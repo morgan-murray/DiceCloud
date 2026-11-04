@@ -2,7 +2,7 @@
 ARG NODE_IMAGE=node:22-bookworm-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da
 FROM ${NODE_IMAGE} AS toolchain
 ARG METEOR_RELEASE=3.4.3
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git python3 make g++ bzip2 libfontconfig1 \
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git python3 make g++ bzip2 libfontconfig1 procps \
     && rm -rf /var/lib/apt/lists/*
 USER node
 WORKDIR /home/node
@@ -17,6 +17,8 @@ COPY --chown=node:node app/ ./
 RUN npm ci
 RUN meteor build --directory /home/node/bundle --architecture os.linux.x86_64
 WORKDIR /home/node/bundle/bundle/programs/server
+COPY --chown=node:node deployment/bundle-package.json ./package.json
+COPY --chown=node:node deployment/bundle-npm-shrinkwrap.json ./npm-shrinkwrap.json
 RUN npm ci --omit=dev
 
 FROM ${NODE_IMAGE} AS runtime

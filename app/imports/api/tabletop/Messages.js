@@ -1,3 +1,4 @@
+import 'meteor/aldeed:collection2/static';
 import SimpleSchema from 'simpl-schema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';

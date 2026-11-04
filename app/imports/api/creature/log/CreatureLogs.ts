@@ -1,3 +1,4 @@
+import 'meteor/aldeed:collection2/static';
 import Creatures, { type Creature } from '/imports/api/creature/creatures/Creatures';
 import LogContentSchema from '/imports/api/creature/log/LogContentSchema';
 import { ValidatedMethod, type MethodContext } from 'meteor/mdg:validated-method';

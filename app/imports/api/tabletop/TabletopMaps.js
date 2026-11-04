@@ -1,3 +1,4 @@
+import 'meteor/aldeed:collection2/static';
 import SimpleSchema from 'simpl-schema';
 import ChildSchema from '/imports/api/parenting/ChildSchema';
 

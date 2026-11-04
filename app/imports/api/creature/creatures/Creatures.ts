@@ -1,3 +1,4 @@
+import 'meteor/aldeed:collection2/static';
 import SimpleSchema from 'simpl-schema';
 import ColorSchema from '/imports/api/properties/subSchemas/ColorSchema';
 import SharingSchema from '/imports/api/sharing/SharingSchema';

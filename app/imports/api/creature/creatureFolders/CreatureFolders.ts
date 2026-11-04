@@ -1,3 +1,4 @@
+import 'meteor/aldeed:collection2/static';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import { TypedSimpleSchema, type InferType } from '/imports/api/utility/TypedSimpleSchema';
 
