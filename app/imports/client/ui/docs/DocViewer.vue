@@ -1,3 +1,32 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { find } from 'lodash';
+import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
+import DocCard from '/imports/client/ui/docs/DocCard.vue';
+import DocListItem from '/imports/client/ui/docs/DocListItem.vue';
+
+const props = defineProps<{
+  doc?: object;
+  childDocs: any[];
+  siblingDocs: any[];
+}>();
+
+const router = useRouter();
+
+const siblingHasIcon = computed(() => !!find(props.siblingDocs, doc => (doc).icon));
+
+function mdClick(e: MouseEvent) {
+  const target = (e.target || (e as any).srcElement) as HTMLAnchorElement | null;
+  const href = target && target.href;
+  if (!href) return;
+  const path = href.split('/docs/')[1];
+  if (!path) return;
+  e.preventDefault();
+  router.push('/docs/' + path);
+}
+</script>
+
 <template>
   <v-row
     justify="center"
@@ -15,7 +44,7 @@
           <v-fade-transition mode="out-in">
             <v-list
               v-if="siblingDocs.length > 1"
-              :dense="siblingDocs.length > 5"
+              :density="siblingDocs.length > 5 ? 'compact' : 'default'"
             >
               <doc-list-item
                 v-for="sibling in siblingDocs"
@@ -38,12 +67,12 @@
           >
             <svg-icon
               v-if="doc && doc.icon"
-              large
+              size="large"
               :shape="doc.icon.shape"
             />
             <v-icon
               v-else-if="!doc"
-              large
+              size="large"
             >
               mdi-home
             </v-icon>
@@ -94,51 +123,6 @@
     </v-col>
   </v-row>
 </template>
-
-<script lang="js">
-import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
-import DocCard from '/imports/client/ui/docs/DocCard.vue';
-import DocListItem from '/imports/client/ui/docs/DocListItem.vue';
-import { find } from 'lodash';
-
-export default {
-  components: {
-    DocListItem,
-    MarkdownText,
-    DocCard,
-  },
-  props: {
-    doc: {
-      type: Object,
-      default: undefined,
-    },
-    childDocs: {
-      type: Array,
-      required: true,
-    },
-    siblingDocs: {
-      type: Array,
-      required: true,
-    },
-  },
-  computed: {
-    siblingHasIcon() {
-      return !!find(this.siblingDocs, doc => doc.icon);
-    }
-  },
-  methods: {
-    mdClick(e) {
-      const target = e.target || e.srcElement;
-      const href = target && target.href;
-      if (!href) return;
-      const path = href.split('/docs/')[1];
-      if (!path) return;
-      e.preventDefault();
-      this.$router.push('/docs/' + path);
-    },
-  }
-}
-</script>
 
 <style lang="css" scoped>
 @media (min-width: 500px) {

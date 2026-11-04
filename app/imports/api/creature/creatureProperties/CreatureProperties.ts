@@ -5,8 +5,8 @@ import SoftRemovableSchema from '/imports/api/parenting/SoftRemovableSchema';
 import propertySchemasIndex from '/imports/api/properties/computedPropertySchemasIndex';
 import { storedIconsSchema } from '/imports/api/icons/Icons';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
-import { ConvertToUnion, InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
-import { Simplify } from 'type-fest';
+import { type ConvertToUnion, type InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { type Simplify } from 'type-fest';
 import type { PropertyType } from '/imports/api/properties/PropertyType.type';
 
 const PreComputeCreaturePropertySchema = TypedSimpleSchema.from({
@@ -131,6 +131,8 @@ const DenormalisedOnlyCreaturePropertySchema = TypedSimpleSchema.from({
 
 const CreaturePropertySchema = PreComputeCreaturePropertySchema.extend(DenormalisedOnlyCreaturePropertySchema);
 
+export const creaturePropertyRootCollections = ['creatures' as const];
+
 export type CreaturePropertyTypes = {
   [T in PropertyType]: Simplify<
     { type: T }
@@ -138,7 +140,7 @@ export type CreaturePropertyTypes = {
   > & Simplify<
     Exclude<InferType<typeof CreaturePropertySchema>, 'type'>
     & InferType<typeof ColorSchema>
-    & InferType<typeof ChildSchema>
+    & InferType<ReturnType<typeof ChildSchema<typeof creaturePropertyRootCollections[number]>>>
     & InferType<typeof SoftRemovableSchema>
   >
 }
@@ -150,7 +152,7 @@ const CreatureProperties = new Mongo.Collection<CreatureProperty>('creaturePrope
 const genericCreaturePropertySchema = TypedSimpleSchema.from({})
   .extend(CreaturePropertySchema)
   .extend(ColorSchema)
-  .extend(ChildSchema)
+  .extend(ChildSchema(creaturePropertyRootCollections))
   .extend(SoftRemovableSchema);
 
 // Attach the default schema
@@ -159,7 +161,8 @@ CreatureProperties.attachSchema(genericCreaturePropertySchema);
 // Attach the schemas for each type
 let key: keyof typeof propertySchemasIndex;
 for (key in propertySchemasIndex) {
-  const schema = TypedSimpleSchema.from({})
+  if (key === 'reference') continue;
+  const schema = new SimpleSchema({})
     .extend(propertySchemasIndex[key])
     .extend(genericCreaturePropertySchema)
   CreatureProperties.attachSchema(schema, {

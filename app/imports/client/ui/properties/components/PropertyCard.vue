@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import ActionCard from '/imports/client/ui/properties/components/actions/ActionCard.vue';
+
+withDefaults(defineProps<{
+  model?: Record<string, any>;
+}>(), {
+  model: undefined,
+});
+</script>
+
 <template
   lang="html"
   functional
@@ -12,19 +22,3 @@
     </v-card-title>
   </v-card>
 </template>
-
-<script lang="js">
-import ActionCard from '/imports/client/ui/properties/components/actions/ActionCard.vue';
-
-export default {
-  components: {
-    action: ActionCard,
-  },
-  props: {
-    model: {
-      type: Object,
-      default: undefined,
-    },
-  },
-}
-</script>

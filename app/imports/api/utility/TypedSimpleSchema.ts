@@ -1,4 +1,8 @@
-import SimpleSchema, { SimpleSchemaDefinition } from 'simpl-schema';
+import SimpleSchema, {
+  type SimpleSchemaDefinition,
+  type SchemaDefinition,
+  type SchemaDefinitionType,
+} from 'simpl-schema';
 import type {
   FieldToCalculate, CalculatedOnlyField
 } from '/imports/api/properties/subSchemas/computedField';
@@ -7,13 +11,22 @@ import type {
 } from '/imports/api/properties/subSchemas/inlineCalculationField';
 import type { Simplify } from 'type-fest';
 
+export type SchemaDefinitionCustom = Omit<SchemaDefinition, 'type'> & {
+  type: SchemaDefinitionType | 'inlineCalculationFieldToCompute'
+  | 'fieldToCompute'
+  | 'computedOnlyInlineCalculationField'
+  | 'computedOnlyField';
+}
+
 // It DOES NOT support a constructor with multiple schemas.
-export type Definition = Exclude<SimpleSchemaDefinition, any[]>;
+export type Definition = {
+  [key: string]: SchemaDefinitionCustom
+}
 
 // This is a no-op wrapper, effectively implementing a phantom type.
 export class TypedSimpleSchema<T> extends SimpleSchema {
   private constructor(definition: Definition) {
-    super(definition);
+    super(definition as SimpleSchemaDefinition);
   }
   static from<D extends Definition>(definition: D): TypedSimpleSchema<InferSchema<D>> {
     return new TypedSimpleSchema(definition);
@@ -21,10 +34,19 @@ export class TypedSimpleSchema<T> extends SimpleSchema {
   clean(...args: Parameters<SimpleSchema['clean']>): unknown {
     return super.clean(...args);
   }
+  pick<K extends keyof T & string>(...args: K[]): TypedSimpleSchema<Pick<T, K>> {
+    return super.pick(...args) as unknown as TypedSimpleSchema<Pick<T, K>>;
+  }
+  omit<K extends keyof T & string>(...args: K[]): TypedSimpleSchema<Omit<T, K>> {
+    return super.pick(...args) as unknown as TypedSimpleSchema<Omit<T, K>>;
+  }
   // Extending the schema with another schema &'s their definitions
   // In some cases, this is not strictly accurate, use with caution
   extend<U>(otherSchema: TypedSimpleSchema<U>): TypedSimpleSchema<Simplify<T & U>> {
-    return super.extend(otherSchema);
+    return super.extend(otherSchema) as unknown as TypedSimpleSchema<Simplify<T & U>>;
+  }
+  validator(options?: Parameters<SimpleSchema['validator']>[0]): (obj: T) => boolean {
+    return super.validator(options);
   }
 }
 
@@ -37,6 +59,10 @@ export function cleanAndValidate<T extends { _id?: string }>(schema: TypedSimple
   const cleanDoc = schema.clean(doc);
   validate(schema, cleanDoc);
   return cleanDoc;
+}
+
+export function oneOf<T extends SchemaDefinitionType[]>(...types: T): TypedSimpleSchema<InferTypeInner<T[number]>> {
+  return SimpleSchema.oneOf(...types) as unknown as TypedSimpleSchema<InferTypeInner<T[number]>>;
 }
 
 // If this type emerges anywhere in calculations, congratulations!
@@ -53,7 +79,7 @@ export type InferType<T> = T extends TypedSimpleSchema<infer X> ? X : never;
 type InferTypeInner<T> =
   T extends typeof Array ? ArrayMarker :
   T extends typeof Boolean ? boolean :
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   T extends typeof Function ? Function :
   T extends typeof Number ? number :
   T extends typeof SimpleSchema.Integer ? number :

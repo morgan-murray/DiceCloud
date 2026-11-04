@@ -1,9 +1,7 @@
-import ParseNode from '/imports/parser/parseTree/ParseNode';
-import ResolvedResult from '../types/ResolvedResult';
-import TraverseFunction from '/imports/parser/types/TraverseFunction';
-import MapFunction from '/imports/parser/types/MapFunction';
-import ResolveFunction from '/imports/parser/types/ResolveFunction';
-import ToStringFunction from '/imports/parser/types/ToStringFunction';
+import type { ParseNode } from '/imports/parser/parseTree/ParseNode';
+import type { ResolvedResult } from '../types/ResolvedResult';
+import type { ResolveFunction } from '/imports/parser/types/ResolveFunction';
+import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
 
 export type IfNode = {
   parseType: 'if';
@@ -12,19 +10,12 @@ export type IfNode = {
   alternative: ParseNode;
 }
 
-type IfFactory = {
-  create(node: Partial<IfNode>): IfNode;
+type IfFactory = ParseNodeFactory<IfNode> & {
   resolve: ResolveFunction<IfNode>;
-  toString: ToStringFunction<IfNode>;
-  traverse: TraverseFunction<IfNode>;
-  map: MapFunction<IfNode>;
 }
 
 const ifNode: IfFactory = {
-  create(
-    { condition, consequent, alternative }:
-      { condition: ParseNode, consequent: ParseNode, alternative: ParseNode }
-  ) {
+  create({ condition, consequent, alternative }) {
     return {
       parseType: 'if',
       condition,
@@ -34,7 +25,6 @@ const ifNode: IfFactory = {
   },
   toString(node, stringOthers) {
     const { condition, consequent, alternative } = node;
-    condition.parseType
     return `${stringOthers(condition)} ? ${stringOthers(consequent)} : ${stringOthers(alternative)}`
   },
   async resolve(fn, node, scope, context, inputProvider, resolveOthers): Promise<ResolvedResult> {

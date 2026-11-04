@@ -1,16 +1,14 @@
-import SimpleSchema from 'simpl-schema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertAdmin } from '/imports/api/sharing/sharingPermissions';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
-import { InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { type InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import type { Collection as MongoCollection } from 'mongodb';
 
 const iconsSchema = TypedSimpleSchema.from({
   name: {
     type: String,
-    unique: true,
     max: STORAGE_LIMITS.name,
-    index: 1,
   },
   description: {
     type: String,
@@ -21,7 +19,6 @@ const iconsSchema = TypedSimpleSchema.from({
     type: Array,
     optional: true,
     maxCount: STORAGE_LIMITS.tagCount,
-    index: 1,
   },
   'tags.$': {
     type: String,
@@ -36,11 +33,10 @@ const iconsSchema = TypedSimpleSchema.from({
 type Icon = InferType<typeof iconsSchema>;
 
 const Icons = new Mongo.Collection<Icon>('icons');
-// @ts-expect-error don't have types for .attachSchema
 Icons.attachSchema(iconsSchema);
 
 if (Meteor.isServer) {
-  Icons._ensureIndex({
+  await Icons.createIndexAsync({
     'name': 'text',
     'description': 'text',
     'tags': 'text',
@@ -56,27 +52,33 @@ const storedIconsSchema = TypedSimpleSchema.from({
   },
 });
 
-// This method does not validate icons against the schema, use wisely;
 const writeIcons = new ValidatedMethod({
   name: 'icons.write',
-  validate: null,
+  validate: TypedSimpleSchema.from({
+    icons: {
+      type: Array,
+    },
+    'icons.$': {
+      type: iconsSchema,
+    },
+  }).validator(),
   mixins: [RateLimiterMixin],
   rateLimit: {
     numRequests: 20,
     timeInterval: 10000,
   },
-  run(icons) {
-    assertAdmin(this.userId);
+  async run({ icons }) {
+    await assertAdmin(this.userId);
     if (Meteor.isServer) {
       this.unblock();
-      Icons.rawCollection().insert(icons, { ordered: false });
+      await (Icons.rawCollection() as MongoCollection<Icon>).insertMany(icons, { ordered: false });
     }
   }
 });
 
 const findIcons = new ValidatedMethod({
   name: 'icons.find',
-  validate: new SimpleSchema({
+  validate: TypedSimpleSchema.from({
     search: {
       type: String,
       max: 30,
@@ -88,7 +90,7 @@ const findIcons = new ValidatedMethod({
     numRequests: 20,
     timeInterval: 10000,
   },
-  run({ search }) {
+  async run({ search }) {
     if (!search) return [];
     if (!Meteor.isServer) return;
     return Icons.find(
@@ -102,9 +104,10 @@ const findIcons = new ValidatedMethod({
         // `score` property specified in the projection fields above.
         sort: {
           score: { $meta: 'textScore' }
-        }
+        },
+        limit: 120,
       }
-    ).fetch();
+    ).fetchAsync();
   }
 })
 

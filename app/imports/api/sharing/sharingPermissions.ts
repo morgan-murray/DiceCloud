@@ -1,7 +1,10 @@
 import { includes } from 'lodash';
-import { fetchDocByRef } from '/imports/api/parenting/parentingFunctions';
 import type { Shared } from '/imports/api/sharing/SharingSchema';
 import type { TreeDoc } from '/imports/api/parenting/ChildSchema';
+import { Roles } from 'meteor/roles';
+import { getDocByRefAsync } from '/imports/api/parenting/reference';
+import type { Library } from '/imports/api/library/Libraries';
+import type { Creature } from '/imports/api/creature/creatures/Creatures';
 
 function assertIdValid(userId: string | undefined | null): asserts userId {
   if (!userId || typeof userId !== 'string') {
@@ -10,14 +13,14 @@ function assertIdValid(userId: string | undefined | null): asserts userId {
   }
 }
 
-function assertDocExists(doc: Record<string, any> | undefined): asserts doc {
+export function assertDocExists(doc: Record<string, unknown> | undefined): asserts doc {
   if (!doc) {
     throw new Meteor.Error('Permission denied',
       'Permission denied: No such document exists');
   }
 }
 
-export function assertOwnership(doc: Shared, userId: string): asserts doc {
+export function assertOwnership(doc: Shared | undefined, userId: string | undefined | null): asserts doc {
   assertIdValid(userId);
   assertDocExists(doc);
 
@@ -35,21 +38,17 @@ export function assertOwnership(doc: Shared, userId: string): asserts doc {
  *
  * Warning: the doc and userId must be set by a trusted source
  */
-export function assertEditPermission(doc: Shared | undefined, userId: string | undefined | null): asserts doc {
+export async function assertEditPermission(doc: Shared | undefined, userId: string | undefined | null): Promise<void> {
   assertIdValid(userId);
   assertDocExists(doc);
-  const user = Meteor.users.findOne(userId, {
-    fields: {
-      'roles': 1,
-    }
-  });
+  const user = await Meteor.users.findOneAsync(userId);
   if (!user) {
     throw new Meteor.Error('Edit permission denied',
       'No such user exists');
   }
 
   // Admin override
-  if (user.roles && user.roles.includes('admin')) {
+  if (await Roles.userIsInRoleAsync(user, 'admin')) {
     return;
   }
 
@@ -71,10 +70,10 @@ export function assertEditPermission(doc: Shared | undefined, userId: string | u
  *
  * Warning: the doc and userId must be set by a trusted source
  */
-export function assertCopyPermission(doc: Shared, userId): asserts doc {
+export async function assertCopyPermission(doc: Shared | undefined, userId: string | undefined | null): Promise<void> {
   assertIdValid(userId);
   assertDocExists(doc);
-  const user = Meteor.users.findOne(userId, {
+  const user = await Meteor.users.findOneAsync(userId, {
     fields: {
       'roles': 1,
     }
@@ -86,7 +85,7 @@ export function assertCopyPermission(doc: Shared, userId): asserts doc {
   }
 
   // Admin override
-  if (user.roles && user.roles.includes('admin')) {
+  if (Roles.userIsInRole(user, 'admin')) {
     return;
   }
 
@@ -107,10 +106,10 @@ export function assertCopyPermission(doc: Shared, userId): asserts doc {
   }
 }
 
-function getRoot(doc: TreeDoc | Shared | undefined) {
+async function getRoot(doc: TreeDoc | Shared | undefined): Promise<Shared | undefined> {
   assertDocExists(doc);
   if ('root' in doc) {
-    return fetchDocByRef<Shared>(doc.root);
+    return await getDocByRefAsync(doc.root) as Library | Creature;
   } else {
     return doc;
   }
@@ -122,9 +121,9 @@ function getRoot(doc: TreeDoc | Shared | undefined) {
  *
  * Warning: the doc and userId must be set by a trusted source
  */
-export function assertDocEditPermission(doc: TreeDoc | Shared | undefined, userId: string | null): asserts doc {
-  const root = getRoot(doc);
-  assertEditPermission(root, userId);
+export async function assertDocEditPermission(doc: TreeDoc | Shared | undefined, userId: string | null): Promise<void> {
+  const root = await getRoot(doc);
+  await assertEditPermission(root, userId);
 }
 
 /**
@@ -133,12 +132,12 @@ export function assertDocEditPermission(doc: TreeDoc | Shared | undefined, userI
  *
  * Warning: the doc and userId must be set by a trusted source
  */
-export function assertDocCopyPermission(doc, userId): asserts doc {
-  const root = getRoot(doc);
-  assertCopyPermission(root, userId);
+export async function assertDocCopyPermission(doc: TreeDoc, userId: string | undefined | null): Promise<void> {
+  const root = await getRoot(doc);
+  await assertCopyPermission(root, userId);
 }
 
-export function assertViewPermission(doc, userId): asserts doc {
+export async function assertViewPermission(doc: Shared | undefined, userId: string | undefined | null): Promise<void> {
   assertDocExists(doc);
   if (doc.public) return;
   assertIdValid(userId);
@@ -149,26 +148,16 @@ export function assertViewPermission(doc, userId): asserts doc {
     includes(doc.writers, userId)
   ) {
     return;
-  } else {
-
-    // Admin override
-    const user = Meteor.users.findOne(userId, {
-      fields: {
-        'roles': 1,
-      }
-    });
-    if (!user) {
-      throw new Meteor.Error('Edit permission denied',
-        'No such user exists');
-    }
-
-    if (user.roles && user.roles.includes('admin')) {
-      return;
-    }
-
-    throw new Meteor.Error('View permission denied',
-      'You do not have permission to view this document');
   }
+
+  // Admin override
+  if (await Roles.userIsInRoleAsync(userId, 'admin')) {
+    return;
+  }
+
+  throw new Meteor.Error('View permission denied',
+    'You do not have permission to view this document');
+
 }
 
 /**
@@ -177,21 +166,16 @@ export function assertViewPermission(doc, userId): asserts doc {
  *
  * Warning: the doc and userId must be set by a trusted source
  */
-export function assertDocViewPermission(doc, userId): asserts doc {
-  const root = getRoot(doc);
-  assertViewPermission(root, userId);
+export async function assertDocViewPermission(doc: Shared | TreeDoc | undefined, userId: string | undefined | null): Promise<void> {
+  const root = await getRoot(doc);
+  await assertViewPermission(root, userId);
 }
 
-export function assertAdmin(userId): asserts userId {
+export async function assertAdmin(userId: string | undefined | null): Promise<void> {
   assertIdValid(userId);
-  const user = Meteor.users.findOne(userId, { fields: { roles: 1 } });
-  if (!user) {
-    throw new Meteor.Error('Permission denied',
-      'UserId does not match any existing user');
-  }
-  const isAdmin = user.roles && user.roles.includes('admin')
+  const isAdmin = await Roles.userIsInRoleAsync(userId, 'admin');
   if (!isAdmin) {
-    throw new Meteor.Error('Permission denied',
+    throw new Meteor.Error('permission-denied',
       'User does not have the admin role');
   }
 }

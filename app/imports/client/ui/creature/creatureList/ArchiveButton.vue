@@ -1,3 +1,21 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import { Random } from 'meteor/random';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = defineProps<{ text?: boolean }>();
+const store = useStore(key);
+const randomId = ref(Random.id());
+
+function openArchive() {
+  store.commit('pushDialogStack', {
+    component: 'archive-dialog',
+    elementId: randomId.value,
+  });
+}
+</script>
+
 <template lang="html">
   <v-btn
     :icon="!text"
@@ -9,30 +27,10 @@
     <template v-if="text">
       Archive Characters
     </template>
-    <v-icon :right="text">
+    <v-icon :class="text ? 'ml-1' : ''">
       mdi-archive
     </v-icon>
   </v-btn>
 </template>
 
-<script lang="js">
-export default {
-  props: {
-    text: Boolean,
-  },
-  data(){return {
-    randomId: Random.id(),
-  }},
-  methods: {
-    openArchive(){
-      this.$store.commit('pushDialogStack', {
-        component: 'archive-dialog',
-        elementId: this.randomId,
-      });
-    }
-  }
-}
-</script>
-
-<style lang="css" scoped>
-</style>
+<style lang="css" scoped></style>

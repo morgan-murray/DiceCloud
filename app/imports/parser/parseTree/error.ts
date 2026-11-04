@@ -1,6 +1,6 @@
-import ParseNode from '/imports/parser/parseTree/ParseNode';
-import ResolveLevelFunction from '/imports/parser/types/ResolveLevelFunction';
-import ToStringFunction from '/imports/parser/types/ToStringFunction';
+import type { ParseNode } from '/imports/parser/parseTree/ParseNode';
+import type { ResolveLevelFunction } from '/imports/parser/types/ResolveLevelFunction';
+import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
 
 export type ErrorNode = {
   parseType: 'error';
@@ -8,10 +8,8 @@ export type ErrorNode = {
   error: string;
 }
 
-interface ErrorFactory {
-  create(node: Partial<ErrorNode>): ErrorNode;
+type ErrorFactory = ParseNodeFactory<ErrorNode> & {
   compile: ResolveLevelFunction<ErrorNode>;
-  toString: ToStringFunction<ErrorNode>;
 }
 
 const error: ErrorFactory = {
@@ -23,11 +21,17 @@ const error: ErrorFactory = {
     }
   },
   async compile(node, scope, context) {
-    return { result: node, context };
+    return Promise.resolve({ result: node, context });
   },
   toString(node) {
     return node.error;
   },
+  traverse(node, fn) {
+    return fn(node);
+  },
+  map(node, fn) {
+    return fn(node);
+  }
 }
 
 export default error;

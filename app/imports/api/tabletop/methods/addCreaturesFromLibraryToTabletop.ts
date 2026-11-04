@@ -8,7 +8,6 @@ import LibraryNodes from '/imports/api/library/LibraryNodes';
 import { getFilter, renewDocIds } from '/imports/api/parenting/parentingFunctions';
 import { reifyNodeReferences, storeLibraryNodeReferences } from '/imports/api/creature/creatureProperties/methods/insertPropertyFromLibraryNode';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import Tabletops from '/imports/api/tabletop/Tabletops';
 import { assertTabletopHasPropSpace } from '/imports/api/tabletop/methods/shared/tabletopLimits'
 
@@ -36,18 +35,18 @@ const addCreaturesFromLibraryToTabletop = new ValidatedMethod({
     timeInterval: 5_000,
   },
 
-  run({ libraryNodeIds, tabletopId }) {
+  async run({ libraryNodeIds, tabletopId }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.addCreatures.denied',
         'You need to be logged in to remove a tabletop');
     }
     assertUserHasPaidBenefits(this.userId);
-    const tabletop = Tabletops.findOne(tabletopId);
+    const tabletop = await Tabletops.findOneAsync(tabletopId);
     assertUserInTabletop(tabletop, this.userId);
     assertTabletopHasPropSpace(tabletop);
 
     for (const nodeId of libraryNodeIds) {
-      const creatureNode = LibraryNodes.findOne({
+      const creatureNode = await LibraryNodes.findOneAsync({
         _id: nodeId,
         type: 'creature',
         removed: { $ne: true },
@@ -64,7 +63,7 @@ const addCreaturesFromLibraryToTabletop = new ValidatedMethod({
       }
 
       // Insert the creature
-      const creatureId = Creatures.insert({
+      const creatureId = await Creatures.insertAsync({
         ...creatureNode,
         _id: Random.id(),
         type: 'monster',
@@ -77,21 +76,16 @@ const addCreaturesFromLibraryToTabletop = new ValidatedMethod({
         settings: {},
       });
 
-      // Insert the creature variables
-      CreatureVariables.insert({
-        _creatureId: creatureId,
-      });
-
-      insertSubProperties(creatureNode, creatureId);
+      await insertSubProperties(creatureNode, creatureId);
     }
   },
 });
 
-function insertSubProperties(node, creatureId: string) {
-  let nodes = LibraryNodes.find({
+async function insertSubProperties(node, creatureId: string) {
+  let nodes = await LibraryNodes.find({
     ...getFilter.descendants(node),
     removed: { $ne: true },
-  }).fetch();
+  }).fetchAsync();
 
   for (const node of nodes) {
     node.root = {
@@ -101,7 +95,7 @@ function insertSubProperties(node, creatureId: string) {
   }
 
   // Convert all references into actual nodes
-  nodes = reifyNodeReferences(nodes);
+  nodes = await reifyNodeReferences(nodes);
 
   // set libraryNodeIds
   storeLibraryNodeReferences(nodes);
@@ -113,8 +107,9 @@ function insertSubProperties(node, creatureId: string) {
   });
 
   // Insert the creature properties
-  // @ts-expect-error Batch insert not defined
-  if (nodes.length) CreatureProperties.batchInsert(nodes);
+  for (const n of nodes) {
+    await CreatureProperties.insertAsync(n);
+  }
   return node;
 }
 

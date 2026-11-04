@@ -1,3 +1,7 @@
+<script setup lang="ts">
+defineProps<{ model: Record<string, any> }>();
+</script>
+
 <template lang="html">
   <div class="buff-viewer">
     <!--<property-field
@@ -19,32 +23,6 @@
     </v-row>
   </div>
 </template>
-
-<script lang="js">
-import propertyViewerMixin from '/imports/client/ui/properties/viewers/shared/propertyViewerMixin'
-import numberToSignedString from '../../../../api/utility/numberToSignedString';
-
-export default {
-  mixins: [propertyViewerMixin],
-  computed: {
-    reset() {
-      let reset = this.model.reset
-      if (reset === 'shortRest') {
-        return `Reset${this.model.resetMultiplier && ' x' + this.model.resetMultiplier
-          } on a short rest`;
-      } else if (reset === 'longRest') {
-        return `Reset${this.model.resetMultiplier && ' x' + this.model.resetMultiplier
-          } on a long rest`;
-      } else {
-        return undefined;
-      }
-    }
-  },
-  methods: {
-    numberToSignedString,
-  }
-}
-</script>
 
 <style lang="css" scoped>
 .ability-value {

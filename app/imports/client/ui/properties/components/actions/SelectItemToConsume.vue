@@ -1,3 +1,46 @@
+<script setup lang="ts">
+import { autorun } from 'vue-meteor-tracker';
+import ItemTreeNode from '/imports/client/ui/properties/treeNodeViews/ItemTreeNode.vue';
+import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
+import selectAmmoItem from '/imports/api/creature/creatureProperties/methods/selectAmmoItem';
+import { findIndex } from 'lodash';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+
+const props = defineProps<{
+  action: Record<string, any>;
+  itemConsumed: Record<string, any>;
+}>();
+
+const { result: items } = autorun(() =>
+  CreatureProperties.find({
+    ...getFilter.descendantsOfRoot(props.action.root.id),
+    type: 'item',
+    tags: props.itemConsumed.tag,
+    removed: { $ne: true },
+    inactive: { $ne: true },
+  }, {
+    sort: { left: 1 },
+    fields: { equipped: false },
+  }).fetchAsync()
+);
+
+async function selectItem(itemId: string) {
+  const itemConsumedIndex = findIndex(
+    props.action.resources.itemsConsumed,
+    (item: any) => item._id === props.itemConsumed._id
+  );
+  try {
+    await selectAmmoItem.callAsync({
+      actionId: props.action._id,
+      itemId,
+      itemConsumedIndex,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+</script>
+
 <template lang="html">
   <v-list v-if="items.length">
     <v-list-item
@@ -17,58 +60,6 @@
     </v-card-text>
   </v-card>
 </template>
-
-<script lang="js">
-import ItemTreeNode from '/imports/client/ui/properties/treeNodeViews/ItemTreeNode.vue';
-import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
-import selectAmmoItem from '/imports/api/creature/creatureProperties/methods/selectAmmoItem';
-import { findIndex } from 'lodash';
-import { getFilter } from '/imports/api/parenting/parentingFunctions';
-export default {
-  components: {
-    ItemTreeNode
-  },
-  props: {
-    action: {
-      type: Object,
-      required: true,
-    },
-    itemConsumed: {
-      type: Object,
-      required: true,
-    },
-  },
-  meteor: {
-    items(){
-      return CreatureProperties.find({
-        ...getFilter.descendantsOfRoot(this.action.root.id),
-        type: 'item',
-        tags: this.itemConsumed.tag,
-        removed: {$ne: true},
-        inactive: {$ne: true},
-      }, {
-        sort: {left: 1},
-        fields: {equipped: false},
-      });
-    }
-  },
-  methods:{
-    selectItem(itemId){
-      let itemConsumedIndex = findIndex(
-        this.action.resources.itemsConsumed,
-        item => item._id === this.itemConsumed._id
-      );
-      selectAmmoItem.call({
-        actionId: this.action._id,
-        itemId,
-        itemConsumedIndex
-      }, error => {
-        if (error) console.error(error);
-      });
-    }
-  }
-}
-</script>
 
 <style lang="css" scoped>
 </style>

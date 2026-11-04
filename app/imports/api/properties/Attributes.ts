@@ -2,7 +2,7 @@ import SimpleSchema from 'simpl-schema';
 import VARIABLE_NAME_REGEX from '/imports/constants/VARIABLE_NAME_REGEX';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import createPropertySchema from '/imports/api/properties/subSchemas/createPropertySchema';
-import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { oneOf, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 
 /*
  * Attributes are numbered stats of a character
@@ -35,7 +35,6 @@ const AttributeSchema = createPropertySchema({
       'utility', // Aren't displayed, Jump height, Carry capacity
     ] as const,
     defaultValue: 'stat',
-    index: 1,
   },
   // For type hitDice, the size needs to be stored separately
   hitDiceSize: {
@@ -150,13 +149,13 @@ const ComputedOnlyAttributeSchema = createPropertySchema({
   },
   // The computed value of the attribute
   total: {
-    type: SimpleSchema.oneOf(Number, String, Boolean),
+    type: oneOf(Number, String, Boolean),
     optional: true,
     removeBeforeCompute: true,
   },
   // The computed value of the attribute minus the damage
   value: {
-    type: SimpleSchema.oneOf(Number, String, Boolean),
+    type: oneOf(Number, String, Boolean),
     defaultValue: 0,
     optional: true,
     removeBeforeCompute: true,

@@ -1,3 +1,17 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), { errors: () => ({}) });
+
+const emit = defineEmits(['change']);
+
+function change(path: string | string[], value: any, ack?: Function) {
+  const pathArray = Array.isArray(path) ? path : [path];
+  emit('change', { path: pathArray, value, ack });
+}
+</script>
+
 <template lang="html">
   <div class="container-form">
     <v-row dense>
@@ -79,11 +93,3 @@
     </form-sections>
   </div>
 </template>
-
-<script lang="js">
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-
-export default {
-  mixins: [propertyFormMixin],
-}
-</script>

@@ -1,3 +1,9 @@
+<script setup lang="ts">
+defineProps<{
+  model: Record<string, any>;
+}>();
+</script>
+
 <template lang="html">
   <property-field
     v-if="model.targetByTags"
@@ -12,7 +18,7 @@
           :key="index"
           class="mr-1"
           disabled
-          small
+          size="small"
         >
           {{ tag }}
         </v-chip>
@@ -30,7 +36,7 @@
             :key="index"
             class="mr-1"
             disabled
-            small
+            size="small"
           >
             {{ extraTag }}
           </v-chip>
@@ -39,19 +45,3 @@
     </div>
   </property-field>
 </template>
-
-<script lang="js">
-import PropertyField from '/imports/client/ui/properties/viewers/shared/PropertyField.vue';
-
-export default {
-  components: {
-    PropertyField,
-  },
-  props: {
-    model: {
-      type: Object,
-      required: true,
-    },
-  },
-}
-</script>

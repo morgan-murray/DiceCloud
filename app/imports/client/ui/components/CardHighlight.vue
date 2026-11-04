@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { inject } from 'vue';
+
+const theme = inject<{ isDark: boolean }>('theme', { isDark: false });
+
+defineProps<{
+  active?: boolean;
+  dark?: boolean;
+}>();
+</script>
+
 <template lang="html">
   <div
     v-if="dark || theme.isDark"
@@ -5,22 +16,6 @@
     :class="{active, 'extra-bright': dark && !theme.isDark}"
   />
 </template>
-
-<script lang="js">
-  export default {
-    inject: {
-      theme: {
-        default: {
-          isDark: false,
-        },
-      },
-    },
-    props: {
-      active: Boolean,
-      dark: Boolean,
-    },
-  }
-</script>
 
 <style lang="css" scoped>
   .overlay {

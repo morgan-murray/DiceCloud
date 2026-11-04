@@ -1,6 +1,33 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
+
+const library = ref({
+  name: 'New Library',
+  description: undefined as string | undefined,
+});
+const valid = ref(true);
+
+function nameChanged(val: string, ack: (error?: string) => void) {
+  if (val) {
+    library.value.name = val;
+    valid.value = true;
+    ack();
+  } else {
+    valid.value = false;
+    ack('Name is required');
+  }
+}
+
+function descriptionChanged(val: string, ack: () => void) {
+  library.value.description = val;
+  ack();
+}
+</script>
+
 <template lang="html">
   <dialog-base>
-    <template slot="toolbar">
+    <template #toolbar>
       <v-toolbar-title>
         New Library
       </v-toolbar-title>
@@ -17,10 +44,10 @@
       :debounce-time="0"
       @change="descriptionChanged"
     />
-    <template slot="actions">
+    <template #actions>
       <v-spacer />
       <v-btn
-        text
+        variant="text"
         :disabled="!valid"
         @click="$store.dispatch('popDialogStack', library)"
       >
@@ -29,41 +56,6 @@
     </template>
   </dialog-base>
 </template>
-
-<script lang="js">
-import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
-
-export default {
-  components: {
-    DialogBase,
-  },
-  data() {
-    return {
-      library: {
-        name: 'New Library',
-        description: undefined,
-      },
-      valid: true,
-    }
-  },
-  methods: {
-    nameChanged(val, ack) {
-      if (val) {
-        this.library.name = val;
-        this.valid = true,
-          ack();
-      } else {
-        this.valid = false;
-        ack('Name is required')
-      }
-    },
-    descriptionChanged(val, ack) {
-      this.library.description = val;
-      ack();
-    },
-  },
-};
-</script>
 
 <style lang="css" scoped>
 

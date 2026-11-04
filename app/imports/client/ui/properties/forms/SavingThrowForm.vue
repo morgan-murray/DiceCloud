@@ -1,3 +1,26 @@
+<script setup lang="ts">
+import { autorun } from 'vue-meteor-tracker';
+import createListOfProperties from '/imports/client/ui/properties/forms/shared/lists/createListOfProperties';
+
+withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), {
+  errors: () => ({}),
+});
+
+const emit = defineEmits(['change']);
+
+function change(path: string | string[], value: any, ack?: Function) {
+  const pathArray = Array.isArray(path) ? path : [path];
+  emit('change', { path: pathArray, value, ack });
+}
+
+const { result: saveList } = autorun(() =>
+  createListOfProperties({ type: 'skill', skillType: 'save' })
+);
+</script>
+
 <template lang="html">
   <div class="saving-throw-form">
     <v-row dense>
@@ -55,12 +78,3 @@
     </form-sections>
   </div>
 </template>
-
-<script lang="js">
-import saveListMixin from '/imports/client/ui/properties/forms/shared/lists/saveListMixin';
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-
-export default {
-  mixins: [saveListMixin, propertyFormMixin],
-};
-</script>

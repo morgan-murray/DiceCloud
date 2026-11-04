@@ -19,7 +19,7 @@ const removeArchiveCreature = new ValidatedMethod({
   },
   async run({ fileId }) {
     // fetch the file
-    const file = ArchiveCreatureFiles.findOne({ _id: fileId }).get();
+    const file = await ArchiveCreatureFiles.findOneAsync({ _id: fileId }).get();
     if (!file) {
       throw new Meteor.Error('File not found',
         'The requested creature archive does not exist');
@@ -33,7 +33,7 @@ const removeArchiveCreature = new ValidatedMethod({
     //Remove the archive once the restore succeeded
     ArchiveCreatureFiles.remove({ _id: fileId });
     // Update the user's file storage limits
-    incrementFileStorageUsed(userId, -file.size);
+    await incrementFileStorageUsed(userId, -file.size);
   },
 });
 

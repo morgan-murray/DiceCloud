@@ -1,3 +1,14 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  tags?: string[];
+  noMargin?: boolean;
+  prefix?: string;
+}>(), {
+  tags: () => [],
+  prefix: undefined,
+});
+</script>
+
 <template lang="html">
   <div
     v-if="tags.length"
@@ -19,22 +30,6 @@
     </v-chip>
   </div>
 </template>
-
-<script lang="js">
-export default {
-  props:{
-    tags: {
-      type: Array,
-      default: () => [],
-    },
-    noMargin: Boolean,
-    prefix: {
-      type: String,
-      default: undefined,
-    }
-  },
-}
-</script>
 
 <style lang="css" scoped>
 </style>

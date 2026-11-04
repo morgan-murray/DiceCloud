@@ -1,3 +1,44 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { autorun } from 'vue-meteor-tracker';
+import { isEqual } from 'lodash';
+import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
+import Creatures from '/imports/api/creature/creatures/Creatures';
+
+const props = defineProps<{
+  model?: any[];
+  showSilenced?: boolean;
+}>();
+
+const { result: contentByTargetId } = autorun(() => {
+  const content: any[] = [];
+  const creaturesById: Record<string, any> = {};
+  const getCreature = (creatureId: string) => {
+    if (creaturesById[creatureId]) return creaturesById[creatureId];
+    return creaturesById[creatureId] = Creatures.findOne(creatureId, {
+      fields: { _id: 1, avatarPicture: 1, name: 1 },
+    });
+  };
+  let currentContent: any = undefined;
+  const filteredModel = (props.model ?? [])
+    .filter((contentItem: any) => !contentItem.silenced || props.showSilenced);
+  for (const contentItem of filteredModel) {
+    if (!currentContent || !isEqual(currentContent.targetIds, contentItem.targetIds)) {
+      if (currentContent) content.push(currentContent);
+      currentContent = {
+        targetIds: contentItem.targetIds,
+        targetCreatures: contentItem.targetIds?.map(getCreature) ?? [],
+        content: [contentItem],
+      };
+    } else {
+      currentContent.content.push(contentItem);
+    }
+  }
+  currentContent && content.push(currentContent);
+  return content;
+});
+</script>
+
 <template lang="html">
   <div class="log-content">
     <div
@@ -35,15 +76,15 @@
         <v-tooltip
           v-for="creature in contentGroup.targetCreatures"
           :key="creature._id"
-          left
+          location="left"
         >
-          <template #activator="{ on, attrs }">
-            <v-list-item-avatar
+          <template #activator="{ props }">
+            <v-avatar
               :color="model.color || 'grey'"
               size="28"
               class="ma-2"
-              v-bind="attrs"
-              v-on="on"
+             
+              v-bind="props"
             >
               <img
                 v-if="creature.avatarPicture"
@@ -53,7 +94,7 @@
               <span v-else>
                 {{ creature.name && creature.name[0] || '?' }}
               </span>
-            </v-list-item-avatar>
+            </v-avatar>
           </template>
           <span>{{ creature.name }}</span>
         </v-tooltip>
@@ -61,59 +102,6 @@
     </div>
   </div>
 </template>
-
-<script lang="js">
-import { isEqual } from 'lodash';
-import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
-import Creatures from '/imports/api/creature/creatures/Creatures';
-
-export default {
-  components: {
-    MarkdownText,
-  },
-  props: {
-    model: {
-      type: Array,
-      default: () => [],
-    },
-    showSilenced: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  meteor: {
-    contentByTargetId() {
-      const content = [];
-      const creaturesById = {};
-      const getCreature = creatureId => {
-        if (creaturesById[creatureId]) return creaturesById[creatureId];
-        return creaturesById[creatureId] = Creatures.findOne(creatureId, {
-          fields: { _id: 1, avatarPicture: 1, name: 1 },
-        });
-      };
-      let currentContent = undefined;
-      const filteredModel = this.model
-        .filter(contentItem => !contentItem.silenced || this.showSilenced);
-      for (const contentItem of filteredModel) {
-        if (!currentContent || !isEqual(currentContent.targetIds, contentItem.targetIds)) {
-          if (currentContent) {
-            content.push(currentContent);
-          }
-          currentContent = {
-            targetIds: contentItem.targetIds,
-            targetCreatures: contentItem.targetIds?.map(getCreature) ?? [],
-            content: [contentItem],
-          };
-        } else {
-          currentContent.content.push(contentItem);
-        }
-      }
-      currentContent && content.push(currentContent);
-      return content;
-    }
-  }
-}
-</script>
 
 <style lang="css" scoped>
   .full-width {

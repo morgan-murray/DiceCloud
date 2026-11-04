@@ -1,3 +1,19 @@
+<script setup lang="ts">
+import AttributeConsumedForm from '/imports/client/ui/properties/forms/AttributeConsumedForm.vue';
+
+withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), { errors: () => ({}) });
+
+const emit = defineEmits(['change', 'pull']);
+
+function change(path: string | string[], value: any, ack?: Function) {
+  const pathArray = Array.isArray(path) ? path : [path];
+  emit('change', { path: pathArray, value, ack });
+}
+</script>
+
 <template lang="html">
   <div class="mt-4">
     <v-slide-x-transition group>
@@ -5,7 +21,7 @@
         v-for="(attribute, i) in model"
         :key="attribute._id || i"
       >
-        <div class="layout align-center">
+        <div class="d-flex align-center">
           <div style="flex-grow: 1;">
             <attribute-consumed-form
               :model="attribute"
@@ -13,9 +29,9 @@
             />
           </div>
           <v-btn
-            outlined
+            variant="outlined"
             icon
-            large
+            size="large"
             class="ma-3"
             style="margin-bottom: 30px !important;"
             @click="$emit('pull', {path: [i]})"
@@ -27,15 +43,3 @@
     </v-slide-x-transition>
   </div>
 </template>
-
-<script lang="js">
-import AttributeConsumedForm from '/imports/client/ui/properties/forms/AttributeConsumedForm.vue';
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-
-export default {
-  components: {
-    AttributeConsumedForm,
-  },
-  mixins: [propertyFormMixin],
-}
-</script>

@@ -1,24 +1,27 @@
 import { debounce } from 'lodash';
-import Creatures, { Creature } from '/imports/api/creature/creatures/Creatures';
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
-import CreatureProperties, { CreatureProperty, CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
+import type { Creature } from '/imports/api/creature/creatures/Creatures';
+import type { CreatureProperty, CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
 import computeCreature from './computeCreature';
 import { getFilter } from '/imports/api/parenting/parentingFunctions';
 import type { PropertyType } from '/imports/api/properties/PropertyType.type';
+import type { Variables } from '/imports/api/engine/computation/CreatureComputation';
+
+const Creatures = Mongo.getCollection('creatures') as Mongo.Collection<Creature>;
+const CreatureProperties = Mongo.getCollection('creatureProperties') as Mongo.Collection<CreatureProperty>
 
 const COMPUTE_DEBOUNCE_TIME = 100; // ms
-export const loadedCreatures: Map<string, LoadedCreature> = new Map(); // creatureId => {creature, properties, etc.}
+export const loadedCreatures: Map<string, LoadedCreature> = new Map();
 
-// function logLoadedCreatures() {
-//   let creatureLoadString = '';
-//   for (const [key, value] of loadedCreatures.entries()) {
-//     creatureLoadString += `${key}: ${value.subs.size}\n`;
-//   }
-//   console.log(creatureLoadString);
-// }
+function logLoadedCreatures() {
+  let creatureLoadString = '';
+  for (const [key, value] of loadedCreatures.entries()) {
+    creatureLoadString += `${key}: ${value.subs.size}\n`;
+  }
+  console.log(creatureLoadString);
+}
 
-export function loadCreature(creatureId: string, subscription: Tracker.Computation) {
-  if (!creatureId) throw 'creatureId is required';
+export async function loadCreature(creatureId: string, subscription: Subscription) {
+  if (!creatureId) throw new Meteor.Error('invalid-argument', 'creatureId is required');
   let creature = loadedCreatures.get(creatureId);
   if (!creature?.subs.has(subscription)) {
     subscription.onStop(() => {
@@ -28,49 +31,49 @@ export function loadCreature(creatureId: string, subscription: Tracker.Computati
   if (creature) {
     creature.subs.add(subscription);
   } else {
-    creature = new LoadedCreature(subscription, creatureId);
+    creature = await LoadedCreature.create(subscription, creatureId);
     loadedCreatures.set(creatureId, creature);
   }
-  // logLoadedCreatures()
+  logLoadedCreatures()
 }
 
 export function unloadAllCreatures() {
-  loadedCreatures.forEach((creature, id) => {
+  for (const [id, creature] of loadedCreatures) {
     creature.stop();
     loadedCreatures.delete(id);
-  });
+  }
 }
 
-function unloadCreature(creatureId: string, subscription: Tracker.Computation) {
-  if (!creatureId) throw 'creatureId is required';
+function unloadCreature(creatureId: string, subscription: Subscription) {
+  if (!creatureId) throw new Meteor.Error('invalid-argument', 'creatureId is required');
   const creature = loadedCreatures.get(creatureId);
   if (!creature) return;
   creature.subs.delete(subscription);
   if (creature.subs.size === 0) {
-    creature.stop();
     loadedCreatures.delete(creatureId);
+    creature.stop();
   }
-  // logLoadedCreatures()
+  logLoadedCreatures()
 }
 
-export function getSingleProperty(creatureId: string, propertyId: string) {
+export async function getSingleProperty(creatureId: string, propertyId: string) {
   const creature = loadedCreatures.get(creatureId)
   const property = creature?.properties.get(propertyId);
   if (property?.removed) return;
   if (property) {
     return EJSON.clone(property);
   }
-  // console.time(`Cache miss on creature properties: ${creatureId}`)
-  const prop = CreatureProperties.findOne({
+  console.time(`Cache miss on creature properties: ${creatureId}`)
+  const prop = await CreatureProperties.findOneAsync({
     _id: propertyId,
     'root.id': creatureId,
     'removed': { $ne: true },
   });
-  // console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
+  console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
   return prop;
 }
 
-export function getProperties(creatureId: string): CreatureProperty[] {
+export async function getProperties(creatureId: string): Promise<CreatureProperty[]> {
   const creature = loadedCreatures.get(creatureId);
   if (creature) {
     const props = Array.from(creature.properties.values())
@@ -78,18 +81,18 @@ export function getProperties(creatureId: string): CreatureProperty[] {
       .filter(prop => !prop.removed);
     return EJSON.clone(props);
   }
-  // console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props = CreatureProperties.find({
+  console.time(`Cache miss on creature properties: ${creatureId}`)
+  const props = await CreatureProperties.find({
     'root.id': creatureId,
     'removed': { $ne: true },
   }, {
     sort: { left: 1 },
-  }).fetch();
-  // console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
+  }).fetchAsync();
+  console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
   return props;
 }
 
-export function getPropertiesOfType<T extends PropertyType>(creatureId: string, propType: T): CreaturePropertyTypes[T][] {
+export async function getPropertiesOfType<T extends PropertyType>(creatureId: string, propType: T): Promise<CreaturePropertyTypes[T][]> {
   const creature = loadedCreatures.get(creatureId);
   if (creature) {
     const props = Array.from(creature.properties.values())
@@ -97,15 +100,15 @@ export function getPropertiesOfType<T extends PropertyType>(creatureId: string, 
       .sort((a, b) => a.left - b.left);
     return EJSON.clone(props);
   }
-  // console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props: CreaturePropertyTypes[T][] = CreatureProperties.find({
+  console.time(`Cache miss on creature properties: ${creatureId}`)
+  const props: CreaturePropertyTypes[T][] = await CreatureProperties.find({
     'root.id': creatureId,
     'removed': { $ne: true },
-    'type': propType as any,
+    'type': propType as never,
   }, {
     sort: { left: 1 },
-  }).fetch() as unknown as CreaturePropertyTypes[T][];
-  // console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
+  }).fetchAsync() as CreaturePropertyTypes[T][];
+  console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
   return props;
 }
 
@@ -127,52 +130,42 @@ export function getPropertiesByFilter(
       .sort((a, b) => a.left - b.left);
     return EJSON.clone(props);
   }
-  // console.time(`Cache miss on creature properties: ${creatureId}`)
+  console.time(`Cache miss on creature properties: ${creatureId}`)
   const props = CreatureProperties.find({
     'root.id': creatureId,
     'removed': { $ne: true },
     ...mongoFilter
-  } as any, {
+  }, {
     sort: { left: 1 },
   }).fetch();
-  // console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
+  console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
   return props;
 }
 
-export function getCreature(creatureId: string) {
+export async function getCreature(creatureId: string) {
   const loadedCreature = loadedCreatures.get(creatureId);
   const loadedCreatureDoc = loadedCreature?.creature;
   if (loadedCreatureDoc) {
     return EJSON.clone(loadedCreatureDoc);
   }
-  // console.time(`Cache miss on Creature: ${creatureId}`);
-  const creature = Creatures.findOne(creatureId);
-  // console.timeEnd(`Cache miss on Creature: ${creatureId}`);
+  console.time(`Cache miss on Creature: ${creatureId}`);
+  const creature = await Creatures.findOneAsync(creatureId);
+  console.timeEnd(`Cache miss on Creature: ${creatureId}`);
   return creature;
 }
 
-export function getVariables(creatureId: string) {
+export function getVariables(creatureId: string): Variables {
   const loadedCreature = loadedCreatures.get(creatureId);
   const loadedVariables = loadedCreature?.variables;
   if (loadedVariables) {
     return EJSON.clone(loadedVariables);
-  }
-  // console.time(`Cache miss on variables: ${creatureId}`);
-  const variables = CreatureVariables.findOne({ _creatureId: creatureId });
-  // console.timeEnd(`Cache miss on variables: ${creatureId}`);
-  return variables;
+  } else {
+    return {} as Variables;
+  };
 }
 
-export function replaceLinkedVariablesWithProps(variables: any) {
-  for (const key in variables) {
-    const propId = variables[key]?._propId;
-    if (!propId) continue;
-    variables[key] = getSingleProperty(variables._creatureId, propId);
-  }
-}
-
-export function getPropertyAncestors(creatureId: string, propertyId: string) {
-  const prop = getSingleProperty(creatureId, propertyId);
+export async function getPropertyAncestors(creatureId: string, propertyId: string) {
+  const prop = await getSingleProperty(creatureId, propertyId);
   if (!prop) return [];
   const loadedCreature = loadedCreatures.get(creatureId);
   if (loadedCreature) {
@@ -181,7 +174,7 @@ export function getPropertyAncestors(creatureId: string, propertyId: string) {
     let currentProp: CreatureProperty | undefined = prop;
     // Iterate through parent chain to get all linked ancestors
     while (currentProp?.parentId) {
-      currentProp = getSingleProperty(creatureId, currentProp.parentId);
+      currentProp = await getSingleProperty(creatureId, currentProp.parentId);
       if (currentProp) props.push(currentProp);
     }
     return EJSON.clone(props);
@@ -196,8 +189,8 @@ export function getPropertyAncestors(creatureId: string, propertyId: string) {
   }
 }
 
-export function getPropertyDescendants(creatureId: string, propertyId: string) {
-  const property = getSingleProperty(creatureId, propertyId);
+export async function getPropertyDescendants(creatureId: string, propertyId: string) {
+  const property = await getSingleProperty(creatureId, propertyId);
   if (!property) return [];
   if (loadedCreatures.has(creatureId)) {
     const creature = loadedCreatures.get(creatureId);
@@ -230,9 +223,9 @@ export function getPropertyDescendants(creatureId: string, propertyId: string) {
  * @param {string | any} property prop or prop ID to get children of
  * @returns {any[]} An array of child properties in tree order
  */
-export function getPropertyChildren(creatureId: string, property: string | CreatureProperty | undefined) {
+export async function getPropertyChildren(creatureId: string, property: string | CreatureProperty | undefined) {
   if (typeof property === 'string') {
-    property = getSingleProperty(creatureId, property);
+    property = await getSingleProperty(creatureId, property);
   }
   if (!property) return [];
   // This propertyId will always appear in the parent of the children
@@ -258,83 +251,76 @@ export function getPropertyChildren(creatureId: string, property: string | Creat
 }
 
 class LoadedCreature {
-  subs!: Set<Tracker.Computation>;
+  subs: Set<Subscription>;
   propertyObserver!: Meteor.LiveQueryHandle;
   creatureObserver!: Meteor.LiveQueryHandle;
   variablesObserver!: Meteor.LiveQueryHandle;
-  properties!: Map<string, CreatureProperty>;
+  properties: Map<string, CreatureProperty>;
   creature?: Creature;
-  variables: any;
+  variables: Variables;
 
-  constructor(sub: Tracker.Computation, creatureId: string) {
-    const self = this;
+  private constructor(sub: Subscription) {
+    this.subs = new Set([sub]);
+    this.properties = new Map();
+    this.variables = {};
+  }
+
+  static async create(sub: Subscription, creatureId: string): Promise<LoadedCreature> {
+    const loaded = new LoadedCreature(sub);
     // This may be called from a subscription, but we don't want the observers
     // to be destroyed with it, so use a non-reactive context to observe
     // the required documents
-    Tracker.nonreactive(() => {
-      self.subs = new Set([sub]);
-      const compute = debounce(Meteor.bindEnvironment(() => {
+    await Tracker.nonreactive(async () => {
+      const compute = debounce(async () => {
         // It's possible that the creature was unloaded before we get around to computing it
         if (!loadedCreatures.has(creatureId)) return;
-        computeCreature(creatureId);
-      }), COMPUTE_DEBOUNCE_TIME);
+        console.log('Computing: ', creatureId)
+        try {
+          await computeCreature(creatureId);
+        } catch (e) {
+          console.error(e);
+          throw e;
+        }
+      }, COMPUTE_DEBOUNCE_TIME);
 
-      self.properties = new Map();
       // Observe all creature properties which are needed for computation
-      self.propertyObserver = CreatureProperties.find({
+      loaded.propertyObserver = await CreatureProperties.find({
         'root.id': creatureId,
-      }).observeChanges({
+      }).observeChangesAsync({
         added(id, fields: CreatureProperty) {
           fields._id = id;
-          self.addProperty(fields);
-          if (fields.dirty) compute();
+          loaded.addProperty(fields);
+          if (fields.dirty) void compute();
         },
         changed(id, fields) {
-          self.changeProperty(id, fields);
-          if (fields.dirty) compute();
+          loaded.changeProperty(id, fields);
+          if (fields.dirty) void compute();
         },
         removed(id) {
-          self.removeProperty(id);
-          compute();
+          loaded.removeProperty(id);
+          void compute();
         },
       });
 
       // Observe the creature itself
-      self.creatureObserver = Creatures.find({
+      loaded.creatureObserver = await Creatures.find({
         _id: creatureId,
-      }).observeChanges({
+      }).observeChangesAsync({
         added(id, fields: Creature) {
           fields._id = id;
-          self.addCreature(fields)
-          if (fields.dirty) compute();
+          loaded.addCreature(fields)
+          if (fields.dirty) void compute();
         },
         changed(id, fields) {
-          self.changeCreature(id, fields);
-          if (fields.dirty) compute();
+          loaded.changeCreature(id, fields);
+          if (fields.dirty) void compute();
         },
         removed() {
-          self.removeCreature();
-        },
-      });
-
-      // Observe the creature's variables
-      self.variablesObserver = CreatureVariables.find({
-        _creatureId: creatureId,
-      }, {
-        fields: { _creatureId: 0 },
-      }).observeChanges({
-        added(id, fields: any) {
-          fields._id = id;
-          self.addVariables(fields)
-        },
-        changed(id, fields) {
-          self.changeVariables(id, fields);
-        },
-        removed() {
-          self.removeVariables();
+          loaded.removeCreature();
         },
       });
     });
+    return loaded;
   }
   stop() {
     this.propertyObserver.stop();
@@ -354,25 +340,22 @@ class LoadedCreature {
     this.creature = creature;
   }
   changeCreature(id: string, fields: Partial<Creature>) {
-    LoadedCreature.changeDoc(this.creature, fields);
+    if (this.creature) LoadedCreature.changeDoc(this.creature, fields);
   }
   removeCreature() {
     delete this.creature;
   }
-  addVariables(variables: any) {
-    this.variables = variables;
-  }
-  changeVariables(id: string, fields: any) {
+  changeVariables(id: string, fields: Record<string, unknown>) {
     LoadedCreature.changeDoc(this.variables, fields);
   }
   removeVariables() {
-    delete this.variables;
+    this.variables = {};
   }
-  static changeMap(id: string, fields: any, map: any) {
+  static changeMap(id: string, fields: Record<string, unknown>, map: Map<string, Record<string, unknown>>) {
     const doc = map.get(id);
-    LoadedCreature.changeDoc(doc, fields);
+    if (doc) LoadedCreature.changeDoc(doc, fields);
   }
-  static changeDoc(doc: any, fields: any) {
+  static changeDoc(doc: Record<string, unknown>, fields: Record<string, unknown>) {
     if (!doc) return;
     for (const key in fields) {
       if (key === undefined) {

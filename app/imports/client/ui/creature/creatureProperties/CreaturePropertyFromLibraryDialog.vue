@@ -1,20 +1,34 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
+import LibraryAndNode from '/imports/client/ui/library/LibraryAndNode.vue';
+import { key } from '/imports/client/ui/vuexStore';
+
+const store = useStore(key);
+const node = ref<any>(undefined);
+</script>
+
 <template lang="html">
   <dialog-base>
-    <v-toolbar-title slot="toolbar">
-      Add from library
-    </v-toolbar-title>
-    <library-and-node
-      slot="unwrapped-content"
-      style="height: 100%;"
-      selection
-      @selected="val => node = val"
-    />
-    <template slot="actions">
+    <template #toolbar>
+      <v-toolbar-title>
+        Add from library
+      </v-toolbar-title>
+    </template>
+    <template #unwrapped-content>
+      <library-and-node
+        style="height: 100%;"
+        selection
+        @selected="val => node = val"
+      />
+    </template>
+    <template #actions>
       <v-spacer />
       <v-btn
-        text
+        variant="text"
         color="primary"
-        @click="$store.dispatch('popDialogStack', node)"
+        @click="store.dispatch('popDialogStack', node)"
       >
         Insert
       </v-btn>
@@ -22,22 +36,4 @@
   </dialog-base>
 </template>
 
-<script lang="js">
-import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
-import LibraryAndNode from '/imports/client/ui/library/LibraryAndNode.vue';
-export default {
-  components: {
-    DialogBase,
-    LibraryAndNode,
-  },
-  data() {
-    return {
-      node: undefined,
-    };
-  },
-};
-</script>
-
-<style lang="css" scoped>
-
-</style>
+<style lang="css" scoped></style>

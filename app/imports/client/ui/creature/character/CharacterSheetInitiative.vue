@@ -1,10 +1,13 @@
+<script setup lang="ts">
+</script>
+
 <template>
   <div
     class="d-flex character-sheet-initiative"
     :style="{
       left: `${$vuetify.application.left}px`,
       right: `${$vuetify.application.right}px`,
-      bottom: $vuetify.breakpoint.xsOnly ? '60px' : '4px',
+      bottom: $vuetify.display.xs ? '60px' : '4px',
     }"
   >
     <v-card
@@ -14,18 +17,11 @@
       :height="64"
       class="mx-1"
     >
-      <v-progress-linear :value="62" />
+      <v-progress-linear :model-value="62" />
       <v-img src="https://picsum.photos/200/300" />
     </v-card>
   </div>
 </template>
-
-<script lang="js">
-
-export default {
-  
-}
-</script>
 
 <style scoped>
 .character-sheet-initiative {

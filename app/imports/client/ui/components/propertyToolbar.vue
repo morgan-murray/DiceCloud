@@ -1,8 +1,90 @@
+<script setup lang="ts">
+import { computed, inject } from 'vue';
+import { useStore } from 'vuex';
+import { autorun } from 'vue-meteor-tracker';
+import isDarkColor from '/imports/client/ui/utility/isDarkColor';
+import PropertyIcon from '/imports/client/ui/properties/shared/PropertyIcon.vue';
+import { getPropertyName } from '/imports/constants/PROPERTIES';
+import getThemeColor from '/imports/client/ui/utility/getThemeColor';
+import PROPERTIES from '/imports/constants/PROPERTIES';
+import { assertUserHasPaidBenefits } from '/imports/api/users/patreon/tiers';
+import { key } from '/imports/client/ui/vuexStore';
+
+const context = inject<{ editPermission?: boolean; copyPermission?: boolean }>('context', {});
+const store = useStore(key);
+
+const props = defineProps<{
+  model?: Record<string, any>;
+  flat?: boolean;
+  editing?: boolean;
+  embedded?: boolean;
+}>();
+
+const emit = defineEmits<{
+  'color-changed': [value: string];
+  'toggle-editing': [];
+  duplicate: [];
+  copy: [];
+  'make-reference': [];
+  move: [];
+  'copy-to-library': [];
+  remove: [];
+}>();
+
+const { result: userPaid } = autorun(() => {
+  try {
+    assertUserHasPaidBenefits(Meteor.user());
+    return true;
+  } catch (e) {
+    return false;
+  }
+});
+
+const color = computed(() => props.model?.color || getThemeColor('secondary'));
+const isDark = computed(() => isDarkColor(color.value));
+
+const title = computed(() => {
+  const model = props.model;
+  if (!model) return '';
+  if (model.quantity !== 1 && model.quantity !== undefined) {
+    if (model.plural) {
+      return `${model.quantity} ${model.plural}`;
+    } else if (model.name) {
+      return `${model.quantity} ${model.name}`;
+    } else {
+      return `${model.quantity} × ${getPropertyName(model.type)}`;
+    }
+  }
+  return model.name || getPropertyName(model.type);
+});
+
+const docsPath = computed(() => {
+  if (!props.model) return undefined;
+  const propDef = (PROPERTIES as Record<string, { docsPath?: string }>)[props.model.type];
+  return propDef?.docsPath;
+});
+
+function colorChanged(value: string) {
+  emit('color-changed', value);
+}
+
+function back() {
+  store.dispatch('popDialogStack');
+}
+
+function helpDialog() {
+  store.commit('pushDialogStack', {
+    component: 'help-dialog',
+    elementId: 'property-toolbar-menu-button',
+    data: { path: docsPath.value },
+  });
+}
+</script>
+
 <template lang="html">
   <v-toolbar
     :color="color || 'secondary'"
-    :dark="isDark"
-    :light="!isDark"
+    :theme="isDark ? 'dark' : 'light'"
     :flat="flat"
   >
     <v-btn
@@ -20,30 +102,28 @@
       {{ title }}
     </v-toolbar-title>
     <v-spacer />
-    <v-slide-y-transition
-      hide-on-leave
-    >
-      <v-layout
+    <v-slide-y-transition hide-on-leave>
+      <div
         v-if="editing && model"
         key="edit-buttons"
         style="flex-shrink: 0;"
       >
         <v-spacer />
         <v-menu
-          v-if="$listeners && (
-            $listeners.move ||
-            $listeners.duplicate ||
-            $listeners.remove
+          v-if="$attrs && (
+            $attrs.onMove ||
+            $attrs.onDuplicate ||
+            $attrs.onRemove
           )"
-          bottom
-          left
+          location="bottom left"
+          
           transition="slide-y-transition"
         >
-          <template #activator="{ on }">
+          <template #activator="{ props }">
             <v-btn
               icon
               data-id="property-toolbar-menu-button"
-              v-on="on"
+              v-bind="props"
             >
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
@@ -53,129 +133,113 @@
               v-if="docsPath"
               @click="helpDialog"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Help
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Help
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-help</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners.duplicate"
+              v-if="$attrs && $attrs.onDuplicate"
               :disabled="context.editPermission === false"
               @click="$emit('duplicate')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Duplicate
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Duplicate
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-content-copy</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners.copy"
+              v-if="$attrs && $attrs.onCopy"
               :disabled="context.copyPermission === false"
               @click="$emit('copy')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Copy To
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Copy To
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-content-duplicate</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners['make-reference']"
+              v-if="$attrs && $attrs['onMake-reference']"
               :disabled="context.editPermission === false"
               @click="$emit('make-reference')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Create Reference
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Create Reference
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-link-plus</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners.move"
+              v-if="$attrs && $attrs.onMove"
               :disabled="context.editPermission === false"
               @click="$emit('move')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Move
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Move
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-send</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners['copy-to-library'] && userPaid"
+              v-if="$attrs && $attrs['onCopy-to-library'] && userPaid"
               :disabled="context.editPermission === false"
               @click="$emit('copy-to-library')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Copy to library
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Copy to library
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-content-duplicate</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-list-item
-              v-if="$listeners && $listeners.remove"
+              v-if="$attrs && $attrs.onRemove"
               :disabled="context.editPermission === false"
               @click="$emit('remove')"
             >
-              <v-list-item-content>
-                <v-list-item-title>
-                  Delete
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action>
+              <v-list-item-title>
+                Delete
+              </v-list-item-title>
+              <template #append>
                 <v-icon>mdi-delete</v-icon>
-              </v-list-item-action>
+              </template>
             </v-list-item>
           </v-list>
         </v-menu>
-      </v-layout>
-      <v-layout
+      </div>
+      <div
         v-else
         key="blank"
       />
     </v-slide-y-transition>
     <v-btn
-      tile
-      outlined
+      rounded="0"
+      variant="outlined"
       @click="$emit('toggle-editing')"
     >
       <span style="width: 44px;">
         {{ editing ? 'Done' : 'Edit' }}
       </span>
-      <v-slide-y-transition
-        hide-on-leave
-      >
+      <v-slide-y-transition hide-on-leave>
         <v-icon
           v-if="editing"
           key="doneIcon"
-          right
+          end
         >
           mdi-check
         </v-icon>
         <v-icon
           v-else
           key="createIcon"
-          right
+          end
         >
           mdi-pencil
         </v-icon>
@@ -184,84 +248,4 @@
   </v-toolbar>
 </template>
 
-<script lang="js">
-import isDarkColor from '/imports/client/ui/utility/isDarkColor';
-import PropertyIcon from '/imports/client/ui/properties/shared/PropertyIcon.vue';
-import { getPropertyName } from '/imports/constants/PROPERTIES';
-import getThemeColor from '/imports/client/ui/utility/getThemeColor';
-import PROPERTIES from '/imports/constants/PROPERTIES';
-import { assertUserHasPaidBenefits } from '/imports/api/users/patreon/tiers';
-
-export default {
-  components: {
-    PropertyIcon,
-  },
-  inject: {
-    context: { default: {} }
-  },
-  props: {
-    model: {
-      type: Object,
-      default: undefined,
-    },
-    flat: Boolean,
-    editing: Boolean,
-    embedded: Boolean,
-  },
-  computed: {
-    isDark(){
-      return isDarkColor(this.color);
-    },
-    color(){
-      return this.model && this.model.color || getThemeColor('secondary');
-    },
-    title(){
-      let model = this.model;
-      if (model.quantity !== 1 && model.quantity !== undefined){
-        if (model.plural){
-          return `${model.quantity} ${model.plural}`;
-        } else if (model.name) {
-          return `${model.quantity} ${model.name}`;
-        } else {
-          return `${model.quantity} × ${getPropertyName(model.type)}`
-        }
-      }
-      return model.name || getPropertyName(model.type);
-    },
-    docsPath() {
-      const propDef = PROPERTIES[this.model.type];
-      return propDef && propDef.docsPath;
-    },
-  },
-  meteor: {
-    userPaid() {
-      try {
-        assertUserHasPaidBenefits(Meteor.user())
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
-  },
-  methods: {
-    colorChanged(value){
-      this.$emit('color-changed', value);
-    },
-    back(){
-      this.$store.dispatch('popDialogStack');
-    },
-    helpDialog() {
-      this.$store.commit('pushDialogStack', {
-        component: 'help-dialog',
-        elementId: 'property-toolbar-menu-button',
-        data: {
-          path: this.docsPath,
-        },
-      });
-    },
-  }
-}
-</script>
-
-<style lang="css" scoped>
-</style>
+<style lang="css" scoped></style>

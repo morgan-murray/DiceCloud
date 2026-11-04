@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import functions from '/imports/parser/functions';
+import { computed } from 'vue';
+
+const functionList = computed(() => {
+  const fns: any[] = [];
+  for (const name in functions) {
+    const f = (functions as any)[name];
+    fns.push({ name, ...f });
+  }
+  return fns;
+});
+</script>
+
 <template>
   <v-container class="documentation">
     <v-row justify="center">
@@ -9,7 +23,7 @@
           <v-card-text class="markdown">
             <h1>Functions</h1>
             <div
-              v-for="fn in functions"
+              v-for="fn in functionList"
               :key="fn.name"
               class="mb-3"
             >
@@ -40,19 +54,3 @@
     </v-row>
   </v-container>
 </template>
-
-<script lang="js">
-import functions from '/imports/parser/functions';
-export default {
-  computed:{
-    functions(){
-      let fns = [];
-      for (let name in functions){
-        let f = functions[name];
-        fns.push({name, ...f});
-      }
-      return fns;
-    }
-  }
-}
-</script>

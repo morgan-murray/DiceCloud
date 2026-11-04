@@ -1,7 +1,19 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = withDefaults(defineProps<{
+  model?: Record<string, any>;
+}>(), {
+  model: () => ({}),
+});
+
+const insufficient = computed(() => !props.model.condition?.value);
+</script>
+
 <template lang="html">
   <div
     v-if="insufficient"
-    class="layout align-center justify-start error--text"
+    class="d-flex align-center justify-start text-error"
   >
     <div
       class="mr-2 text-no-wrap text-truncate"
@@ -11,19 +23,3 @@
     </div>
   </div>
 </template>
-
-<script lang="js">
-export default {
-  props: {
-    model: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  computed: {
-    insufficient(){
-      return !this.model.condition?.value;
-    },
-  },
-}
-</script>

@@ -1,12 +1,10 @@
 type SimpleSchema = import('simpl-schema').default;
-type TypedSimpleSchema<T> = import('imports/api/utility/TypedSimpleSchema').TypedSimpleSchema<T>;
+type TypedSimpleSchema<T> = import('/imports/api/utility/TypedSimpleSchema').TypedSimpleSchema<T>;
 
 declare namespace Mongo {
-  interface CollectionStatic {
-    get: <T>(
-      collectionName: string, options?: { connection: Meteor.Connection }
-    ) => Mongo.Collection<T>;
-  }
+  function getCollection(
+    collectionName: string, options?: { connection: Meteor.Connection }
+  ): Mongo.Collection<unknown>;
   type SchemaOptions = {
     /**
      * Set to `true` if your document must be passed through the collection's transform to properly validate
@@ -16,11 +14,10 @@ declare namespace Mongo {
      * Set to `true` to replace any existing schema instead of combining
      */
     replace?: boolean
-    selector?: any;
+    selector?: Record<string, unknown>;
   }
 
   interface Collection<T> {
-    schema: TypedSimpleSchema<T>;
     simpleSchema<U extends Partial<T>>(selector?: U): TypedSimpleSchema<T & U>;
     /**
      * Use this method to attach a schema to a collection created by another package,
@@ -38,12 +35,42 @@ declare namespace Mongo {
       options?: {
         multi?: boolean | undefined;
         upsert?: boolean | undefined;
-        arrayFilters?: Array<{ [identifier: string]: any }> | undefined;
+        arrayFilters?: Array<{ [identifier: string]: unknown }> | undefined;
         // Add Collection2 options
-        selector?: Record<string, any>;
+        selector?: Record<string, unknown>;
         getAutoValues?: boolean;
       },
       callback?: FunctionConstructor,
     ): number;
+    updateAsync(
+      selector: string | Mongo.ObjectID | Mongo.Selector<T>,
+      modifier: Mongo.Modifier<T>,
+      options?: {
+        multi?: boolean | undefined;
+        upsert?: boolean | undefined;
+        arrayFilters?: {
+          [identifier: string]: unknown;
+        }[] | undefined;
+        // Add Collection2 options
+        selector?: Record<string, unknown>;
+        getAutoValues?: boolean;
+      },
+      callback?: () => unknown,
+    ): Promise<number>
+  }
+  interface Cursor<T, U = T> {
+    /**
+     * Watch a query. Receive callbacks as the result set changes.
+     * @param callbacks Functions to call to deliver the result set as it changes
+     */
+    observeAsync(callbacks: ObserveCallbacks<U>): Promise<Meteor.LiveQueryHandle>;
+    /**
+     * Watch a query. Receive callbacks as the result set changes. Only the differences between the old and new documents are passed to the callbacks.
+     * @param callbacks Functions to call to deliver the result set as it changes
+     */
+    observeChangesAsync(
+      callbacks: ObserveChangesCallbacks<T>,
+      options?: { nonMutatingCallbacks?: boolean | undefined },
+    ): Promise<Meteor.LiveQueryHandle>;
   }
 }

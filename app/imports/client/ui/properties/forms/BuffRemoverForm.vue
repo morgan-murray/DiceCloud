@@ -1,3 +1,21 @@
+<script setup lang="ts">
+import TagTargeting from '/imports/client/ui/properties/forms/shared/TagTargeting.vue';
+
+withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), {
+  errors: () => ({}),
+});
+
+const emit = defineEmits(['change']);
+
+function change(path: string | string[], value: any, ack?: Function) {
+  const pathArray = Array.isArray(path) ? path : [path];
+  emit('change', { path: pathArray, value, ack });
+}
+</script>
+
 <template lang="html">
   <div class="buff-remover-form">
     <smart-toggle
@@ -74,50 +92,6 @@
     </form-sections>
   </div>
 </template>
-
-<script lang="js">
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-import TagTargeting from '/imports/client/ui/properties/forms/shared/TagTargeting.vue';
-
-import {
-  BuffRemoverSchema
-} from '/imports/api/properties/BuffRemovers';
-
-export default {
-  components: {
-    TagTargeting,
-  },
-  mixins: [propertyFormMixin],
-  data(){return {
-    addExtraTagsLoading: false,
-    extraTagOperations: ['OR', 'NOT'],
-  }},
-  computed: {
-    extraTagsFull(){
-      if (!this.model.extraTags) return false;
-      let maxCount = BuffRemoverSchema.get('extraTags', 'maxCount');
-      return this.model.extraTags.length >= maxCount;
-    },
-  },
-  methods: {
-    acknowledgeAddResult(){
-      this.addExtraTagsLoading = false;
-    },
-    addExtraTags(){
-      this.addExtraTagsLoading = true;
-      this.$emit('push', {
-        path: ['extraTags'],
-        value: {
-          _id: Random.id(),
-          operation: 'OR',
-          tags: [],
-        },
-        ack: this.acknowledgeAddResult,
-      });
-    },
-  },
-}
-</script>
 
 <style lang="css" scoped>
 </style>

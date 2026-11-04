@@ -1,17 +1,37 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import IncrementMenu from '/imports/client/ui/components/IncrementMenu.vue';
+
+defineProps<{
+  value: number;
+  loading?: boolean;
+}>();
+
+const emit = defineEmits<{
+  change: [e: unknown];
+}>();
+
+const open = ref(false);
+
+function changeIncrementMenu(e: unknown) {
+  emit('change', e);
+  open.value = false;
+}
+</script>
+
 <template lang="html">
   <v-menu
     v-model="open"
     origin="center center"
     transition="scale-transition"
-    :nudge-left="130"
+    :offset="130"
     :min-width="305"
     :close-on-content-click="false"
   >
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-btn
-        v-bind="$attrs"
+        v-bind="{...$attrs, ...props}"
         :loading="loading"
-        v-on="on"
         @click.stop
       >
         <slot>
@@ -30,32 +50,6 @@
     </v-card>
   </v-menu>
 </template>
-
-<script lang="js">
-import IncrementMenu from '/imports/client/ui/components/IncrementMenu.vue';
-
-export default {
-  components: {
-    IncrementMenu,
-  },
-  props: {
-    value: {
-      type: Number,
-      required: true,
-    },
-    loading: Boolean,
-  },
-  data(){return {
-    open: false
-  }},
-  methods: {
-    changeIncrementMenu(e){
-      this.$emit('change', e);
-      this.open = false;
-    },
-  },
-}
-</script>
 
 <style lang="css" scoped>
 </style>

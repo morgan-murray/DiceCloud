@@ -1,9 +1,228 @@
+<script setup lang="ts">
+import { ref, computed, reactive, watch, toRef, provide } from 'vue';
+import { useStore } from 'vuex';
+import { autorun } from 'vue-meteor-tracker';
+import { Meteor } from 'meteor/meteor';
+import { CreatureVariables } from '/imports/client/localCollections/CreatureVariables';
+import CreatureProperties, { type CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
+import LibraryNodes from '/imports/api/library/LibraryNodes';
+import Libraries from '/imports/api/library/Libraries';
+import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
+import TreeNodeView from '/imports/client/ui/properties/treeNodeViews/TreeNodeView.vue';
+import PropertyDescription from '/imports/client/ui/properties/viewers/shared/PropertyDescription.vue';
+import resolve from '/imports/parser/resolve';
+import { prettifyParseError, parse } from '/imports/parser/parser';
+import LibraryNodeExpansionContent from '/imports/client/ui/library/LibraryNodeExpansionContent.vue';
+import PropertyTags from '/imports/client/ui/properties/viewers/shared/PropertyTags.vue';
+import { difference, isEqual } from 'lodash';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+import nodeToString from '/imports/parser/toString';
+import { ComputedClassSchema } from '/imports/api/properties/Classes';
+import type { InferType } from '/imports/api/utility/TypedSimpleSchema';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = defineProps<{
+  classId: string;
+  creatureId?: string;
+  dummySlot?: InferType<typeof ComputedClassSchema>;
+}>();
+
+const store = useStore(key);
+
+provide('context', reactive({ creatureId: toRef(props, 'creatureId') }));
+
+const selectedNodeIds = ref<string[]>([]);
+const searchInput = ref<string | undefined>(undefined);
+const searchValue = ref<string | undefined>(undefined);
+const showDisabled = ref(false);
+const currentLimit = ref(50);
+
+const { result: classFillerSubReady } = autorun(() => {
+  const handle = Meteor.subscribe('classFillers', props.classId, searchValue.value ?? undefined, currentLimit.value);
+  return handle.ready();
+});
+
+const { result: model } = autorun(() => {
+  return CreatureProperties.findOne(props.classId) as CreaturePropertyTypes['class'] ?? null;
+});
+
+const { result: variables } = autorun(() => {
+  if (!props.creatureId) return {};
+  return CreatureVariables.findOne({ _creatureId: props.creatureId }) || {};
+});
+
+const { result: alreadyAdded } = autorun(() => {
+  const added = new Set<string>();
+  const ancestorId = model.value?.root.id;
+  if (!ancestorId) return added;
+  CreatureProperties.find({
+    ...getFilter.descendantsOfRoot(ancestorId),
+    libraryNodeId: { $exists: true },
+    removed: { $ne: true },
+  }, {
+    fields: { libraryNodeId: 1 },
+  }).forEach((prop: any) => {
+    added.add(prop.libraryNodeId);
+  });
+  return added;
+});
+
+const { result: totalQuantitySelected } = autorun(() => {
+  let quantitySelected = 0;
+  LibraryNodes.find({ _id: { $in: selectedNodeIds.value } }, {
+    fields: { slotQuantityFilled: 1 },
+  }).forEach((node: any) => {
+    if (Number.isFinite(node.slotQuantityFilled)) {
+      quantitySelected += node.slotQuantityFilled;
+    } else {
+      quantitySelected += 1;
+    }
+  });
+  return quantitySelected;
+});
+
+const { result: libraryNames } = autorun(() => {
+  const names: Record<string, string> = {};
+  Libraries.find().forEach((lib: any) => { names[lib._id] = lib.name; });
+  return names;
+});
+
+const { result: filledLevels } = autorun(() =>
+  LibraryNodes.find({ _id: { $in: selectedNodeIds.value } })
+    .map((node: any) => node.level || node.cache?.node?.level || 0)
+    .sort((a: number, b: number) => a - b)
+);
+
+const { result: libraryNodesResult } = autorun(async () => {
+  if (!classFillerSubReady.value) return { nodes: [], count: 0 };
+  const nodes: any[] = LibraryNodes.find({ _classFillerResult: true }, {
+    sort: { level: 1, name: 1, order: 1 },
+  }).fetch();
+  let count = 0;
+  nodes.forEach(node => {
+    if (node.cache?.node) node.level = node.cache.node.level;
+    if (node.slotFillerCondition) {
+      try {
+        const parseNode = parse(node.slotFillerCondition);
+        const { result: resultNode } = resolve('reduce', parseNode, variables.value);
+        if (resultNode?.parseType === 'constant') {
+          if (!resultNode.value) {
+            node._disabledBySlotFillerCondition = true;
+            node._conditionError = node.slotFillerConditionNote || node.slotFillerCondition;
+            count += 1;
+          }
+        } else {
+          node._disabledBySlotFillerCondition = true;
+          node._conditionError = node.slotFillerConditionNote || nodeToString(resultNode);
+          count += 1;
+        }
+      } catch (e) {
+        console.warn(e);
+        const error = prettifyParseError(e as Error);
+        node._disabledBySlotFillerCondition = true;
+        node._conditionError = 'Condition error: ' + error;
+        count += 1;
+      }
+    }
+    const quantityToFill = node.type === 'slotFiller' ? node.slotQuantityFilled : 1;
+    if (quantityToFill > spaceLeft.value) {
+      node._disabledByQuantityFilled = true;
+    }
+    if (alreadyAdded.value?.has(node._id)) {
+      node._disabledByAlreadyAdded = true;
+    }
+  });
+  nodes.sort((a, b) => a.level - b.level);
+  return { nodes, count };
+});
+
+const libraryNodes = computed(() => libraryNodesResult.value?.nodes ?? []);
+const disabledNodeCount = computed(() => libraryNodesResult.value?.count ?? 0);
+
+const tagsSearched = computed(() => {
+  const or: string[][] = [];
+  const not: string[][] = [];
+  if (model.value?.slotTags?.length) or.push(model.value.slotTags);
+  model.value?.extraTags?.forEach((extras: any) => {
+    if (extras.tags?.length) {
+      if (extras.operation === 'OR') or.push(extras.tags);
+      else if (extras.operation === 'NOT') not.push(extras.tags);
+    }
+  });
+  return { or, not };
+});
+
+const hasMore = computed(() => libraryNodes.value.length >= currentLimit.value);
+const searchLoading = computed(() => !!searchValue.value && !classFillerSubReady.value);
+const activeCount = computed(() => libraryNodes.value.length - disabledNodeCount.value);
+
+function isDisabled(node: any) {
+  const selected = selectedNodeIds.value.includes(node._id);
+  return node._disabledByAlreadyAdded
+    || (node._disabledByQuantityFilled && !selected)
+    || (filledLevels.value?.includes(node.level || node.cache?.node?.level || 0) && !selected);
+}
+
+watch(selectedNodeIds, (selectedIds, oldSelectedIds) => {
+  if (oldSelectedIds.length < selectedIds.length) {
+    const addedId = difference(selectedIds, oldSelectedIds)[0];
+    if (!addedId) return;
+    const addedNode: any = LibraryNodes.findOne(addedId);
+    if (!addedNode) return;
+    const backFilledLevels = new Set<number>();
+    LibraryNodes.find({ _id: { $in: selectedIds } }).forEach((node: any) => {
+      backFilledLevels.add(node.level || node.cache?.node?.level || 0);
+    });
+    libraryNodes.value.forEach((node: any) => {
+      if (
+        !selectedIds.includes(node._id)
+        && (node.level < addedNode.level)
+        && !backFilledLevels.has(node.level)
+        && !isDisabled(node)
+        && !node._disabledBySlotFillerCondition
+      ) {
+        selectedIds.push(node._id);
+        backFilledLevels.add(node.level);
+      }
+    });
+  }
+  const sortedIds = LibraryNodes.find(
+    { _id: { $in: selectedIds } },
+    { sort: { level: 1, name: 1, order: 1 } }
+  )
+    .fetch()
+    .sort((a: any, b: any) => (a.level || a.cache?.node?.level || 0) - (b.level || b.cache?.node?.level || 0))
+    .map((node: any) => node._id);
+  if (!isEqual(selectedNodeIds.value, sortedIds)) {
+    selectedNodeIds.value = sortedIds;
+  }
+});
+
+watch(activeCount, (val) => {
+  if (!classFillerSubReady.value) return;
+  if (hasMore.value && val < 20) loadMore();
+});
+
+function loadMore() {
+  if (!hasMore.value) return;
+  currentLimit.value += 50;
+}
+
+function openPropertyDetails(id: string) {
+  store.commit('pushDialogStack', {
+    component: 'library-node-dialog',
+    elementId: id,
+    data: { _id: id },
+  });
+}
+</script>
+
 <template lang="html">
   <dialog-base
     :color="model.color"
     dark-body
   >
-    <template slot="toolbar">
+    <template #toolbar>
       <v-toolbar-title>
         {{ model.name }}
       </v-toolbar-title>
@@ -41,7 +260,7 @@
     </p>
     <v-expansion-panels
       multiple
-      inset
+      variant="inset"
     >
       <template v-for="libraryNode in libraryNodes">
         <v-expansion-panel
@@ -49,19 +268,16 @@
           :key="libraryNode._id"
           :model="libraryNode"
           :data-id="libraryNode._id"
-          :class="{disabled: isDisabled(libraryNode) || libraryNode._disabledBySlotFillerCondition}"
+          :class="{ disabled: isDisabled(libraryNode) || libraryNode._disabledBySlotFillerCondition }"
         >
-          <v-expansion-panel-header>
+          <v-expansion-panel-title>
             <template #default="{ open }">
-              <v-layout
-                align-center
-                class="flex-grow-0 mr-2"
-              >
+              <div class="d-flex align-center flex-grow-0 mr-2">
                 <v-checkbox
                   v-if="libraryNode._disabledByAlreadyAdded"
                   class="my-0 py-0"
                   hide-details
-                  :input-value="true"
+                  :model-value="true"
                   disabled
                 />
                 <v-checkbox
@@ -74,26 +290,26 @@
                   :value="libraryNode._id"
                   @click.stop
                 />
-              </v-layout>
-              <v-layout column>
-                <v-layout align-center>
+              </div>
+              <div class="d-flex flex-column">
+                <div class="d-flex align-center">
                   <tree-node-view :model="libraryNode" />
                   <div
                     v-if="libraryNode._disabledBySlotFillerCondition"
-                    class="error--text text-no-wrap text-truncate"
+                    class="text-error text-no-wrap text-truncate"
                   >
                     {{ libraryNode._conditionError }}
                   </div>
-                </v-layout>
-                <div class="text-caption text-no-wrap text-truncate">
-                  {{ libraryNames[libraryNode.root.id ] }}
                 </div>
-              </v-layout>
+                <div class="text-caption text-no-wrap text-truncate">
+                  {{ libraryNames[libraryNode.root.id] }}
+                </div>
+              </div>
               <div
                 v-if="libraryNode.slotQuantityFilled !== undefined && libraryNode.slotQuantityFilled !== 1"
                 class="text-overline flex-grow-0 text-no-wrap"
                 :class="{
-                  'error--text': isDisabled(libraryNode) &&
+                  'text-error': isDisabled(libraryNode) &&
                     libraryNode._disabledByQuantityFilled
                 }"
               >
@@ -109,36 +325,28 @@
                 </v-btn>
               </template>
             </template>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
             <library-node-expansion-content :id="libraryNode._id" />
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </template>
     </v-expansion-panels>
-    <v-layout
-      v-if="(!$subReady.classFillers && !searchValue) || currentLimit < countAll"
-      column
-      align-center
-      justify-center
-      class="ma-3 mt-8"
+    <div
+      v-if="(!classFillerSubReady && !searchValue) || hasMore"
+      class="d-flex flex-column align-center justify-center ma-3 mt-8"
     >
       <v-btn
-        :loading="!$subReady.classFillers"
+        :loading="!classFillerSubReady"
         color="accent"
-        outlined
+        variant="outlined"
         @click="loadMore"
       >
         Load More
       </v-btn>
-    </v-layout>
+    </div>
     <template v-if="!showDisabled && disabledNodeCount">
-      <v-layout
-        column
-        align-center
-        justify-center
-        class="ma-3"
-      >
+      <div class="d-flex flex-column align-center justify-center ma-3">
         <div>
           Requirements of {{ disabledNodeCount }} properties were not met
         </div>
@@ -150,21 +358,21 @@
         >
           Show All
         </v-btn>
-      </v-layout>
+      </div>
     </template>
-    <template slot="actions">
+    <template #actions>
       <v-btn
-        text
-        @click="$store.dispatch('popDialogStack')"
+        variant="text"
+        @click="store.dispatch('popDialogStack')"
       >
         Cancel
       </v-btn>
       <v-spacer />
       <v-btn
-        text
+        variant="text"
         color="primary"
         :disabled="!dummySlot && !selectedNodeIds.length"
-        @click="$store.dispatch('popDialogStack', selectedNodeIds)"
+        @click="store.dispatch('popDialogStack', selectedNodeIds)"
       >
         <template v-if="model.spaceLeft">
           {{ totalQuantitySelected }} / {{ model.spaceLeft }}
@@ -180,299 +388,8 @@
   </dialog-base>
 </template>
 
-<script lang="js">
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
-import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
-import LibraryNodes from '/imports/api/library/LibraryNodes';
-import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
-import TreeNodeView from '/imports/client/ui/properties/treeNodeViews/TreeNodeView.vue';
-import PropertyDescription from '/imports/client/ui/properties/viewers/shared/PropertyDescription.vue'
-import resolve from '/imports/parser/resolve';
-import { prettifyParseError, parse } from '/imports/parser/parser';
-import Libraries from '/imports/api/library/Libraries';
-import LibraryNodeExpansionContent from '/imports/client/ui/library/LibraryNodeExpansionContent.vue';
-import PropertyTags from '/imports/client/ui/properties/viewers/shared/PropertyTags.vue';
-import { clone, difference, isEqual } from 'lodash';
-import { getFilter } from '/imports/api/parenting/parentingFunctions';
-
-export default {
-  components: {
-    DialogBase,
-    TreeNodeView,
-    PropertyDescription,
-    LibraryNodeExpansionContent,
-    PropertyTags,
-  },
-  props: {
-    classId: {
-      type: String,
-      default: undefined,
-    },
-    creatureId: {
-      type: String,
-      default: undefined,
-    },
-    dummySlot: {
-      type: Object,
-      default: undefined,
-    },
-  },
-  data() {
-    return {
-      selectedNodeIds: [],
-      searchInput: undefined,
-      searchValue: undefined,
-      showDisabled: false,
-      disabledNodeCount: undefined,
-    }
-  },
-  reactiveProvide: {
-    name: 'context',
-    include: ['creatureId'],
-  },
-  computed: {
-    tagsSearched() {
-      let or = [];
-      let not = [];
-      if (this.model.slotTags && this.model.slotTags.length) {
-        or.push(this.model.slotTags);
-      }
-      this.model.extraTags?.forEach(extras => {
-        if (extras.tags?.length) {
-          if (extras.operation === 'OR') {
-            or.push(extras.tags);
-          } else if (extras.operation === 'NOT') {
-            not.push(extras.tags);
-          }
-        }
-      });
-      return { or, not };
-    },
-    filledLevels() {
-      return LibraryNodes.find({
-        _id: { $in: this.selectedNodeIds }
-      }).map(
-        node => node.level || node.cache?.node?.level || 0
-      ).sort((a, b) => a - b);
-    }
-  },
-  watch: {
-    selectedNodeIds(selectedIds, oldSelectedIds) {
-      // Skip if we increased the length by adding a new Id, see if we need to backfill levels
-      if (oldSelectedIds.length < selectedIds.length) {
-        // Find out which library node was added
-        const addedId = difference(selectedIds, oldSelectedIds)[0];
-        if (!addedId) return;
-        const addedNode = LibraryNodes.findOne(addedId);
-        if (!addedNode) return;
-        // Check which levels are already backfilled
-        const backFilledLevels = new Set();
-        const sortedIds = LibraryNodes.find({
-          _id: { $in: selectedIds }
-        }).map(node => backFilledLevels.add(node.level || node.cache?.node?.level || 0));
-        // Tick any unchecked nodes of a lower level, but only one per level
-        this.libraryNodes.forEach(node => {
-          if (
-            !selectedIds.includes(node._id)
-            && (node.level < addedNode.level)
-            && !backFilledLevels.has(node.level)
-            && !this.isDisabled(node)
-            && !node._disabledBySlotFillerCondition
-          ) {
-            selectedIds.push(node._id);
-            backFilledLevels.add(node.level)
-          }
-        });
-        this.selectedNodeIds = sortedIds;
-      }
-      
-      // Refetch the library nodes to sort them correctly
-      const sortedIds = LibraryNodes.find({
-        _id: { $in: selectedIds }
-      }, {
-        sort: { level: 1, name: 1, order: 1 }
-      })
-        .fetch()
-        .sort((a, b) => (a.level || a.cache?.node?.level || 0) - (b.level || b.cache?.node?.level || 0))
-        .map(node => node._id);
-      // Only update if the order changed
-      if (!isEqual(this.selectedNodeIds, sortedIds)) {
-        this.selectedNodeIds = sortedIds;
-      }
-    },
-    activeCount(val) {
-      // Still loading fillers
-      if (!this._subs['classFillers'].ready()) return;
-      // Can load more, and not showing enough active choices, so load more
-      if (
-        this.currentLimit < this.countAll
-        && val < 20
-      ) {
-        this.loadMore();
-      }
-    },
-  },
-  methods: {
-    loadMore() {
-      if (this.currentLimit >= this.countAll) return;
-      this._subs['classFillers'].setData('limit', this.currentLimit + 50);
-    },
-    openPropertyDetails(id) {
-      this.$store.commit('pushDialogStack', {
-        component: 'library-node-dialog',
-        elementId: id,
-        data: {
-          _id: id,
-        },
-      });
-    },
-    isDisabled(node) {
-      const selected = this.selectedNodeIds.includes(node._id);
-      return node._disabledByAlreadyAdded
-        || ( node._disabledByQuantityFilled && !selected )
-        || ( this.filledLevels.includes(node.level || node.cache?.node?.level || 0) && !selected )
-    },
-  },
-  meteor: {
-    $subscribe: {
-      'classFillers'() {
-        return [this.classId, this.searchValue || undefined]
-      },
-    },
-    searchLoading() {
-      return !!this.searchValue && !this.$subReady.classFillers;
-    },
-    model() {
-      if (this.classId) {
-        return CreatureProperties.findOne(this.classId);
-      } else if (this.dummySlot) {
-        let model = clone(this.dummySlot)
-        if (!model.quantityExpected) model.quantityExpected = {};
-        model.quantityExpected.value = +model.quantityExpected.calculation;
-        model.spaceLeft = model.quantityExpected.value;
-        return model;
-      }
-    },
-    variables() {
-      if (!this.creatureId) return {};
-      return CreatureVariables.findOne({ _creatureId: this.creatureId }) || {};
-    },
-    currentLimit() {
-      return this._subs['classFillers'].data('limit') || 50;
-    },
-    countAll() {
-      return this._subs['classFillers'].data('countAll');
-    },
-    activeCount() {
-      if (!this.libraryNodes) return;
-      return this.libraryNodes.length - (this.disabledNodeCount || 0);
-    },
-    alreadyAdded() {
-      let added = new Set();
-      if (!this.model.unique) return added;
-      let ancestorId;
-      if (this.model.unique === 'uniqueInSlot') {
-        ancestorId = this.model._id;
-      } else if (this.model.unique === 'uniqueInCreature') {
-        ancestorId = this.creatureId;
-      }
-      CreatureProperties.find({
-        ...getFilter.descendants(ancestorId),
-        libraryNodeId: { $exists: true },
-        removed: { $ne: true },
-      }, {
-        fields: { libraryNodeId: 1 },
-      }).forEach(prop => {
-        added.add(prop.libraryNodeId);
-      });
-      return added;
-    },
-    totalQuantitySelected() {
-      let quantitySelected = 0;
-      LibraryNodes.find({
-        _id: { $in: this.selectedNodeIds }
-      }, {
-        fields: { slotQuantityFilled: 1 },
-      }).forEach(node => {
-        if (Number.isFinite(node.slotQuantityFilled)) {
-          quantitySelected += node.slotQuantityFilled;
-        } else {
-          quantitySelected += 1;
-        }
-      });
-      return quantitySelected;
-    },
-    spaceLeft() {
-      if (!this.model.quantityExpected || this.model.quantityExpected.value === 0) return undefined;
-      return this.model.spaceLeft - this.totalQuantitySelected;
-    },
-    libraryNames() {
-      let names = {};
-      Libraries.find().forEach(lib => names[lib._id] = lib.name)
-      return names;
-    },
-    libraryNodeFilter() {
-      const filterString = this._subs['classFillers'].data('libraryNodeFilter');
-      if (!filterString) return;
-      return EJSON.parse(filterString);
-    },
-    libraryNodes() {
-      if (!this.libraryNodeFilter) return [];
-      if (!this.$subReady.classFillers) return [];
-      let nodes = LibraryNodes.find(this.libraryNodeFilter, {
-        sort: { level: 1, name: 1, order: 1 }
-      }).fetch();
-      let disabledNodeCount = 0;
-      // Mark classFillers whose condition isn't met or are too big to fit
-      // the quantity to fill
-      nodes.forEach(node => {
-        if (node.cache?.node) {
-          node.level = node.cache.node.level;
-        }
-        if (node.slotFillerCondition) {
-          try {
-            let parseNode = parse(node.slotFillerCondition);
-            const { result: resultNode } = resolve('reduce', parseNode, this.variables);
-            if (resultNode?.parseType === 'constant') {
-              if (!resultNode.value) {
-                node._disabledBySlotFillerCondition = true;
-                node._conditionError = node.slotFillerConditionNote || node.slotFillerCondition;
-                disabledNodeCount += 1;
-              }
-            } else {
-              node._disabledBySlotFillerCondition = true;
-              node._conditionError = node.slotFillerConditionNote || toString(resultNode);
-              disabledNodeCount += 1;
-            }
-          } catch (e) {
-            console.warn(e);
-            let error = prettifyParseError(e);
-            node._disabledBySlotFillerCondition = true;
-            node._conditionError = 'Condition error: ' + error;
-            disabledNodeCount += 1;
-          }
-        }
-        let quantityToFill = node.type === 'slotFiller' ? node.slotQuantityFilled : 1;
-        if (
-          quantityToFill > this.spaceLeft
-        ) {
-          node._disabledByQuantityFilled = true;
-        }
-        if (this.alreadyAdded.has(node._id)) {
-          node._disabledByAlreadyAdded = true;
-        }
-      });
-      nodes.sort((a, b) => a.level - b.level);
-      this.disabledNodeCount = disabledNodeCount;
-      return nodes;
-    },
-  }
-}
-</script>
-
 <style lang="css" scoped>
 .disabled {
   opacity: 0.7;
 }
 </style>
-resolveimport { toString } from '/imports/parser/toString';

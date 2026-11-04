@@ -1,14 +1,13 @@
+import 'meteor/aldeed:collection2/static';
 import '/imports/api/simpleSchemaConfig';
-import '/imports/server/config/SimpleRestConfig';
 import '/imports/server/config/limitLoginTokens';
 import '/imports/server/rest/index';
 import '/imports/server/config/accountsEmailConfig';
 import '/imports/server/config/simpleSchemaDebug';
 import '/imports/server/config/SyncedCronConfig';
-import '/imports/server/config/redisCaching';
 import '/imports/server/publications/index';
 import '/imports/server/cron/deleteSoftRemovedDocuments';
-import '/imports/api/parenting/organizeMethods';
+import '/imports/api/creature/creatureProperties/methods/organizeProperty';
 import '/imports/api/users/patreon/updatePatreonOnLogin';
 import '/imports/migrations/server/index';
 import '/imports/migrations/methods/index'
@@ -19,3 +18,9 @@ import '/imports/api/creature/creatures/methods/index';
 import '/imports/api/engine/action/methods/index';
 import '/imports/api/sharing/sharing';
 import '/imports/server/config/publicationStrategies';
+
+// Methods
+import '/imports/api/creature/creatureFolders/methods/index';
+import '/imports/api/library/methods/index';
+
+console.log('\nMain loaded\n')

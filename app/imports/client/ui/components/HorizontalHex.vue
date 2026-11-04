@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const hover = ref(false);
+</script>
+
 <template lang="html">
   <div
     class="d-flex justify-center align-center"
@@ -30,14 +36,6 @@
     </div>
   </div>
 </template>
-
-<script lang="js">
-  export default {
-    data(){return {
-      hover: false,
-    }},
-  }
-</script>
 
 <style lang="css" scoped>
 path {

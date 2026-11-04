@@ -1,3 +1,25 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{ model: Record<string, any> }>();
+
+const type = computed(() => {
+  if (props.model.damageType === 'healing') return props.model.damageType;
+  return `${props.model.damageType} damage`;
+});
+
+const saveDamage = computed(() => {
+  if (!props.model.save) return;
+  if (!props.model.save.damageFunction?.calculation) {
+    return { value: 'Half damage' };
+  }
+  if (props.model.save.damageFunction.calculation == '0' || props.model.save.damageFunction.value === 0) {
+    return { value: 'No damage' };
+  }
+  return { calculation: props.model.save.damageFunction };
+});
+</script>
+
 <template lang="html">
   <div class="damage-viewer">
     <v-row dense>
@@ -36,30 +58,6 @@
     </v-row>
   </div>
 </template>
-
-<script lang="js">
-import propertyViewerMixin from '/imports/client/ui/properties/viewers/shared/propertyViewerMixin';
-
-export default {
-  mixins: [propertyViewerMixin],
-  computed: {
-    type() {
-      if (this.model.damageType === 'healing') return this.model.damageType;
-      return `${this.model.damageType} damage`
-    },
-    saveDamage() {
-      if (!this.model.save) return;
-      if (!this.model.save.damageFunction?.calculation) {
-        return { value: 'Half damage' };
-      }
-      if (this.model.save.damageFunction.calculation == '0' || this.model.save.damageFunction.value === 0) {
-        return { value: 'No damage' };
-      }
-      return { calculation: this.model.save.damageFunction };
-    }
-  }
-}
-</script>
 
 <style lang="css" scoped>
 

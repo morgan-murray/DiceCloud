@@ -1,19 +1,12 @@
-import { getCollectionByName, getFilter } from '/imports/api/parenting/parentingFunctions';
-import { TreeDoc } from '/imports/api/parenting/ChildSchema';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+import type { SoftRemovableTreeDoc } from '/imports/api/parenting/SoftRemovableSchema';
 
-export function softRemove(collectionOrName: Mongo.Collection<TreeDoc> | string, docOrId?: TreeDoc | string) {
+export async function softRemove(collection: Mongo.Collection<SoftRemovableTreeDoc>, docOrId?: SoftRemovableTreeDoc | string) {
   const removalDate = new Date();
 
-  let collection: Mongo.Collection<TreeDoc>;
-  if (typeof collectionOrName === 'string') {
-    collection = getCollectionByName(collectionOrName);
-  } else {
-    collection = collectionOrName;
-  }
-
-  let doc: TreeDoc | undefined;
+  let doc: SoftRemovableTreeDoc | undefined;
   if (typeof docOrId === 'string') {
-    doc = collection.findOne(docOrId);
+    doc = await collection.findOneAsync(docOrId);
   } else {
     doc = docOrId
   }
@@ -22,7 +15,7 @@ export function softRemove(collectionOrName: Mongo.Collection<TreeDoc> | string,
   }
 
   // Remove this document
-  collection.update(
+  await collection.updateAsync(
     doc._id,
     {
       $set: {
@@ -36,7 +29,7 @@ export function softRemove(collectionOrName: Mongo.Collection<TreeDoc> | string,
   );
   // Remove all the descendants that have not yet been removed, and set them to be
   // removed with this document
-  collection.update({
+  await collection.updateAsync({
     ...getFilter.descendants(doc),
     removed: { $ne: true },
   }, {
@@ -56,18 +49,14 @@ const restoreError = function () {
   );
 };
 
-export function restore(collectionOrName: Mongo.Collection<TreeDoc> | string, docOrId: TreeDoc | string, extraUpdates?) {
-
-  let collection: Mongo.Collection<TreeDoc>;
-  if (typeof collectionOrName === 'string') {
-    collection = getCollectionByName(collectionOrName);
-  } else {
-    collection = collectionOrName;
-  }
-
-  let doc: TreeDoc | undefined;
+export async function restore(
+  collection: Mongo.Collection<SoftRemovableTreeDoc>,
+  docOrId: SoftRemovableTreeDoc | string,
+  extraUpdates?: Mongo.Modifier<SoftRemovableTreeDoc>
+) {
+  let doc: SoftRemovableTreeDoc | undefined;
   if (typeof docOrId === 'string') {
-    doc = collection.findOne(docOrId);
+    doc = await collection.findOneAsync(docOrId);
   } else {
     doc = docOrId
   }
@@ -75,7 +64,7 @@ export function restore(collectionOrName: Mongo.Collection<TreeDoc> | string, do
     throw new Meteor.Error('not found', 'The document to remove was not found');
   }
 
-  const numUpdated: number = collection.update({
+  const numUpdated: number = await collection.updateAsync({
     _id: doc._id,
     removedWith: { $exists: false }
   }, {
@@ -88,7 +77,7 @@ export function restore(collectionOrName: Mongo.Collection<TreeDoc> | string, do
 
   if (numUpdated === 0) restoreError();
 
-  return collection.update({
+  return await collection.updateAsync({
     removedWith: doc._id,
   }, {
     $unset: {

@@ -1,36 +1,18 @@
 import { chain, reverse } from 'lodash';
-import { TreeDoc, treeDocFields, Reference } from '/imports/api/parenting/ChildSchema';
+import { type TreeDoc, treeDocFields } from '/imports/api/parenting/ChildSchema';
 import { getProperties } from '/imports/api/engine/loadCreatures';
-import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
+import CreatureProperties, { type CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
+import type { AnyBulkWriteOperation, Collection as MongoCollection } from 'mongodb';
+import type { Reference, ReferenceCollection } from '/imports/api/parenting/reference';
 
-export function getCollectionByName<T = TreeDoc>(name: string): Mongo.Collection<T> {
-  const collection = Mongo.Collection.get<T>(name)
+export function getCollectionByName(name: string): Mongo.Collection<unknown> {
+  const collection = Mongo.getCollection(name)
   if (!collection) {
     throw new Meteor.Error('bad-collection-reference',
       `Parent references collection ${name}, which does not exist`
     );
   }
   return collection;
-}
-
-function assertDocFound(doc, ref) {
-  if (!doc) {
-    throw new Meteor.Error('document-not-found',
-      `No document could be found with id: ${ref.id} in ${ref.collection}`
-    );
-  }
-}
-
-export function fetchDocByRefAsync(ref: Reference, options?: Mongo.Options<object>): Promise<TreeDoc> {
-  const doc = getCollectionByName(ref.collection).findOneAsync(ref.id, options);
-  assertDocFound(doc, ref);
-  return doc;
-}
-
-export function fetchDocByRef<T extends object = TreeDoc>(ref: Reference, options?: Mongo.Options<object>): T {
-  const doc: T = getCollectionByName<T>(ref.collection).findOne(ref.id, options);
-  assertDocFound(doc, ref);
-  return doc;
 }
 
 export interface TreeNode<T> {
@@ -75,7 +57,14 @@ export function docsToForest(docs: Array<TreeDoc>): TreeNode<TreeDoc>[] {
   return forest;
 }
 
+type FilteredDoc = {
+  _descendantOfMatchedDocument?: boolean,
+  _matchedDocumentFilter?: boolean,
+  _ancestorOfMatchedDocument?: boolean,
+} & TreeDoc;
+
 /**
+ * Client only!
  * Fetch the documents from a collection, and return the tree of those documents, potentially
  * including their ancestors or descendants as required
  * @param param options
@@ -83,23 +72,17 @@ export function docsToForest(docs: Array<TreeDoc>): TreeNode<TreeDoc>[] {
  * assigned based on the nearest ancestor included in the input, which may or may not be their
  * actual direct parents
  */
-type FilteredDoc = {
-  _descendantOfMatchedDocument?: boolean,
-  _matchedDocumentFilter?: boolean,
-  _ancestorOfMatchedDocument?: boolean,
-} & TreeDoc;
-
 export function filterToForest(
   collection: Mongo.Collection<TreeDoc>,
   rootId: string,
   filter?: Mongo.Selector<TreeDoc>,
   {
-    options = <Mongo.Options<TreeDoc>>{},
+    options = <Omit<Mongo.Options<TreeDoc>, 'transform'>>{},
     includeFilteredDocAncestors = false,
     includeFilteredDocDescendants = false
   } = {}
 ): TreeNode<FilteredDoc>[] {
-  if (!Meteor.isClient) throw 'Only available on the client';
+  if (!Meteor.isClient) throw new Meteor.Error('client-only', 'Only available on the client');
   // Setup the filter
   let collectionFilter: Mongo.Selector<TreeDoc> = {
     'root.id': rootId,
@@ -121,22 +104,20 @@ export function filterToForest(
       ...options.sort,
     }
   }
-  let collectionOptions: Mongo.Options<TreeDoc> = {
+  const collectionOptions: Omit<Mongo.Options<TreeDoc>, 'transform'> = {
     sort: collectionSort,
+    ...options
   }
-  if (options) {
-    collectionOptions = {
-      ...collectionOptions,
-      ...options,
-    }
-  }
+
   // Find all the docs that match the filter
-  const docs: TreeDoc[] = collection.find(collectionFilter, collectionOptions)
+  const docs = collection.find(collectionFilter, collectionOptions)
     .map(doc => {
       if (!filter) return doc;
       // Mark the docs that were found by the custom filter
-      doc._matchedDocumentFilter = true;
-      return doc;
+      return {
+        ...doc,
+        _matchedDocumentFilter: true,
+      };
     });
 
   // Get the doc ancestors
@@ -262,7 +243,7 @@ export const getFilter = {
    * @param rootIds a non-empty array of ids
    */
   descendantsOfAllRoots(rootIds: string[]) {
-    if (!rootIds.length) throw 'rootIds can\'t be empty';
+    if (!rootIds.length) throw new Meteor.Error('empty-root-ids', 'rootIds can\'t be empty');
     return {
       'root.id': { $in: rootIds },
     };
@@ -316,7 +297,11 @@ export const getFilter = {
  * Give documents new random ids and transform their references.
  * Transform collections of re-IDed docs according to the collection map
  */
-export function renewDocIds({ docArray, collectionMap = {}, idMap = {} }) {
+export function renewDocIds({ docArray, collectionMap = {}, idMap = {} }: {
+  docArray: TreeDoc[],
+  collectionMap?: Partial<Record<ReferenceCollection, ReferenceCollection>>,
+  idMap?: Record<string, string>,
+}) {
   // idMap is a map of {oldId: newId}
   // Get a random generator that's consistent on client and server
   const randomSrc = DDP.randomStream('renewDocIds');
@@ -330,7 +315,8 @@ export function renewDocIds({ docArray, collectionMap = {}, idMap = {} }) {
   });
 
   // Get the id from the map if it exists, leave unchanged otherwise
-  const remap = id => id in idMap ? idMap[id] : id
+  const remap = (id: string) => id in idMap ? idMap[id] : id;
+
 
   // If there are references by id that need to be maintained when copying from 
   // a library, here is where we would update them
@@ -338,11 +324,12 @@ export function renewDocIds({ docArray, collectionMap = {}, idMap = {} }) {
     // Remap the root and parent ids
     doc.root.id = remap(doc.root.id);
     doc.root.collection = collectionMap[doc.root.collection] || doc.root.collection;
-    doc.parentId = remap(doc.parentId);
+    doc.parentId = doc.parentId && remap(doc.parentId);
 
+    // TODO break this out to its own function, parenting shouldn't know about resources
     // Remap itemIds of items selected as ammo
-    doc.resource?.itemsConsumed?.forEach(itemConsumed => {
-      itemConsumed.itemId = remap(itemConsumed.itemId);
+    (doc as CreaturePropertyTypes['action']).resources?.itemsConsumed?.forEach(itemConsumed => {
+      itemConsumed.itemId = itemConsumed.itemId && remap(itemConsumed.itemId);
     });
   });
 }
@@ -393,7 +380,7 @@ export async function moveDocWithinRoot(doc: TreeDoc, collection: Mongo.Collecti
 
   // Use bulk operations with $set only, because using $inc caused a lot of trouble with both
   // latency compensation and oplog tailing
-  const bulkOps: any[] = [];
+  const bulkOps: AnyBulkWriteOperation<TreeDoc>[] = [];
 
   // Move the doc and its children the move distance
   await collection.find({
@@ -423,7 +410,7 @@ export async function moveDocWithinRoot(doc: TreeDoc, collection: Mongo.Collecti
     if (newParentId) {
       update = { $set: { parentId: newParentId } };
     } else {
-      update = { $unset: { parentId: 1 } };
+      update = { $unset: { parentId: 1 as const } };
     }
     bulkOps.push({
       updateOne: {
@@ -469,12 +456,7 @@ export async function moveDocBetweenRoots(doc: TreeDoc, collection: Mongo.Collec
 
   // Use bulk operations with $set only, because using $inc caused a lot of trouble with both
   // latency compensation and oplog tailing
-  const bulkOps: {
-    updateOne: {
-      filter: Mongo.Query<TreeDoc>,
-      update: Mongo.Modifier<TreeDoc>
-    }
-  }[] = [];
+  const bulkOps: AnyBulkWriteOperation<TreeDoc>[] = [];
 
   // Get the new parent of the doc after the move
   const newParent = await collection.findOneAsync({
@@ -493,7 +475,7 @@ export async function moveDocBetweenRoots(doc: TreeDoc, collection: Mongo.Collec
     if (newParentId) {
       update = { $set: { parentId: newParentId } };
     } else {
-      update = { $unset: { parentId: 1 } };
+      update = { $unset: { parentId: 1 as const } };
     }
     bulkOps.push({
       updateOne: {
@@ -623,13 +605,13 @@ export async function changeParent(doc: TreeDoc, parent: TreeDoc | null, collect
   await collection.updateAsync(doc._id, update);
 
   // Rebuild the nested sets of everything on the root document(s)
-  rebuildNestedSets(collection, doc.root.id);
+  await rebuildNestedSets(collection, doc.root.id);
   if (rootChange) {
-    rebuildNestedSets(collection, parent.root.id);
+    await rebuildNestedSets(collection, parent.root.id);
   }
 }
 
-export function compareOrder(docA, docB) {
+export function compareOrder(docA: TreeDoc, docB: TreeDoc) {
   // < 0 if A comes before B
   // = 0 if A and B are the same order
   // > 0 if B comes before A
@@ -674,8 +656,8 @@ export function setDocToLastOrder(collection: Mongo.Collection<TreeDoc>, doc: Tr
   doc.left = Number.MAX_SAFE_INTEGER;
 }
 
-export function rebuildNestedSets(collection: Mongo.Collection<TreeDoc>, rootId: string) {
-  const docs = collection.find({
+export async function rebuildNestedSets(collection: Mongo.Collection<TreeDoc>, rootId: string) {
+  const docs = await collection.find({
     'root.id': rootId,
     removed: { $ne: true }
   }, {
@@ -684,14 +666,14 @@ export function rebuildNestedSets(collection: Mongo.Collection<TreeDoc>, rootId:
       //Reverse sorting so that arrays can be used as stacks with the first item on top
       left: 1,
     },
-  }).fetch();
+  }).fetchAsync();
 
   const operations = calculateNestedSetOperations(docs);
   return writeBulkOperations(collection, operations);
 }
 
-export function rebuildCreatureNestedSets(creatureId) {
-  const docs = getProperties(creatureId);
+export async function rebuildCreatureNestedSets(creatureId: string) {
+  const docs = await getProperties(creatureId);
   const operations = calculateNestedSetOperations(docs);
   return writeBulkOperations(CreatureProperties as Mongo.Collection<TreeDoc, TreeDoc>, operations);
 }
@@ -712,9 +694,9 @@ export function rebuildCreatureNestedSets(creatureId) {
  * @param docs 
  * @returns 
  */
-export function calculateNestedSetOperations(docs: TreeDoc[]) {
+export function calculateNestedSetOperations(docs: TreeDoc[]): AnyBulkWriteOperation<TreeDoc>[] {
   const { trees: stack, orphanIds } = docsToForestByParentId(reverse(docs));
-  const removeMissingParentsOp = orphanIds.length ? {
+  const removeMissingParentsOp: AnyBulkWriteOperation<TreeDoc> | undefined = orphanIds.length ? {
     updateMany: {
       filter: { _id: { $in: orphanIds } },
       update: { $unset: { parentId: 1 } },
@@ -722,7 +704,9 @@ export function calculateNestedSetOperations(docs: TreeDoc[]) {
   } : undefined;
   const visitedNodes = new Set();
   const visitedChildren = new Set();
-  const opsById: { [_id: string]: any } = {}
+  const opsById: {
+    [_id: string]: AnyBulkWriteOperation<TreeDoc>;
+  } = {}
   let count = 1;
 
   while (stack.length) {
@@ -737,15 +721,18 @@ export function calculateNestedSetOperations(docs: TreeDoc[]) {
       visitedNodes.add(top);
       stack.pop();
       if (top.doc.right !== count) {
-        if (!opsById[top.doc._id]) {
+        const op = opsById[top.doc._id];
+        if (!op) {
           opsById[top.doc._id] = {
             updateOne: {
               filter: { _id: top.doc._id },
               update: { $set: { right: count } }
             }
           }
-        } else {
-          opsById[top.doc._id].updateOne.update.$set.right = count;
+        } else if ('updateOne' in op) {
+          const update = op.updateOne.update;
+          const $set = '$set' in update ? update.$set : undefined;
+          if ($set) Object.assign($set, { right: count });
         }
       }
       count += 1;
@@ -766,7 +753,7 @@ export function calculateNestedSetOperations(docs: TreeDoc[]) {
     }
   }
 
-  const operations = [...Object.values(opsById)];
+  const operations: AnyBulkWriteOperation<TreeDoc>[] = [...Object.values(opsById)];
   if (removeMissingParentsOp) operations.push(removeMissingParentsOp);
   return operations;
 }
@@ -826,35 +813,26 @@ export function applyNestedSetProperties<T extends TreeDoc>(docs: T[]): Forest<T
  * @param operations An array of bulk operations to write
  * @returns Promise<undefined>
  */
-function writeBulkOperations(collection: Mongo.Collection<TreeDoc>, operations) {
+async function writeBulkOperations<T extends TreeDoc>(
+  collection: Mongo.Collection<T>,
+  operations: AnyBulkWriteOperation<T>[],
+) {
   if (Meteor.isServer) {
     if (!operations.length) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      collection.rawCollection().bulkWrite(
-        operations,
-        { ordered: false },
-        function (e) {
-          if (e) {
-            reject(e);
-          } else {
-            resolve(undefined);
-          }
-        }
-      );
-    });
+    await (collection.rawCollection() as MongoCollection<T>).bulkWrite(operations, { ordered: false });
   } else {
     // Don't do latency compensation if there are too many operations, it just causes client
     // lag without much benefit
     operations.forEach(op => {
-      if (op.updateOne) {
+      if ('updateOne' in op) {
         collection.update(
-          op.updateOne.filter,
-          op.updateOne.update,
+          op.updateOne.filter as Mongo.Selector<T>,
+          op.updateOne.update as Mongo.Modifier<T>,
         );
-      } else if (op.updateMany) {
+      } else if ('updateMany' in op) {
         collection.update(
-          op.updateMany.filter,
-          op.updateMany.update,
+          op.updateMany.filter as Mongo.Selector<T>,
+          op.updateMany.update as Mongo.Modifier<T>,
           { multi: true },
         )
       }

@@ -1,7 +1,107 @@
+<script setup lang="ts">
+import { computed, inject } from 'vue';
+import { useStore } from 'vuex';
+import { autorun } from 'vue-meteor-tracker';
+import numberToSignedString from '../../../../api/utility/numberToSignedString';
+import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
+import AttributeEffect from '/imports/client/ui/properties/components/attributes/AttributeEffect.vue';
+import SkillProficiency from '/imports/client/ui/properties/components/skills/SkillProficiency.vue';
+import getProficiencyIcon from '/imports/client/ui/utility/getProficiencyIcon';
+import sortEffects from '/imports/client/ui/utility/sortEffects';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = defineProps<{ model: Record<string, any> }>();
+const context = inject<any>('context', {});
+const store = useStore(key);
+
+const isFinite = Number.isFinite;
+
+const proficiencyText: Record<number, string> = {
+  0: 'Not proficient',
+  1: 'Proficient',
+  0.49: 'Half proficiency bonus rounded down',
+  0.5: 'Half proficiency bonus rounded up',
+  2: 'Double proficiency bonus',
+};
+
+const skillTypes: Record<string, string> = {
+  skill: 'Skill',
+  save: 'Save',
+  check: 'Check',
+  tool: 'Tool',
+  weapon: 'Weapon',
+  armor: 'Armor',
+  language: 'Language',
+  utility: 'Utility',
+};
+
+const icon = computed(() => getProficiencyIcon(props.model.proficiency));
+
+const passiveScore = computed(() =>
+  10 + props.model.value + props.model.passiveBonus
+);
+
+const { result: effects } = autorun(() => {
+  if (!props.model.effectIds) return [];
+  const effectList = CreatureProperties.find({ _id: { $in: props.model.effectIds } }).fetch();
+  return sortEffects(effectList);
+});
+
+const { result: proficiencies } = autorun(() => {
+  if (!props.model.proficiencyIds) return [];
+  return CreatureProperties.find(
+    { _id: { $in: props.model.proficiencyIds } },
+    { sort: { left: 1 } }
+  ).fetch();
+});
+
+const { result: ability } = autorun(() => {
+  const creatureId = context.creatureId;
+  const abilityName = props.model.ability;
+  if (!creatureId || !abilityName) return undefined;
+  const abilityProp = CreatureProperties.findOne({
+    ...getFilter.descendantsOfRoot(creatureId),
+    variableName: abilityName,
+    type: 'attribute',
+    removed: { $ne: true },
+    inactive: { $ne: true },
+    overridden: { $ne: true },
+  });
+  if (!abilityProp) return undefined;
+  return {
+    _id: abilityProp._id,
+    name: abilityProp.name,
+    operation: 'base',
+    amount: { value: abilityProp.modifier },
+    stats: [props.model.variableName],
+    root: abilityProp.root,
+  };
+});
+
+const { result: proficiencyBonus } = autorun(() =>
+  CreatureProperties.findOne({
+    ...getFilter.descendantsOfRoot(context.creatureId),
+    variableName: 'proficiencyBonus',
+    overridden: { $ne: true },
+    removed: { $ne: true },
+    inactive: { $ne: true },
+  })?.value
+);
+
+function clickEffect(id: string) {
+  store.commit('pushDialogStack', {
+    component: 'creature-property-dialog',
+    elementId: `${id}`,
+    data: { _id: id },
+  });
+}
+</script>
+
 <template lang="html">
   <div class="skill-viewer">
     <v-row
-      dense
+      class="density"
       justify="center"
       justify-sm="start"
     >
@@ -49,13 +149,11 @@
       />
       <property-field
         v-if="model.overridden"
-        :cols="{cols: 6, md: 12}"
+        :cols="{ cols: 6, md: 12 }"
         name="Overridden"
         value="Overriden by another property with the same variable name"
       />
-      <property-target-tags
-        :model="model"
-      />
+      <property-target-tags :model="model" />
     </v-row>
     <v-row dense>
       <property-description
@@ -65,10 +163,10 @@
     </v-row>
     <v-row
       v-if="ability || (effects && effects.length)"
-      dense
+      class="density"
     >
       <property-field
-        :cols="{col: 12}"
+        :cols="{ col: 12 }"
         name="Effects"
       >
         <v-list style="width: 100%">
@@ -93,10 +191,10 @@
     </v-row>
     <v-row
       v-if="proficiencies.length"
-      dense
+      class="density"
     >
       <property-field
-        :cols="{col: 12}"
+        :cols="{ col: 12 }"
         name="Proficiencies"
       >
         <v-list style="width: 100%">
@@ -114,124 +212,4 @@
   </div>
 </template>
 
-<script lang="js">
-import propertyViewerMixin from '/imports/client/ui/properties/viewers/shared/propertyViewerMixin';
-import numberToSignedString from '../../../../api/utility/numberToSignedString';
-import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
-import AttributeEffect from '/imports/client/ui/properties/components/attributes/AttributeEffect.vue';
-import SkillProficiency from '/imports/client/ui/properties/components/skills/SkillProficiency.vue';
-import getProficiencyIcon from '/imports/client/ui/utility/getProficiencyIcon';
-import sortEffects from '/imports/client/ui/utility/sortEffects';
-import PropertyTargetTags from '/imports/client/ui/properties/viewers/shared/PropertyTargetTags.vue';
-import { getFilter } from '/imports/api/parenting/parentingFunctions';
-
-export default {
-  components: {
-    AttributeEffect,
-    SkillProficiency,
-    PropertyTargetTags,
-  },
-  mixins: [propertyViewerMixin],
-  inject: {
-    context: { default: {} }
-  },
-  data() {
-    return {
-      proficiencyText: {
-        0: 'Not proficient',
-        1: 'Proficient',
-        0.49: 'Half proficiency bonus rounded down',
-        0.5: 'Half proficiency bonus rounded up',
-        2: 'Double proficiency bonus',
-      },
-      skillTypes: {
-        skill: 'Skill',
-        save: 'Save',
-        check: 'Check',
-        tool: 'Tool',
-        weapon: 'Weapon',
-        armor: 'Armor',
-        language: 'Language',
-        utility: 'Utility',
-      },
-    }
-  },
-  computed: {
-    displayedModifier() {
-      let mod = this.model.value;
-      if (this.model.fail) {
-        return 'fail';
-      } else {
-        return numberToSignedString(mod);
-      }
-    },
-    icon() {
-      return getProficiencyIcon(this.model.proficiency);
-    },
-    passiveScore() {
-      return 10 + this.model.value + this.model.passiveBonus;
-    },
-    effects() {
-      if (!this.model.effectIds) return [];
-      const effects = CreatureProperties.find({ _id: { $in: this.model.effectIds } }).fetch();
-      return sortEffects(effects);
-    },
-  },
-  methods: {
-    numberToSignedString,
-    isFinite: Number.isFinite,
-    clickEffect(id) {
-      this.$store.commit('pushDialogStack', {
-        component: 'creature-property-dialog',
-        elementId: `${id}`,
-        data: { _id: id },
-      });
-    },
-  },
-  meteor: {
-    proficiencies() {
-      if (!this.model.proficiencyIds) return [];
-      return CreatureProperties.find({
-          _id: {$in: this.model.proficiencyIds},
-      }, {
-        sort: {left: 1}
-      }).fetch();
-    },
-    ability() {
-      let creatureId = this.context.creatureId;
-      let ability = this.model.ability;
-      if (!creatureId || !ability) return;
-      let abilityProp = CreatureProperties.findOne({
-        ...getFilter.descendantsOfRoot(creatureId),
-        variableName: ability,
-        type: 'attribute',
-        removed: { $ne: true },
-        inactive: { $ne: true },
-        overridden: { $ne: true },
-      });
-      if (!abilityProp) return;
-      return {
-        _id: abilityProp._id,
-        name: abilityProp.name,
-        operation: 'base',
-        amount: { value: abilityProp.modifier },
-        stats: [this.model.variableName],
-        root: abilityProp.root,
-      }
-    },
-    proficiencyBonus() {
-      return CreatureProperties.findOne({
-        ...getFilter.descendantsOfRoot(this.context.creatureId),
-        variableName: 'proficiencyBonus',
-        overridden: { $ne: true },
-        removed: { $ne: true },
-        inactive: { $ne: true },
-      })?.value;
-    },
-  },
-}
-</script>
-
-<style lang="css" scoped>
-
-</style>
+<style lang="css" scoped></style>

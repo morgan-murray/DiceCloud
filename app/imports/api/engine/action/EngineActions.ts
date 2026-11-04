@@ -1,7 +1,7 @@
 import SimpleSchema from 'simpl-schema';
 import TaskResult from './tasks/TaskResult';
 import LogContentSchema from '/imports/api/creature/log/LogContentSchema';
-import Task from './tasks/Task';
+import type { Task } from './tasks/Task';
 
 const EngineActions = new Mongo.Collection<EngineAction>('actions');
 
@@ -21,8 +21,6 @@ const ActionSchema = new SimpleSchema({
   creatureId: {
     type: String,
     max: 32,
-    // @ts-expect-error index not defined
-    index: 1,
   },
   rootPropId: {
     type: String,
@@ -33,8 +31,6 @@ const ActionSchema = new SimpleSchema({
     type: String,
     max: 32,
     optional: true,
-    // @ts-expect-error index not defined
-    index: 1,
   },
   task: {
     type: Object,

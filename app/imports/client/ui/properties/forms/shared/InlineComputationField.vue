@@ -1,3 +1,11 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  model?: Record<string, any>;
+}>(), {
+  model: () => ({}),
+});
+</script>
+
 <template lang="html">
   <div class="inline-computation-field">
     <text-area
@@ -14,7 +22,7 @@
         class="mb-4"
       >
         <div
-          class="warning--text mb-2 ml-4"
+          class="text-warning mb-2 ml-4"
           style="font-family: monospace;"
         >
           { {{ calc.calculation }} }
@@ -31,22 +39,6 @@
     </template>
   </div>
 </template>
-
-<script lang="js">
-import CalculationErrorList from '/imports/client/ui/properties/forms/shared/CalculationErrorList.vue';
-
-export default {
-  components: {
-    CalculationErrorList,
-  },
-  props: {
-    model: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-}
-</script>
 
 <style lang="css" scoped>
 </style>

@@ -1,0 +1,148 @@
+import { check } from 'meteor/check';
+import Libraries from '/imports/api/library/Libraries';
+import LibraryNodes, { type LibraryNode } from '/imports/api/library/LibraryNodes';
+import getCreatureLibraryIds from '/imports/api/library/getCreatureLibraryIds';
+import getUserLibraryIds from '/imports/api/library/getUserLibraryIds';
+import { assertViewPermission } from '/imports/api/sharing/sharingPermissions';
+import escapeRegex from '/imports/api/utility/escapeRegex';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+
+Meteor.publish('selectedLibraryNodes', async function (selectedNodeIds: string[]) {
+  check(selectedNodeIds, Array);
+  // Limit to 20 selected nodes
+  if (selectedNodeIds.length > 20) {
+    selectedNodeIds = selectedNodeIds.slice(0, 20);
+  }
+  const libraryViewPermissions: Record<string, boolean> = {};
+  const nodes: LibraryNode[] = [];
+  // Check view permissions of all libraries
+  for (const id of selectedNodeIds) {
+    const node = await LibraryNodes.findOneAsync(id);
+    if (!node) continue;
+    nodes.push(node);
+    const libraryId = node.root.id;
+    if (libraryViewPermissions[id]) {
+      continue;
+    } else {
+      const library = Libraries.findOne(libraryId, {
+        fields: {
+          owner: 1,
+          readers: 1,
+          writers: 1,
+          public: 1,
+          root: 1,
+          left: 1,
+          right: 1,
+        }
+      });
+      try {
+        await assertViewPermission(library, this.userId);
+      } catch (e) {
+        console.warn(e);
+        return this.error(e as Error);
+      }
+      libraryViewPermissions[id] = true;
+    }
+  }
+  // Return all nodes and their children
+  return [LibraryNodes.find({
+    $or: [
+      { _id: { $in: selectedNodeIds } },
+      { ...getFilter.descendantsOfAll(nodes) },
+    ],
+  })];
+});
+
+Meteor.publish('searchLibraryNodes', async function (creatureId: string, type: string, searchTerm: string, limit: number) {
+  if (!type) return [];
+
+  const userId = this.userId;
+  if (!userId) {
+    return [];
+  }
+
+  limit = limit || 32;
+  if (searchTerm) check(searchTerm, String);
+  check(limit, Number);
+
+  // Get all the ids of libraries the user can access
+  let libraryIds;
+  if (creatureId) {
+    libraryIds = await getCreatureLibraryIds(creatureId, userId)
+  } else {
+    libraryIds = await getUserLibraryIds(userId)
+  }
+
+  // Build a filter for nodes in those libraries that match the type
+  const filter: Mongo.Selector<LibraryNode> = {
+    ...getFilter.descendantsOfAllRoots(libraryIds),
+    removed: { $ne: true },
+    searchable: true //library nodes must opt-in
+  };
+  if (type) {
+    filter.$or = [{
+      type: type as never,
+    }, {
+      slotFillerType: type,
+    }];
+  }
+
+  let options: Mongo.Options<LibraryNode> | undefined = undefined;
+  if (searchTerm) {
+    // Regex search instead of text index
+    filter.$and = [{
+      $or: [
+        { name: { $regex: escapeRegex(searchTerm), '$options': 'i' } },
+        { libraryTags: searchTerm },
+      ],
+    }];
+    options = {
+      sort: {
+        'root.id': 1,
+        name: 1,
+        left: 1,
+      }
+    }
+  } else {
+    delete filter.$and;
+    options = {
+      sort: {
+        'root.id': 1,
+        name: 1,
+        left: 1,
+      }
+    };
+  }
+  options.limit = limit;
+
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const self = this;
+  const cursor = LibraryNodes.find(filter, options);
+  const libraries = Libraries.find({ _id: { $in: libraryIds } });
+
+  // @ts-expect-error Doing crimes
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  Mongo.Collection._publishCursor(libraries, self, 'libraries');
+
+  const observeHandle = await cursor.observeChangesAsync({
+    added: function (id, fields: Partial<LibraryNode> & { _searchResult?: true }) {
+      fields._searchResult = true;
+      self.added('libraryNodes', id, fields);
+    },
+    changed: function (id, fields) {
+      self.changed('libraryNodes', id, fields);
+    },
+    removed: function (id) {
+      self.removed('libraryNodes', id);
+    }
+  },
+    // Publications don't mutate the documents
+    { nonMutatingCallbacks: true }
+  );
+
+  // register stop callback (expects lambda w/ no args).
+  self.onStop(function () {
+    observeHandle.stop();
+  });
+  self.ready();
+});

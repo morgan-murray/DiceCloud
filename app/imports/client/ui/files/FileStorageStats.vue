@@ -1,15 +1,43 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { autorun } from 'vue-meteor-tracker';
+import { getUserTierAsync } from '/imports/api/users/patreon/tiers';
+import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
+import updateFileStorageUsed from '/imports/api/users/methods/updateFileStorageUsed';
+import prettyBytes from 'pretty-bytes';
+
+const updateStorageUsedLoading = ref(false);
+
+const { result: storageUsed } = autorun(() => Meteor.user()?.fileStorageUsed || 0);
+const { result: storageAllowed } = autorun(() => getUserTierAsync(Meteor.userId()).fileStorage * 1000000);
+
+const percentFileStorageUsed = computed(() =>
+  Math.round(((storageUsed.value ?? 0) / (storageAllowed.value ?? 1)) * 100)
+);
+
+async function updateStorageUsedFn() {
+  updateStorageUsedLoading.value = true;
+  try {
+    await updateFileStorageUsed.callAsync();
+  } catch (error: any) {
+    snackbar({ text: error.reason });
+  }
+  updateStorageUsedLoading.value = false;
+}
+</script>
+
 <template>
   <v-col
     cols="12"
     md="4"
     lg="3"
-    class="layout column justify-center align-center"
+    class="d-flex flex-column justify-center align-center"
   >
     <v-progress-circular
       :rotate="-90"
       :size="100"
       :width="15"
-      :value="percentFileStorageUsed"
+      :model-value="percentFileStorageUsed"
       :buffer-value="50"
       color="accent"
     >
@@ -26,40 +54,6 @@
     </div>
   </v-col>
 </template>
-
-<script lang="js">
-import { getUserTier } from '/imports/api/users/patreon/tiers';
-import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import updateFileStorageUsed from '/imports/api/users/methods/updateFileStorageUsed';
-import prettyBytes from 'pretty-bytes';
-
-export default {
-   meteor: {
-    storageUsed(){
-      return Meteor.user().fileStorageUsed || 0;
-    },
-    storageAllowed(){
-      return getUserTier(Meteor.userId()).fileStorage * 1000000;
-    },
-    percentFileStorageUsed(){
-      return Math.round((this.storageUsed / this.storageAllowed) * 100);
-    },
-  },
-    methods: {
-    prettyBytes(input){
-      return prettyBytes(input)
-    },
-    updateStorageUsed(){
-      this.updateStorageUsedLoading = true;
-      updateFileStorageUsed.call(error => {
-        this.updateStorageUsedLoading = false;
-        if (!error) return;
-        snackbar({text: error.reason});
-      });
-    },
-  },
-}
-</script>
 
 <style>
 

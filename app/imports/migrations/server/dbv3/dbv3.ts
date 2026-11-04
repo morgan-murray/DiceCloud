@@ -4,14 +4,13 @@ import { rebuildNestedSets } from '/imports/api/parenting/parentingFunctions';
 import Docs, { DOC_ROOT_ID } from '/imports/api/docs/Docs';
 import LibraryNodes from '/imports/api/library/LibraryNodes';
 import { TreeDoc } from '/imports/api/parenting/ChildSchema';
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 
 // Git version 2.0.59
 // Database version 3
 Migrations.add({
   version: 3,
   name: 'Changes parenting from array of ancestors to nested sets',
-  up: Meteor.wrapAsync(async (_, next) => {
+  up: async function () {
     console.log('migrating up library nodes 2 -> 3');
     await migrateCollection('libraryNodes');
     console.log('migrating up creature props 2 -> 3');
@@ -21,7 +20,7 @@ Migrations.add({
     console.log('New parenting schema fields added, if it was done correctly remove the old fields manually');
 
     console.log('removing all CreatureVariables, creatures will add them back the next time they recalculate');
-    CreatureVariables.remove({});
+    // await CreatureVariables.removeAsync({});
 
     console.log('Rebuilding nested sets for all libraries'); // Characters rebuild themselves on recompute
     const libraryIds = await Libraries.find().mapAsync((library) => library._id);
@@ -31,15 +30,14 @@ Migrations.add({
     }
 
     console.log('Removing all docs and replacing them with default docs');
-    Docs.remove({});
-    Assets.getText('docs/defaultDocs.json', (error, string) => {
-      const docs = JSON.parse(string)
-      docs.forEach(doc => Docs.insert(doc));
-    });
-    rebuildNestedSets(Docs, DOC_ROOT_ID);
-
-    next();
-  }),
+    await Docs.removeAsync({});
+    const string = Assets.getText('docs/defaultDocs.json');
+    const docs = JSON.parse(string);
+    for (const doc of docs) {
+      await Docs.insertAsync(doc);
+    }
+    await rebuildNestedSets(Docs, DOC_ROOT_ID);
+  },
 
   down() {
     throw 'Migrating from version 3 down to version 2 is not supported'
@@ -48,7 +46,7 @@ Migrations.add({
 });
 
 export function migrateCollection(collectionName: string) {
-  const collection = Mongo.Collection.get(collectionName);
+  const collection = Mongo.getCollection(collectionName);
   // Copy the parent id field and the root ancestor to the new structure
   // Using the mongo aggregation API
   // Waring: This will destroy parenting data if the old parenting fields are deleted

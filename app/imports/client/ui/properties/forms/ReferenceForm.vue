@@ -1,3 +1,55 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import TreeNodeView from '/imports/client/ui/properties/treeNodeViews/TreeNodeView.vue';
+import OutlinedInput from '/imports/client/ui/properties/viewers/shared/OutlinedInput.vue';
+import updateReferenceNodeMethod from '/imports/api/library/methods/updateReferenceNode';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), {
+  errors: () => ({}),
+});
+
+const emit = defineEmits(['change']);
+
+const store = useStore(key);
+const linkLoading = ref(false);
+
+function changeReference() {
+  store.commit('pushDialogStack', {
+    component: 'select-library-node-dialog',
+    elementId: 'change-ref',
+    callback(node: any) {
+      if (!node) return;
+      linkLoading.value = true;
+      emit('change', {
+        path: ['ref'],
+        value: {
+          id: node._id,
+          collection: 'libraryNodes',
+        },
+        ack() {
+          linkLoading.value = false;
+        },
+      });
+    },
+  });
+}
+
+async function updateReferenceNode() {
+  if (!props.model._id) return;
+  linkLoading.value = true;
+  try {
+    await updateReferenceNodeMethod.callAsync({ _id: props.model._id });
+  } finally {
+    linkLoading.value = false;
+  }
+}
+</script>
+
 <template lang="html">
   <div class="reference-form">
     <v-row dense>
@@ -9,7 +61,7 @@
           data-id="change-ref"
           style="cursor: pointer;"
           @click="changeReference"
-        > 
+        >
           <v-progress-circular
             v-if="linkLoading"
             indeterminate
@@ -37,7 +89,7 @@
               </div>
               <div
                 v-if="model.cache.error || errors.ref"
-                class="error--text"
+                class="text-error"
               >
                 {{ model.cache.error || errors.ref }}
               </div>
@@ -64,53 +116,4 @@
   </div>
 </template>
 
-<script lang="js">
-  import TreeNodeView from '/imports/client/ui/properties/treeNodeViews/TreeNodeView.vue';
-  import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-  import updateReferenceNode from '/imports/api/library/methods/updateReferenceNode';
-  import OutlinedInput from '/imports/client/ui/properties/viewers/shared/OutlinedInput.vue';
-
-  export default {
-    components: {
-      TreeNodeView,
-      OutlinedInput,
-    },
-    mixins: [propertyFormMixin],
-    data(){return {
-      linkLoading: false,
-    }},
-    methods: {
-      changeReference(){
-        let that = this;
-        this.$store.commit('pushDialogStack', {
-          component: 'select-library-node-dialog',
-          elementId: 'change-ref',
-          callback(node){
-            if (!node) return;
-            that.linkLoading = true;
-            that.$emit('change', {
-              path: ['ref'],
-              value: {
-                id: node._id,
-                collection: 'libraryNodes',
-              },
-              ack(){
-                that.linkLoading = false;
-              }
-            });
-          }
-        });
-      },
-      updateReferenceNode(){
-        if (!this.model._id) return;
-        this.linkLoading = true;
-        updateReferenceNode.call({_id: this.model._id}, () => {
-          this.linkLoading = false;
-        });
-      }
-    },
-  };
-</script>
-
-<style lang="css" scoped>
-</style>
+<style lang="css" scoped></style>

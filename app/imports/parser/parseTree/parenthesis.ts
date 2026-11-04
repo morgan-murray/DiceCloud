@@ -1,20 +1,14 @@
-import ParseNode from '/imports/parser/parseTree/ParseNode';
-import ResolveFunction from '/imports/parser/types/ResolveFunction';
-import TraverseFunction from '/imports/parser/types/TraverseFunction';
-import MapFunction from '/imports/parser/types/MapFunction';
-import ToStringFunction from '/imports/parser/types/ToStringFunction';
+import type { ParseNode } from '/imports/parser/parseTree/ParseNode';
+import type { ResolveFunction } from '/imports/parser/types/ResolveFunction';
+import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
 
 export type ParenthesisNode = {
   parseType: 'parenthesis';
   content: ParseNode;
 }
 
-type ParenthesisFactory = {
-  create(node: Partial<ParenthesisNode>): ParenthesisNode;
+type ParenthesisFactory = ParseNodeFactory<ParenthesisNode> & {
   resolve: ResolveFunction<ParenthesisNode>;
-  toString: ToStringFunction<ParenthesisNode>;
-  traverse: TraverseFunction<ParenthesisNode>;
-  map: MapFunction<ParenthesisNode>;
 }
 
 const parenthesis: ParenthesisFactory = {
