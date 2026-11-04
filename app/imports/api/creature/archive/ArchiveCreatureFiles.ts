@@ -8,7 +8,7 @@ const s3FilesStorage = Meteor.isServer
 
 const ArchiveCreatureFiles = s3FilesStorage.createS3FilesCollection({
   collectionName: 'archiveCreatureFiles',
-  storagePath: Meteor.isDevelopment ? '../../../../../fileStorage/archiveCreatures' : 'assets/app/archiveCreatures',
+  storagePath: Meteor.isServer && process.env.DICECLOUD_STORAGE_PATH ? `${process.env.DICECLOUD_STORAGE_PATH}/archiveCreatures` : (Meteor.isDevelopment ? '../../../../../fileStorage/archiveCreatures' : 'assets/app/archiveCreatures'),
   async onBeforeUpload(file) {
     // Allow upload files under 10MB, and only in json format
     if (file.size > 10485760) {

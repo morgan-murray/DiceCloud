@@ -1,6 +1,6 @@
 import emailTemplate from './emailTemplate';
 
-Accounts.emailTemplates.from = 'no-reply@dicecloud.com';
+Accounts.emailTemplates.from = process.env.MAIL_FROM || 'no-reply@example.invalid';
 Accounts.emailTemplates.siteName = 'DiceCloud';
 
 Accounts.emailTemplates.enrollAccount = {

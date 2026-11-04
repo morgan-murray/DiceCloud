@@ -1,0 +1,14 @@
+**/.git
+**/node_modules
+**/.meteor/local
+**/.cache
+**/_build
+**/build
+**/fileStorage
+**/settings.json
+**/.env*
+**/secrets
+**/backups
+**/test-results
+**/playwright-report
+**/artifacts

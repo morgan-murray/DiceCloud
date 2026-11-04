@@ -1,0 +1,56 @@
+name: Runtime build
+on:
+  push:
+    branches: [chore/runtime-build, develop]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: runtime-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-amd64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build checked-out source
+        run: docker build --progress=plain -t dicecloud:runtime .
+      - name: Check non-root runtime
+        run: test "$(docker image inspect dicecloud:runtime --format '{{.Config.User}}')" = node
+      - name: Initialize isolated private stack
+        run: |
+          python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-config"
+          docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
+          curl --fail --retry 5 --retry-all-errors http://127.0.0.1:31080/api/status
+      - name: Consistent backup and guarded restore
+        run: |
+          python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-config/runtime.env" --project dicecloud-ci backup --destination "$RUNNER_TEMP/dicecloud-backup"
+          python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-restore-config" --port 31081
+          IMAGE_ID=$(docker image inspect dicecloud:runtime --format '{{.Id}}')
+          sed -i "s|DICECLOUD_IMAGE=.*|DICECLOUD_IMAGE=$IMAGE_ID|" "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"
+          python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --project dicecloud-restore-ci restore --backup "$RUNNER_TEMP/dicecloud-backup"
+          curl --fail http://127.0.0.1:31081/api/status
+      - name: Export built image for private VPS verification
+        if: success()
+        run: docker save dicecloud:runtime | gzip -1 > runtime-image.tar.gz
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: success()
+        with:
+          name: runtime-image
+          path: runtime-image.tar.gz
+          retention-days: 1
+          compression-level: 0
+      - name: Show bounded diagnostics on failure
+        if: failure()
+        run: docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci logs --tail 80
+      - name: Remove disposable stack
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/dicecloud-config/runtime.env"; then
+            docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci down -v
+          fi
+          if test -f "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"; then
+            docker compose --env-file "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" -p dicecloud-restore-ci down -v
+          fi

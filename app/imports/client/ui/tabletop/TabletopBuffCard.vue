@@ -2,8 +2,8 @@
 import { ref, computed, inject } from 'vue';
 import { useStore } from 'vuex';
 import { autorun } from 'vue-meteor-tracker';
-import { getPropertyName } from '/imports/constants/PROPERTIES.js';
-import numberToSignedString from '/imports/api/utility/numberToSignedString.js';
+import { getPropertyName } from '/imports/constants/PROPERTIES';
+import numberToSignedString from '/imports/api/utility/numberToSignedString';
 import doAction from '/imports/client/ui/creature/actions/doAction';
 import PropertyIcon from '/imports/client/ui/properties/shared/PropertyIcon.vue';
 import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';

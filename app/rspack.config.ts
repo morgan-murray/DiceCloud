@@ -10,7 +10,7 @@ const circularPlugin = new rspack.CircularDependencyRspackPlugin({
 export default defineConfig(Meteor => ({
   devtool: 'source-map',
   resolve: {
-    extensions: ['...', 'ts'],
+    extensions: ['...', '.ts'],
   },
   plugins: [
     circularPlugin,

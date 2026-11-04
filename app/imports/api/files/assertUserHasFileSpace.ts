@@ -9,7 +9,7 @@ export default async function assertUserHasFileSpace(userId: string | null, spac
 
   // Work out how much space they have and need
   const fileStorageUsed = user.fileStorageUsed || 0;
-  const fileStorageAllowed = getUserTierAsync(Meteor.userId()).fileStorage * 1000000;
+  const fileStorageAllowed = (await getUserTierAsync(userId)).fileStorage * 1000000;
   let fileStorageLeft = fileStorageAllowed - fileStorageUsed;
   if (fileStorageLeft < 0) fileStorageLeft = 0;
 

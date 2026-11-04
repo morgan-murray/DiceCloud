@@ -1,3 +1,4 @@
+import '/imports/server/config/selfHosting';
 import 'meteor/aldeed:collection2/static';
 import '/imports/api/simpleSchemaConfig';
 import '/imports/server/config/limitLoginTokens';

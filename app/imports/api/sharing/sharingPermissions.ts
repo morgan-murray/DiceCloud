@@ -85,7 +85,7 @@ export async function assertCopyPermission(doc: Shared | undefined, userId: stri
   }
 
   // Admin override
-  if (Roles.userIsInRole(user, 'admin')) {
+  if (await Roles.userIsInRoleAsync(user, 'admin')) {
     return;
   }
 
