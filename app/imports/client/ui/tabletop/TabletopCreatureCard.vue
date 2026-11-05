@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { appPath } from '/imports/api/utility/basePath';
 import { ref, computed, useAttrs } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
@@ -44,7 +45,7 @@ const { result: healthBars } = autorun(() => {
     v-on="hasClickListener ? {click: () => $emit('click')} : {}"
   >
     <v-img
-      :src="model.picture || '/images/ui/missing-portrait.png'"
+      :src="model.picture || appPath('/images/ui/missing-portrait.png')"
       :lazy-src="loadingImg"
       :height="height"
       :width="width"

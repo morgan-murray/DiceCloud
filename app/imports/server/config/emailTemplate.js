@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 export default function emailTemplate({heading, text, buttonText, url}){
   return `
   <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
@@ -48,7 +49,7 @@ export default function emailTemplate({heading, text, buttonText, url}){
                                         <tbody>
                                           <tr>
                                             <td style="line-height: 24px; font-size: 16px; width: 100%; margin: 0; padding: 20px;" align="left">
-                                              <img src="https://dicecloud.com/favicon-96x96.png" style="height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; border-style: none; border-width: 0;">
+                                              <img src="${Meteor.absoluteUrl('favicon-96x96.png')}" style="height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; border-style: none; border-width: 0;">
                                               <h1 class="h3" style="padding-top: 0; padding-bottom: 0; font-weight: 500; vertical-align: baseline; font-size: 28px; line-height: 33.6px; margin: 0;" align="left">DiceCloud</h1>
                                               <table class="s-2 w-full" role="presentation" border="0" cellpadding="0" cellspacing="0" style="width: 100%;" width="100%">
                                                 <tbody>

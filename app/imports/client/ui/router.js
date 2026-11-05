@@ -1,3 +1,4 @@
+import { basePath } from '/imports/api/utility/basePath';
 import { createRouter, createWebHistory } from 'vue-router';
 import { acceptInviteToken } from '/imports/api/users/Invites';
 import MAINTENANCE_MODE from '/imports/constants/MAINTENANCE_MODE';
@@ -54,7 +55,7 @@ function ensureLoggedIn(to, from, next) {
       if (user) {
         next()
       } else {
-        next({ name: 'signIn', query: { redirect: to.path } });
+        next({ name: 'signIn', query: { redirect: to.fullPath } });
       }
     }
   });
@@ -72,7 +73,7 @@ function ensureAdmin(to, from, next) {
           next({ name: 'home' });
         }
       } else {
-        next({ name: 'signIn', query: { redirect: to.path } });
+        next({ name: 'signIn', query: { redirect: to.fullPath } });
       }
     }
   });
@@ -93,7 +94,7 @@ async function claimInvite(to, from, next) {
           next({ name: 'inviteError', params: { error } });
         });
       } else {
-        next({ name: 'signIn', query: { redirect: to.path } });
+        next({ name: 'signIn', query: { redirect: to.fullPath } });
       }
     }
   });
@@ -131,7 +132,7 @@ function redirectIfMaintenance(to, from, next) {
 }
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(basePath),
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;

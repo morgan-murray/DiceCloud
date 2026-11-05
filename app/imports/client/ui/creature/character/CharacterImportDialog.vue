@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { characterApiUrl } from '/imports/api/utility/urlPaths.mjs';
 import { ref, computed } from 'vue';
 import { autorun, subscribe } from 'vue-meteor-tracker';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
@@ -21,12 +22,9 @@ const biographyAlert = computed(() => {
 });
 
 async function setUrl(val: string, ack: Function) {
-  const regex = /(https?:\/\/)([\w|.]+)\/character\/([^/]+)\/(.+)/;
-  if (!regex.test(val)) {
-    ack('Not a valid character URL');
-    return;
-  }
-  const newUrl = val.replace(regex, '$1$2/api/creature/$3');
+  let newUrl: string;
+  try { newUrl = characterApiUrl(val); }
+  catch { ack('Not a valid character URL'); return; }
   importError.value = undefined;
   let data: any;
   try {

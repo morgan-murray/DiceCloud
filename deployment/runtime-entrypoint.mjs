@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { rootConfiguration } from './urlPaths.mjs';
+process.env.ROOT_URL = rootConfiguration(process.env.ROOT_URL).rootUrl;
 if (!process.env.MONGO_URL) {
   const password = readFileSync('/run/secrets/mongo_app_password', 'utf8').trim();
   if (!password) throw new Error('MongoDB application password is empty');

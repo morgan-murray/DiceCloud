@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { appPath } from '/imports/api/utility/basePath';
 import { autorun } from 'vue-meteor-tracker';
 
 const { result: signedIn } = autorun(() => !!Meteor.userId());
@@ -88,7 +89,7 @@ const highlightCards = [
     </section>
     <section>
       <v-parallax
-        src="/images/crown-dice-on-ipad.webp"
+        :src="appPath('/images/crown-dice-on-ipad.webp')"
         height="300"
       />
     </section>
@@ -162,7 +163,7 @@ const highlightCards = [
           >
             <v-img
               class="text-white align-end"
-              :src="'/images/screenshots/' + card.img"
+              :src="appPath('/images/screenshots/' + card.img)"
               gradient="to bottom, rgba(0,0,0,0), rgba(0,0,0,.5)"
               height="360px"
             >

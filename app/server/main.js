@@ -1,3 +1,5 @@
+import '/imports/server/config/urlPath';
+import '/imports/server/config/bootstrapAccount';
 import '/imports/server/config/selfHosting';
 import 'meteor/aldeed:collection2/static';
 import '/imports/api/simpleSchemaConfig';

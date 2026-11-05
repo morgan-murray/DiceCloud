@@ -32,10 +32,11 @@ LABEL org.opencontainers.image.revision=${SOURCE_REVISION}
 ENV NODE_ENV=production PORT=3000 BIND_IP=0.0.0.0 CONTAINER_VERSION=${SOURCE_REVISION}
 WORKDIR /opt/dicecloud
 COPY --from=build --chown=node:node /home/node/bundle/bundle/ ./
-COPY --chown=node:node deployment/runtime-entrypoint.mjs ./deployment/
+COPY --chown=node:node deployment/runtime-entrypoint.mjs deployment/healthcheck.mjs ./deployment/
+COPY --chown=node:node app/imports/api/utility/urlPaths.mjs ./deployment/
 RUN mkdir -p /var/lib/dicecloud && chown node:node /var/lib/dicecloud
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
-    CMD node -e "fetch('http://127.0.0.1:3000/api/status').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+    CMD node deployment/healthcheck.mjs
 CMD ["node", "deployment/runtime-entrypoint.mjs"]

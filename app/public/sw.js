@@ -1,97 +1,31 @@
-const HTMLToCache = '/';
-const version = 'MSW V0.3';
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(version).then((cache) => {
-    cache.add(HTMLToCache).then(self.skipWaiting());
-  }));
+// Cache only public static resources in this instance's scope. Character HTML,
+// API responses, sockets and uploads always use the network and are never cached.
+const scope = new URL(self.registration.scope);
+const family = `dicecloud-static:${scope.href}:`;
+const cacheName = family + 'v1';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(key => key.startsWith(family) && key !== cacheName).map(key => caches.delete(key))
+  )).then(() => self.clients.claim()));
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-  caches.keys().then(cacheNames => Promise.all(cacheNames.map((cacheName) => {
-    if (version !== cacheName) return caches.delete(cacheName);
-  }))).then(self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  // only processes http:// & https:// requests, prevents chrome-extention:// errors
-  if (event.request.url.startsWith('http')){
-
-    const requestToFetch = event.request.clone();
-    event.respondWith(
-    caches.match(event.request.clone()).then((cached) => {
-      // We don't return cached HTML (except if fetch failed)
-      if (cached) {
-        const resourceType = cached.headers.get('content-type');
-        // We only return non css/js/html cached response e.g images
-        if (!hasHash(event.request.url) && !/text\/html/.test(resourceType)) {
-          return cached;
-        }
-
-        // If the CSS/JS didn't change since it's been cached, return the cached version
-        if (hasHash(event.request.url) && hasSameHash(event.request.url, cached.url)) {
-          return cached;
-        }
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+  const local = url.pathname.slice(scope.pathname.length);
+  const immutable = /^[a-f0-9]{20,}\.(js|css)$/.test(local);
+  const publicAsset = /^(fonts|images)\//.test(local) || /^(favicon|apple-touch-icon|android-chrome|mstile|crown-dice-logo)[^/]*\.(png|ico)$/.test(local);
+  if (!immutable && !publicAsset) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match(event.request);
+    if (cached && immutable) return cached;
+    try {
+      const response = await fetch(event.request);
+      if (response.ok && response.type === 'basic' && !/no-store/i.test(response.headers.get('cache-control') || '')) {
+        await cache.put(event.request, response.clone());
       }
-      return fetch(requestToFetch).then((response) => {
-        const clonedResponse = response.clone();
-        const contentType = clonedResponse.headers.get('content-type');
-
-        if (!clonedResponse || clonedResponse.status !== 200 || clonedResponse.type !== 'basic'
-        || /\/sockjs\//.test(event.request.url)) {
-          return response;
-        }
-
-        if (/html/.test(contentType)) {
-          caches.open(version).then(cache => cache.put(HTMLToCache, clonedResponse));
-        } else {
-          // Delete old version of a file
-          if (hasHash(event.request.url)) {
-            caches.open(version).then(cache => cache.keys().then(keys => keys.forEach((asset) => {
-              if (new RegExp(removeHash(event.request.url)).test(removeHash(asset.url))) {
-                cache.delete(asset);
-              }
-            })));
-          }
-
-          if (event.request.method !== 'POST') {
-            caches.open(version).then(cache => cache.put(event.request, clonedResponse));
-          }
-        }
-        return response;
-      }).catch(() => {
-        if (hasHash(event.request.url)) return caches.match(event.request.url);
-        // If the request URL hasn't been served from cache and isn't sockjs we suppose it's HTML
-        else if (!/\/sockjs\//.test(event.request.url)) return caches.match(HTMLToCache);
-        // Only for sockjs
-        return new Response('No connection to the server', {
-          status: 503,
-          statusText: 'No connection to the server',
-          headers: new Headers({ 'Content-Type': 'text/plain' }),
-        });
-      });
-    })
-    );
-
-  }
-
+      return response;
+    } catch (error) { if (cached) return cached; throw error; }
+  })());
 });
-
-function removeHash(element) {
-  if (typeof element === 'string') return element.split('?hash=')[0];
-}
-
-function hasHash(element) {
-  if (typeof element === 'string') return /\?hash=.*/.test(element);
-}
-
-function hasSameHash(firstUrl, secondUrl) {
-  if (typeof firstUrl === 'string' && typeof secondUrl === 'string') {
-    return /\?hash=(.*)/.exec(firstUrl)[1] === /\?hash=(.*)/.exec(secondUrl)[1];
-  }
-}
-
-// Service worker created by Ilan Schemoul alias NitroBAY as a specific Service Worker for Meteor
-// Please see https://github.com/NitroBAY/meteor-service-worker for the official project source
