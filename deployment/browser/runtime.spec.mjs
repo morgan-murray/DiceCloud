@@ -234,11 +234,11 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
   await page.goBack();
   await page.waitForFunction(() => window.Meteor?.status().connected);
-  expect(new URL(page.url()).pathname).toContain(configured.pathname + `character/${creatureId}/`);
+  await expect(page).toHaveURL(appURL(`/character/${creatureId}/Encoded%20name?tab=spells#slot`));
   await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
   await page.goForward();
   await page.waitForFunction(() => window.Meteor?.status().connected);
-  expect(new URL(page.url()).pathname).toBe(configured.pathname + 'my-files');
+  await expect(page).toHaveURL(appURL('/my-files'));
   await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
   await ready(page, `/character/${creatureId}`);
   await page.locator('[data-id="creature-menu"]').click();
