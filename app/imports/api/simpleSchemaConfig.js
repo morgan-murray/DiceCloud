@@ -1,20 +1,9 @@
 import SimpleSchema from '/imports/api/utility/SimpleSchema';
-import MeteorSimpleSchema from 'meteor/aldeed:simple-schema';
 import { set } from 'lodash';
 
 set(Meteor.settings,
   'packages.collection2.disableCollectionNamesInValidation',
   true);
-
-const customOptions = [
-  'parseLevel',
-  'removeBeforeCompute',
-  'inlineCalculationField',
-  'computedField',
-];
-
-SimpleSchema.extendOptions(customOptions);
-MeteorSimpleSchema.extendOptions(customOptions);
 
 // Store a quick way of referencing keys that have specific tags === true
 function storeTaggedKeys(tag, fnName) {
