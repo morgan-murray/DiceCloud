@@ -5,7 +5,7 @@ import { Tracker } from 'meteor/tracker';
 import CreatureLogs, { logRoll } from '/imports/api/creature/log/CreatureLogs';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import { CreatureVariables } from '/imports/client/localCollections/CreatureVariables';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import { parse, prettifyParseError } from '/imports/parser/parser';
 import resolve from '/imports/parser/resolve';
 import toString from '/imports/parser/toString';

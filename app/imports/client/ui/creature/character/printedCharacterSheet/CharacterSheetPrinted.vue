@@ -8,7 +8,7 @@ import CreatureProperties from '/imports/api/creature/creatureProperties/Creatur
 import PrintedStats from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedStats.vue';
 import PrintedInventory from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedInventory.vue';
 import PrintedSpells from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedSpells.vue';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import { CreatureVariables } from '/imports/client/localCollections/CreatureVariables';
 import QrcodeVue from 'qrcode.vue';
 import { getFilter } from '/imports/api/parenting/parentingFunctions';

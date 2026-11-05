@@ -10,7 +10,7 @@ import { getPropertyName } from '/imports/constants/PROPERTIES';
 import propertyFormIndex from '/imports/client/ui/properties/forms/shared/propertyFormIndex';
 import propertyViewerIndex from '/imports/client/ui/properties/viewers/shared/propertyViewerIndex';
 import CreaturePropertiesTree from '/imports/client/ui/creature/creatureProperties/CreaturePropertiesTree.vue';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import insertProperty from '/imports/api/creature/creatureProperties/methods/insertProperty';
 import insertPropertyFromLibraryNode from '/imports/api/creature/creatureProperties/methods/insertPropertyFromLibraryNode';
 import { key } from '/imports/client/ui/vuexStore';

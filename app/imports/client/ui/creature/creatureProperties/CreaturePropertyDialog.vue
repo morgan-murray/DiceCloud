@@ -16,7 +16,7 @@ import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 import { getPropertyName } from '/imports/constants/PROPERTIES';
 import PropertyForm from '/imports/client/ui/properties/PropertyForm.vue';
 import getPropertyTitle from '/imports/client/ui/properties/shared/getPropertyTitle';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import { get } from 'lodash';
 import equipItem from '/imports/api/creature/creatureProperties/methods/equipItem';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';

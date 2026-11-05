@@ -5,7 +5,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { autorun } from 'vue-meteor-tracker';
 import { Meteor } from 'meteor/meteor';
 import LibraryCollections from '/imports/api/library/LibraryCollections';
-import { assertDocEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertDocEditPermission } from '/imports/client/permissions/sharingPermissions';
 import formatter from '/imports/client/ui/utility/numberFormatter';
 import { key } from '/imports/client/ui/vuexStore';
 

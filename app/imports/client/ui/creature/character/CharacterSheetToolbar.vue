@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { autorun } from 'vue-meteor-tracker';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import removeCreature from '/imports/api/creature/creatures/methods/removeCreature';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import { updateUserSharePermissions } from '/imports/api/sharing/sharing';
 import isDarkColor from '/imports/client/ui/utility/isDarkColor';
 import CharacterSheetFab from '/imports/client/ui/creature/character/CharacterSheetFab.vue';

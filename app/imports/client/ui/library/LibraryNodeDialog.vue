@@ -17,7 +17,7 @@ import { getPropertyName } from '/imports/constants/PROPERTIES';
 import { get } from 'lodash';
 import {
   assertDocEditPermission, assertDocCopyPermission
-} from '/imports/api/sharing/sharingPermissions';
+} from '/imports/client/permissions/sharingPermissions';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
 import getPropertyTitle from '/imports/client/ui/properties/shared/getPropertyTitle';
 import copyLibraryNodeTo from '/imports/api/library/methods/copyLibraryNodeTo';

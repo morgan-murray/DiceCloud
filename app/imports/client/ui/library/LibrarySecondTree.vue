@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import LibraryList from '/imports/client/ui/library/LibraryList.vue';
 import LibraryContentsContainer from '/imports/client/ui/library/LibraryContentsContainer.vue';
 import Libraries from '/imports/api/library/Libraries';
-import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertEditPermission } from '/imports/client/permissions/sharingPermissions';
 
 defineProps<{ selectedNode?: Record<string, any> }>();
 

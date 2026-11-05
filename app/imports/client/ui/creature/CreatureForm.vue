@@ -7,7 +7,7 @@ import FormSection, { FormSections } from '/imports/client/ui/properties/forms/s
 import LibraryList from '/imports/client/ui/library/LibraryList.vue';
 import LibraryCollections from '/imports/api/library/LibraryCollections';
 import { changeAllowedLibraries, toggleAllUserLibraries } from '/imports/api/creature/creatures/methods/changeAllowedLibraries';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import SmartImageInput from '/imports/client/ui/components/global/SmartImageInput.vue';
 import { key } from '/imports/client/ui/vuexStore';
 

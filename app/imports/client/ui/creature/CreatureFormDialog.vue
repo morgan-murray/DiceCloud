@@ -4,7 +4,7 @@ import Creatures from '/imports/api/creature/creatures/Creatures';
 import updateCreature from '/imports/api/creature/creatures/methods/updateCreature';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 import CreatureForm from '/imports/client/ui/creature/CreatureForm.vue';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import ColorPicker from '/imports/client/ui/components/ColorPicker.vue';
 
 const props = withDefaults(defineProps<{

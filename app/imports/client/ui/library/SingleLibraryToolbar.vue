@@ -6,7 +6,7 @@ import { autorun } from 'vue-meteor-tracker';
 import { Meteor } from 'meteor/meteor';
 import Libraries from '/imports/api/library/Libraries';
 import formatter from '/imports/client/ui/utility/numberFormatter';
-import { assertDocEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertDocEditPermission } from '/imports/client/permissions/sharingPermissions';
 import { key } from '/imports/client/ui/vuexStore';
 
 const store = useStore(key);

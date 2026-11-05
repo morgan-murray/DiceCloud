@@ -2,7 +2,7 @@
 import { autorun } from 'vue-meteor-tracker';
 import { Meteor } from 'meteor/meteor';
 import { useStore } from 'vuex';
-import { assertDocEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertDocEditPermission } from '/imports/client/permissions/sharingPermissions';
 import SharedIcon from '/imports/client/ui/components/SharedIcon.vue';
 import { key } from '/imports/client/ui/vuexStore';
 

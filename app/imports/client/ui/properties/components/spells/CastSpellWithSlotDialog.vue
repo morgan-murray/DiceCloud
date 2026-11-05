@@ -3,7 +3,7 @@ import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useGoTo } from 'vuetify';
 import { autorun } from 'vue-meteor-tracker';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 import SplitListLayout from '/imports/client/ui/properties/components/attributes/SplitListLayout.vue';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';

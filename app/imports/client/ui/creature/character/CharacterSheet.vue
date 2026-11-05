@@ -11,7 +11,7 @@ import SpellsTab from '/imports/client/ui/creature/character/characterSheetTabs/
 import CharacterTab from '/imports/client/ui/creature/character/characterSheetTabs/JournalTab.vue';
 import BuildTab from '/imports/client/ui/creature/character/characterSheetTabs/BuildTab.vue';
 import TreeTab from '/imports/client/ui/creature/character/characterSheetTabs/TreeTab.vue';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
 import CharacterSheetFab from '/imports/client/ui/creature/character/CharacterSheetFab.vue';
 import ActionsTab from '/imports/client/ui/creature/character/characterSheetTabs/ActionsTab.vue';

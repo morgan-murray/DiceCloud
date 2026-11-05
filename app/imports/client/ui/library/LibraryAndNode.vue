@@ -12,7 +12,7 @@ import LibraryContentsContainer from '/imports/client/ui/library/LibraryContents
 import InsertLibraryNodeButton from '/imports/client/ui/library/InsertLibraryNodeButton.vue';
 import { getPropertyName } from '/imports/constants/PROPERTIES';
 import isDarkColor from '/imports/client/ui/utility/isDarkColor';
-import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertEditPermission } from '/imports/client/permissions/sharingPermissions';
 import getThemeColor from '/imports/client/ui/utility/getThemeColor';
 import TreeSearchInput from '/imports/client/ui/components/tree/TreeSearchInput.vue';
 import LibrarySecondTree from '/imports/client/ui/library/LibrarySecondTree.vue';
