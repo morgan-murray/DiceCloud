@@ -7,7 +7,7 @@ const fixturePath = process.env.DICECLOUD_TEST_FIXTURE;
 const imageFixture = readFileSync(new URL('./fixtures/runtime.png', import.meta.url));
 
 async function propertyHasValue(page, id, value) {
-  await page.waitForFunction(({ id, value }) => window.Mongo.getCollection('creatureProperties')?.findOne(id)?.value === value, { id, value });
+  await page.waitForFunction(({ id, value }) => window.Mongo.getCollection('creatureProperties')?.findOne(id)?.value === value, { id, value }, { timeout: 30000 });
 }
 
 async function ready(page, path = '/') {
@@ -61,6 +61,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   await page.waitForFunction(() => !window.Meteor.status().connected);
   await page.evaluate(() => window.Meteor.reconnect());
   await page.waitForFunction(() => window.Meteor.status().connected);
+  console.info('Verified character refresh and reconnect');
   const libraryId = await call(page, 'libraries.insert', {
     name: 'Runtime smoke library', description: 'Synthetic runtime fixture',
     public: false, readers: [], writers: [], readersCanCopy: false,
@@ -76,6 +77,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   });
   await ready(page, `/character/${creatureId}`);
   await propertyHasValue(page, abilityId, 14);
+  console.info('Verified library feature computation');
   const slotId = await call(page, 'creatureProperties.insert', { creatureProperty: {
     type: 'attribute', name: 'Runtime spell slots', variableName: 'runtimeSlots', attributeType: 'spellSlot',
     baseValue: { calculation: '2' }, spellSlotLevel: { calculation: '1' }, damage: 1, reset: 'longRest',
@@ -95,6 +97,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   } });
   await call(page, 'actions.runAction', { actionId });
   await propertyHasValue(page, slotId, 2);
+  console.info('Verified native long-rest action');
   const asset = await page.request.get(new URL('/crown-dice-logo-cropped-transparent.png', baseURL).href);
   expect(asset.ok()).toBeTruthy();
   expect(asset.headers()['content-type']).toContain('image');
@@ -108,6 +111,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   expect((await imageResponse.body()).equals(imageFixture)).toBe(true);
   const imageURL = new URL(imageHref, baseURL);
   const imagePath = imageURL.pathname + imageURL.search;
+  console.info('Verified upload and exact download bytes');
   const secondContext = await browser.newContext();
   const second = await secondContext.newPage();
   await register(second, other.username, other.password);

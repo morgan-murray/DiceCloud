@@ -7,8 +7,9 @@ import { getFilter } from '/imports/api/parenting/parentingFunctions';
 import type { PropertyType } from '/imports/api/properties/PropertyType.type';
 import type { Variables } from '/imports/api/engine/computation/CreatureComputation';
 
-const Creatures = Mongo.getCollection('creatures') as Mongo.Collection<Creature>;
-const CreatureProperties = Mongo.getCollection('creatureProperties') as Mongo.Collection<CreatureProperty>
+// Resolve after collection modules initialize; caching here can capture undefined in a cold bundle.
+function creatures() { return Mongo.getCollection('creatures') as Mongo.Collection<Creature>; }
+function properties() { return Mongo.getCollection('creatureProperties') as Mongo.Collection<CreatureProperty>; }
 
 const COMPUTE_DEBOUNCE_TIME = 100; // ms
 export const loadedCreatures: Map<string, LoadedCreature> = new Map();
@@ -65,7 +66,7 @@ export async function getSingleProperty(creatureId: string, propertyId: string) 
     return EJSON.clone(property);
   }
   console.time(`Cache miss on creature properties: ${creatureId}`)
-  const prop = await CreatureProperties.findOneAsync({
+  const prop = await properties().findOneAsync({
     _id: propertyId,
     'root.id': creatureId,
     'removed': { $ne: true },
@@ -83,7 +84,7 @@ export async function getProperties(creatureId: string): Promise<CreaturePropert
     return EJSON.clone(props);
   }
   console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props = await CreatureProperties.find({
+  const props = await properties().find({
     'root.id': creatureId,
     'removed': { $ne: true },
   }, {
@@ -102,7 +103,7 @@ export async function getPropertiesOfType<T extends PropertyType>(creatureId: st
     return EJSON.clone(props);
   }
   console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props: CreaturePropertyTypes[T][] = await CreatureProperties.find({
+  const props: CreaturePropertyTypes[T][] = await properties().find({
     'root.id': creatureId,
     'removed': { $ne: true },
     'type': propType as never,
@@ -132,7 +133,7 @@ export async function getPropertiesByFilter(
     return EJSON.clone(props);
   }
   console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props = await CreatureProperties.find({
+  const props = await properties().find({
     'root.id': creatureId,
     'removed': { $ne: true },
     ...mongoFilter
@@ -150,7 +151,7 @@ export async function getCreature(creatureId: string) {
     return EJSON.clone(loadedCreatureDoc);
   }
   console.time(`Cache miss on Creature: ${creatureId}`);
-  const creature = await Creatures.findOneAsync(creatureId);
+  const creature = await creatures().findOneAsync(creatureId);
   console.timeEnd(`Cache miss on Creature: ${creatureId}`);
   return creature;
 }
@@ -186,7 +187,7 @@ export async function getPropertyAncestors(creatureId: string, propertyId: strin
     return EJSON.clone(props);
   } else {
     // Fetch from database
-    return CreatureProperties.find({
+    return properties().find({
       ...getFilter.ancestors(prop),
       removed: { $ne: true },
     }, {
@@ -215,7 +216,7 @@ export async function getPropertyDescendants(creatureId: string, propertyId: str
     const cloneProps = EJSON.clone(props).sort((a, b) => a.left - b.left);
     return cloneProps;
   } else {
-    return CreatureProperties.find({
+    return properties().find({
       ...getFilter.descendants(property),
       removed: { $ne: true },
     }, {
@@ -247,7 +248,7 @@ export async function getPropertyChildren(creatureId: string, property: string |
     const cloneProps = EJSON.clone(props);
     return cloneProps.sort((a, b) => a.left - b.left);
   } else {
-    return CreatureProperties.find({
+    return properties().find({
       'parentId': property._id,
       removed: { $ne: true },
     }, {
@@ -290,7 +291,7 @@ class LoadedCreature {
       }, COMPUTE_DEBOUNCE_TIME);
 
       // Observe all creature properties which are needed for computation
-      loaded.propertyObserver = await CreatureProperties.find({
+      loaded.propertyObserver = await properties().find({
         'root.id': creatureId,
       }).observeChangesAsync({
         added(id, fields: CreatureProperty) {
@@ -309,7 +310,7 @@ class LoadedCreature {
       });
 
       // Observe the creature itself
-      loaded.creatureObserver = await Creatures.find({
+      loaded.creatureObserver = await creatures().find({
         _id: creatureId,
       }).observeChangesAsync({
         added(id, fields: Creature) {
