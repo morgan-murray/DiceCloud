@@ -33,10 +33,13 @@ jobs:
           python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --project dicecloud-restore-ci restore --backup "$RUNNER_TEMP/dicecloud-backup"
           curl --fail http://127.0.0.1:31081/api/status
       - name: Export built image for private VPS verification
-        if: success()
-        run: docker save dicecloud:runtime | gzip -1 > runtime-image.tar.gz
+        if: always()
+        run: |
+          if docker image inspect dicecloud:runtime >/dev/null 2>&1; then
+            docker save dicecloud:runtime | gzip -1 > runtime-image.tar.gz
+          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: success()
+        if: always() && hashFiles('runtime-image.tar.gz') != ''
         with:
           name: runtime-image
           path: runtime-image.tar.gz

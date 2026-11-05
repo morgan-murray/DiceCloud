@@ -1,1 +1,1 @@
-export const CreatureVariables = new Mongo.Collection(null);
+export { default as CreatureVariables } from '/imports/api/creature/creatures/CreatureVariables';

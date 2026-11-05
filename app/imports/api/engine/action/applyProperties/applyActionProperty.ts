@@ -97,7 +97,7 @@ export default async function applyActionProperty(
       subtaskFn: 'reset',
       eventName: prop.variableName,
       targetIds: [action.creatureId],
-    }, action, result, userInput);
+    }, action, result, userInput, applyTask);
   }
 
   // Finish

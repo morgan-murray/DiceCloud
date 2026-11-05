@@ -1,4 +1,5 @@
 import { debounce } from 'lodash';
+import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import type { Creature } from '/imports/api/creature/creatures/Creatures';
 import type { CreatureProperty, CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
 import computeCreature from './computeCreature';
@@ -118,7 +119,7 @@ export async function getPropertiesOfType<T extends PropertyType>(creatureId: st
  * @param filterFn A function that returns true if the given prop matches the filter
  * @param mongoFilter A mongo selector that is exactly equal to the above function
  */
-export function getPropertiesByFilter(
+export async function getPropertiesByFilter(
   creatureId: string,
   filterFn: (value: CreatureProperty, index: number, array: CreatureProperty[]) => unknown,
   mongoFilter: Mongo.Selector<CreatureProperty>
@@ -131,13 +132,13 @@ export function getPropertiesByFilter(
     return EJSON.clone(props);
   }
   console.time(`Cache miss on creature properties: ${creatureId}`)
-  const props = CreatureProperties.find({
+  const props = await CreatureProperties.find({
     'root.id': creatureId,
     'removed': { $ne: true },
     ...mongoFilter
   }, {
     sort: { left: 1 },
-  }).fetch();
+  }).fetchAsync();
   console.timeEnd(`Cache miss on creature properties: ${creatureId}`);
   return props;
 }
@@ -152,6 +153,11 @@ export async function getCreature(creatureId: string) {
   const creature = await Creatures.findOneAsync(creatureId);
   console.timeEnd(`Cache miss on Creature: ${creatureId}`);
   return creature;
+}
+
+export function setVariables(creatureId: string, variables: Variables) {
+  const loaded = loadedCreatures.get(creatureId);
+  if (loaded) loaded.variables = EJSON.clone(variables);
 }
 
 export function getVariables(creatureId: string): Variables {
@@ -185,7 +191,7 @@ export async function getPropertyAncestors(creatureId: string, propertyId: strin
       removed: { $ne: true },
     }, {
       sort: { left: 1 }
-    }).fetch();
+    }).fetchAsync();
   }
 }
 
@@ -214,7 +220,7 @@ export async function getPropertyDescendants(creatureId: string, propertyId: str
       removed: { $ne: true },
     }, {
       sort: { left: 1 },
-    }).fetch();
+    }).fetchAsync();
   }
 }
 
@@ -246,7 +252,7 @@ export async function getPropertyChildren(creatureId: string, property: string |
       removed: { $ne: true },
     }, {
       sort: { left: 1 },
-    }).fetch();
+    }).fetchAsync();
   }
 }
 
@@ -319,13 +325,18 @@ class LoadedCreature {
           loaded.removeCreature();
         },
       });
+      loaded.variablesObserver = await CreatureVariables.find({ _creatureId: creatureId }).observeChangesAsync({
+        added(id, fields) { loaded.variables = { ...fields, _creatureId: creatureId } as Variables; },
+        changed(id, fields) { loaded.changeVariables(id, fields); },
+        removed() { loaded.removeVariables(); },
+      });
     });
     return loaded;
   }
   stop() {
-    this.propertyObserver.stop();
-    this.creatureObserver.stop();
-    this.variablesObserver.stop();
+    this.propertyObserver?.stop();
+    this.creatureObserver?.stop();
+    this.variablesObserver?.stop();
   }
   addProperty(prop: CreatureProperty) {
     this.properties.set(prop._id, prop);

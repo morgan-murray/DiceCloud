@@ -1,3 +1,4 @@
+import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import Tabletops from '/imports/api/tabletop/Tabletops';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
@@ -88,7 +89,7 @@ Meteor.publish('tabletop', async function (tabletopId: string) {
       { spectators: userId },
     ]
   });
-  const tabletop = tabletopCursor.fetch()[0];
+  const tabletop = (await tabletopCursor.fetchAsync())[0];
   if (!tabletop) {
     return [];
   }
@@ -115,7 +116,7 @@ Meteor.publish('tabletop', async function (tabletopId: string) {
     },
     limit: 110, // Party vs 100 creatures was a fun encounter to run, so let's support that
   });
-  const creatureIds = creatureSummariesCursor.map(c => c._id);
+  const creatureIds = await creatureSummariesCursor.mapAsync(c => c._id);
 
   // Load all the creatures into memory
   for (const creatureId of creatureIds) {
@@ -139,6 +140,7 @@ Meteor.publish('tabletop', async function (tabletopId: string) {
 
   return [
     tabletopCursor,
+    CreatureVariables.find({ _creatureId: { $in: creatureIds } }, { limit: 110 }),
     creatureSummariesCursor,
     propertiesCursor,
     logsCursor,

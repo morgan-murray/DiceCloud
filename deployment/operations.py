@@ -13,6 +13,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 MARGIN = 3 * 1024**3
+PAYLOADS = {'database.archive.gz', 'files.tar', 'configuration.json'}
 
 
 def run(args, **kwargs):
@@ -52,7 +53,7 @@ def backup(args):
     capacity(destination.parent)
     destination.mkdir(mode=0o700)
     os.chmod(destination, 0o700)
-    app = output(args.env, args.project, 'ps', '-q', 'app')
+    app = output(args.env, args.project, 'ps', '-a', '-q', 'app')
     if not app:
         raise RuntimeError('Source application container does not exist')
     details = json.loads(run(['docker', 'inspect', app], capture_output=True, text=True).stdout)[0]
@@ -62,28 +63,42 @@ def backup(args):
         # Stop all application writers before dumping the standalone database and files.
         if was_running:
             compose(args.env, args.project, 'stop', '-t', '45', 'app')
+        database_bytes = int(output(args.env, args.project, 'exec', '-T', 'mongo', 'mongosh', '--quiet', '--eval',
+            "const fs=require('fs'); const d=db.getSiblingDB('dicecloud'); "
+            "d.auth('dicecloud',fs.readFileSync('/run/secrets/mongo_app_password','utf8').trim()); "
+            "const s=d.stats(); print(Math.ceil(Math.max(s.totalSize,s.dataSize+s.indexSize)));").splitlines()[-1])
+        files_bytes = int(output(args.env, args.project, 'run', '--rm', '--no-deps', '-T',
+            '--entrypoint', 'du', 'app', '-sb', '/var/lib/dicecloud').split()[0])
+        capacity(destination, int((database_bytes + files_bytes) * 1.2) + 1024**2)
+        configuration = destination / 'configuration.json'
+        configuration.write_text(output(args.env, args.project, 'config', '--format', 'json') + '\n')
+        configuration.chmod(0o600)
         with (destination / 'database.archive.gz').open('wb') as stream:
             compose(args.env, args.project, 'exec', '-T', 'mongo', 'sh', '-ec',
                     'exec mongodump --quiet --host 127.0.0.1 --username dicecloud '
                     '--password "$(cat /run/secrets/mongo_app_password)" '
                     '--authenticationDatabase dicecloud --db dicecloud --gzip --archive', stdout=stream)
+        capacity(destination)
         # A one-off app uses the same volume without starting Meteor.
         with (destination / 'files.tar').open('wb') as stream:
             compose(args.env, args.project, 'run', '--rm', '--no-deps', '-T',
                     '--entrypoint', 'tar', 'app', '-C', '/var/lib/dicecloud', '-cf', '-', '.', stdout=stream)
+        capacity(destination)
         for name in ['database.archive.gz', 'files.tar']:
             (destination / name).chmod(0o600)
         manifest = {
-            'format': 1, 'completed_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'format': 2, 'completed_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
             'source_project': args.project, 'image_id': image_id,
+            'database_bytes': database_bytes, 'files_bytes': files_bytes,
             'git_commit': run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip(),
             'compose_sha256': config_digest(args.env, args.project),
             'schema_note': 'Schema/migration records are included in the logical database dump.',
-            'sha256': {name: digest(destination / name) for name in ['database.archive.gz', 'files.tar']},
+            'sha256': {name: digest(destination / name) for name in sorted(PAYLOADS)},
         }
-        completed = destination / 'manifest.json'
+        completed = destination / '.manifest.tmp'
         completed.write_text(json.dumps(manifest, indent=2) + '\n')
         completed.chmod(0o600)
+        completed.rename(destination / 'manifest.json')
         print('Completed consistent backup:', destination)
     finally:
         if was_running:
@@ -95,12 +110,14 @@ def restore(args):
     if not re.fullmatch(r'dicecloud-restore-[a-z0-9][a-z0-9-]*', args.project):
         raise RuntimeError('Restore project must start dicecloud-restore- and identify a fresh disposable stack')
     manifest = json.loads((args.backup / 'manifest.json').read_text())
-    if manifest.get('format') != 1 or not manifest.get('completed_at_utc'):
+    if manifest.get('format') != 2 or not manifest.get('completed_at_utc'):
         raise RuntimeError('Unsupported or incomplete backup')
+    if set(manifest.get('sha256', {})) != PAYLOADS:
+        raise RuntimeError('Backup manifest must cover every required payload')
     if args.project == manifest['source_project']:
         raise RuntimeError('Cannot restore over the source project')
     for name, expected in manifest['sha256'].items():
-        if name not in ['database.archive.gz', 'files.tar'] or digest(args.backup / name) != expected:
+        if digest(args.backup / name) != expected:
             raise RuntimeError('Backup checksum mismatch')
     # Refuse even stopped containers and orphaned volumes with this project label.
     for kind in ['container', 'volume', 'network']:
@@ -108,8 +125,10 @@ def restore(args):
                        capture_output=True, text=True).stdout.strip()
         if existing:
             raise RuntimeError('Restore target already has Docker resources; choose a fresh project')
-    size = sum((args.backup / name).stat().st_size for name in manifest['sha256'])
-    capacity(ROOT, size * 5)
+    database_bytes, files_bytes = manifest.get('database_bytes'), manifest.get('files_bytes')
+    if not all(type(size) is int and size >= 0 for size in [database_bytes, files_bytes]):
+        raise RuntimeError('Backup manifest must record uncompressed recovery sizes')
+    capacity(ROOT, int((database_bytes + files_bytes) * 1.5) + 256 * 1024**2)
     config = json.loads(output(args.env, args.project, 'config', '--format', 'json'))
     # Recovery must use the exact retained image, not a mutable tag or a new schema.
     if config['services']['app']['image'] != manifest['image_id']:

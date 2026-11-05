@@ -5,7 +5,7 @@ import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
 import type { ResolvedResult } from '/imports/parser/types/ResolvedResult';
 import type { ResolveLevelFunction } from '/imports/parser/types/ResolveLevelFunction';
 
-const getFromScope = (await import('../../api/engine/shared/scope')).getFromScope;
+import { getFromScope } from '/imports/api/engine/shared/scope';
 
 export type AccessorNode = {
   parseType: 'accessor' | 'symbol';
@@ -48,14 +48,12 @@ const accessor: AccessorFactory = {
       value = (value as Record<string, unknown>)[name] as ValueType;
     });
     // If the accessor returns an object, get the object's value instead
-    while (value && typeof value === 'object' && !Array.isArray(value)) {
+    while (value && typeof value === 'object' && !Array.isArray(value) && !isParseNode(value)) {
       // Prefer the valueNode over the value
       if (value.valueNode) {
         value = value.valueNode as ValueType;
-      } else if (value.valueNode) {
-        value = value.value as ValueType;
       } else {
-        break;
+        value = value.value as ValueType;
       }
     }
     // Return a discovered parse node

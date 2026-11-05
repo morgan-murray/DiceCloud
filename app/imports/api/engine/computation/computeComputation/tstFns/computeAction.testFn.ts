@@ -9,6 +9,7 @@ export default async function () {
     _id: 'testCreatureId',
     props: testProperties,
   });
+  assert.deepEqual(computation.originalPropsById['arrowId'].icon, { name: 'itemIcon', shape: 'itemIconShape' }, 'Item icon survives schema cleaning');
   await computeCreatureComputation(computation);
 
   const prop = computation.propsById['actionId'] as CreaturePropertyTypes['action'];

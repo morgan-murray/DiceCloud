@@ -38,7 +38,7 @@ export class TypedSimpleSchema<T> extends SimpleSchema {
     return super.pick(...args) as unknown as TypedSimpleSchema<Pick<T, K>>;
   }
   omit<K extends keyof T & string>(...args: K[]): TypedSimpleSchema<Omit<T, K>> {
-    return super.pick(...args) as unknown as TypedSimpleSchema<Omit<T, K>>;
+    return super.omit(...args) as unknown as TypedSimpleSchema<Omit<T, K>>;
   }
   // Extending the schema with another schema &'s their definitions
   // In some cases, this is not strictly accurate, use with caution

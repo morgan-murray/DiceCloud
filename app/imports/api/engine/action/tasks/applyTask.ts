@@ -88,7 +88,7 @@ export default async function applyTask(
       }, task.targetIds);
       return;
     }
-    return applyProperties[prop.type](task, action, result, inputProvider);
+    return applyProperties[prop.type](task, action, result, inputProvider, applyTask);
   }
 }
 

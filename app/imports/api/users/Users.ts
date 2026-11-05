@@ -14,16 +14,16 @@ import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 const defaultLibraries = process.env.DEFAULT_LIBRARIES && process.env.DEFAULT_LIBRARIES.split(',') || [];
 const defaultLibraryCollections = process.env.DEFAULT_LIBRARY_COLLECTIONS && process.env.DEFAULT_LIBRARY_COLLECTIONS.split(',') || [];
 
-// Roles
-await Roles.createRoleAsync('contributor');
-await Roles.createRoleAsync('admin');
-
-// Permissions
-await Roles.createRoleAsync('DOCS_EDIT');
-
-// Hierarchy
-await Roles.addRolesToParentAsync('DOCS_EDIT', 'admin');
-await Roles.addRolesToParentAsync('DOCS_EDIT', 'contributor');
+// Create shared roles once the server database is available.
+if (Meteor.isServer) {
+  Meteor.startup(async () => {
+    await Roles.createRoleAsync('contributor');
+    await Roles.createRoleAsync('admin');
+    await Roles.createRoleAsync('DOCS_EDIT');
+    await Roles.addRolesToParentAsync('DOCS_EDIT', 'admin');
+    await Roles.addRolesToParentAsync('DOCS_EDIT', 'contributor');
+  });
+}
 
 const userSchema = TypedSimpleSchema.from({
   username: {

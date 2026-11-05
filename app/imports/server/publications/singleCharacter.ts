@@ -1,3 +1,4 @@
+import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import SimpleSchema from 'simpl-schema';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
@@ -55,6 +56,7 @@ Meteor.publish('singleCharacter', async function (creatureId: string) {
     }
   }
   return [
+    CreatureVariables.find({ _creatureId: creatureId }),
     Creatures.find({
       _id: creatureId,
     }),

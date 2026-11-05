@@ -12,6 +12,8 @@ import type { DependencyGraphNode } from '/imports/api/engine/computation/Creatu
 
 export default function computeVariable(computation: CreatureComputation, node: TraversedNode) {
   const scope = computation.scope;
+  // Links create virtual variable nodes without property data.
+  node.data ??= {} as DependencyGraphNode;
   // Don't add to the scope if the node id is not a legitimate variable name
   // Without this `some.thing` could break the entire sheet as a database key
   if (typeof node.id === 'number' || !VARIABLE_NAME_REGEX.test(node.id)) return;
@@ -30,6 +32,7 @@ function aggregateLinks(computation: CreatureComputation, node: TraversedNode) {
   computation.dependencyGraph.forEachLinkedNode(
     node.id,
     (linkedNode, link) => {
+      linkedNode.data ??= {} as DependencyGraphNode;
       // Ignore inactive props
       if ('inactive' in linkedNode.data && linkedNode.data.inactive) return;
       // Ignore point buy rows if their base table is inactive

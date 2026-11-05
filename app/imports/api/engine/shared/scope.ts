@@ -41,7 +41,7 @@ export async function getConstantValueFromScope(name: string, scope: Variables) 
 }
 
 export async function getParseNodeFromScope(name: string, scope: Variables): Promise<ParseNode | undefined> {
-  const value = await getFromScope(name, scope);
+  let value = await getFromScope(name, scope);
   if (!value) return;
   let valueType = getType(value);
   // Iterate into object.values

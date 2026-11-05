@@ -27,7 +27,7 @@ export default async function applySavingThrowProperty(
   }
 
   if (prop.dc) {
-    recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
+    await recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
   }
 
   if (!isFiniteNode(prop.dc?.valueNode)) {
@@ -60,7 +60,7 @@ export default async function applySavingThrowProperty(
   }
 
   // Each target makes the saving throw
-  const save = prop.stat ? getFromScope(prop.stat, getVariables(targetId)) : undefined;
+  const save = prop.stat ? await getFromScope(prop.stat, getVariables(targetId)) : undefined;
 
   if (!save) {
     result.appendLog({

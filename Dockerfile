@@ -21,6 +21,11 @@ COPY --chown=node:node deployment/bundle-package.json ./package.json
 COPY --chown=node:node deployment/bundle-npm-shrinkwrap.json ./npm-shrinkwrap.json
 RUN npm ci --omit=dev
 
+FROM build AS test
+WORKDIR /workspace/app
+ENV TEST_CLIENT=0 MOCHA_TIMEOUT=10000
+RUN npm run test:server
+
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production PORT=3000 BIND_IP=0.0.0.0
 WORKDIR /opt/dicecloud

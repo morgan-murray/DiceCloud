@@ -42,7 +42,7 @@ export default async function applyBuffProperty(
   // Get the buff and its descendants
   const propList = [
     EJSON.clone(prop),
-    ...getPropertyDescendants(action.creatureId, prop._id),
+    ...await getPropertyDescendants(action.creatureId, prop._id),
   ];
 
   // Crystallize the variables

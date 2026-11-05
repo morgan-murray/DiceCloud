@@ -89,7 +89,7 @@ export async function resetProperties(
     return true;
   }
 
-  const attributes = getPropertiesByFilter(creatureId, attributeFilterFunction, attributeFilter) as CreaturePropertyTypes['attribute'][];
+  const attributes = await getPropertiesByFilter(creatureId, attributeFilterFunction, attributeFilter) as CreaturePropertyTypes['attribute'][];
 
   for (const prop of attributes) {
     await applyTask(action, {
@@ -121,7 +121,7 @@ export async function resetProperties(
     return true;
   }
 
-  const actionProps = getPropertiesByFilter(
+  const actionProps = await getPropertiesByFilter(
     creatureId, actionFilterFunction, actionFilter
   ) as (CreaturePropertyTypes['action'] | CreaturePropertyTypes['spell'])[];
 

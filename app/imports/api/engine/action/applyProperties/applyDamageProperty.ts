@@ -270,7 +270,7 @@ async function dealDamage(
   targetId: string, damageType: string, amount: number
 ) {
   // Get all the health bars and do damage to them
-  let healthBars = getPropertiesOfType(targetId, 'attribute');
+  let healthBars = await getPropertiesOfType(targetId, 'attribute');
 
   // Keep only the healthbars that can take damage/healing
   healthBars = healthBars.filter((bar) => {

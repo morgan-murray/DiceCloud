@@ -15,7 +15,7 @@ describe('Compute computation', function () {
       writers: [],
     });
     const computation = buildComputationFromProps(testProperties, creature, {});
-    computeCreatureComputation(computation);
+    await computeCreatureComputation(computation);
     assert.exists(computation);
   });
   computeTests.forEach(test => it(test.text, test.fn));

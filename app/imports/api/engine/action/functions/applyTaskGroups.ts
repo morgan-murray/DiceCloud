@@ -4,7 +4,7 @@ import type { EngineAction } from '/imports/api/engine/action/EngineActions';
 import type { PropTask } from '../tasks/Task';
 import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import type { CreatureProperty } from '/imports/api/creature/creatureProperties/CreatureProperties';
-import type { ApplyTask } from '/imports/api/engine/action/tasks/applyTask';
+import defaultApplyTask, { type ApplyTask } from '/imports/api/engine/action/tasks/applyTask';
 
 /**
  * Get all the child tasks of a given property
@@ -18,7 +18,7 @@ export async function applyChildren(
   prop: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   const children = await getPropertyChildren(action.creatureId, prop);
   for (const childProp of children) {
@@ -37,7 +37,7 @@ export async function applyAfterChildrenTriggers(
   prop: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   if (!prop.triggerIds?.afterChildren) return;
   for (const triggerId of prop.triggerIds.afterChildren) {
@@ -52,7 +52,7 @@ export async function applyAfterTriggers(
   prop: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   if (!prop.triggerIds?.after) return;
   for (const triggerId of prop.triggerIds.after) {
@@ -77,7 +77,7 @@ export async function applyDefaultAfterPropTasks(
   prop: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   await applyAfterTriggers(action, prop, targetIds, inputProvider, applyTask);
   await applyChildren(action, prop, targetIds, inputProvider, applyTask);
@@ -98,7 +98,7 @@ export async function applyAfterTasksSkipChildren(
   prop: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   await applyAfterTriggers(action, prop, targetIds, inputProvider, applyTask);
   await applyAfterChildrenTriggers(action, prop, targetIds, inputProvider, applyTask);
@@ -119,7 +119,7 @@ export async function applyAfterPropTasksForSingleChild(
   childProp: CreatureProperty,
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   await applyAfterTriggers(action, prop, targetIds, inputProvider, applyTask);
   await applyTask(action, { prop: childProp, targetIds }, inputProvider);
@@ -141,7 +141,7 @@ export async function applyAfterPropTasksForSomeChildren(
   children: CreatureProperty[],
   targetIds: string[],
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   await applyAfterTriggers(action, prop, targetIds, inputProvider, applyTask);
   for (const childProp of children) {
@@ -164,7 +164,7 @@ export async function applyTriggers(
   targetIds: string[],
   triggerPath: string,
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   const triggerIds = get(prop, triggerPath);
   if (!triggerIds) return;
@@ -186,7 +186,7 @@ export async function applyTaskToEachTarget(
   task: PropTask,
   targetIds: string[] = task.targetIds,
   inputProvider: InputProvider,
-  applyTask: ApplyTask,
+  applyTask: ApplyTask = defaultApplyTask,
 ) {
   if (targetIds.length <= 1) throw 'Must have multiple targets to split a task';
   // If there are targets, apply a new task to each target
