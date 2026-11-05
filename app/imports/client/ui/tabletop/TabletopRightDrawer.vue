@@ -1,32 +1,28 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import TabletopLog from '/imports/client/ui/log/TabletopLog.vue';
+import { key } from '/imports/client/ui/vuexStore';
+
+const store = useStore(key);
+
+const drawer = computed({
+  get() {
+    return store.state.rightDrawer;
+  },
+  set(value) {
+    store.commit('setRightDrawer', value);
+  },
+});
+</script>
+
 <template lang="html">
   <v-navigation-drawer
     v-model="drawer"
-    app
-    right
-    clipped
+    location="right"
   >
     <tabletop-log :tabletop-id="$route.params.id" />
   </v-navigation-drawer>
 </template>
 
-<script lang="js">
-import TabletopLog from '/imports/client/ui/log/TabletopLog.vue';
-export default {
-  components: {
-    TabletopLog,
-  },
-  computed: {
-    drawer: {
-      get () {
-        return this.$store.state.rightDrawer;
-      },
-      set (value) {
-        this.$store.commit('setRightDrawer', value);
-      },
-    },
-  },
-}
-</script>
-
-<style lang="css" scoped>
-</style>
+<style lang="css" scoped></style>

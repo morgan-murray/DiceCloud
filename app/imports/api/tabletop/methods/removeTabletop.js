@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import Tabletops from '../Tabletops';
@@ -24,18 +24,18 @@ const removeTabletop = new ValidatedMethod({
     timeInterval: 5000,
   },
 
-  run({ tabletopId }) {
+  async run({ tabletopId }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.remove.denied',
         'You need to be logged in to remove a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertUserIsTabletopOwner(tabletopId, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertUserIsTabletopOwner(await Tabletops.findOneAsync(tabletopId), this.userId);
 
-    let removed = Tabletops.remove({
+    const removed = await Tabletops.removeAsync({
       _id: tabletopId,
     });
-    Creatures.update({
+    await Creatures.updateAsync({
       tabletop: tabletopId,
     }, {
       $unset: { tabletop: 1 },

@@ -1,4 +1,4 @@
-import { getFromScope } from '/imports/api/creature/creatures/CreatureVariables';
+import { getFromScope } from '../../shared/scope';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
 import { getEffectiveActionScope } from '/imports/api/engine/action/functions/getEffectiveActionScope';
 import recalculateCalculation from '/imports/api/engine/action/functions/recalculateCalculation';
@@ -54,7 +54,7 @@ export default async function spendResources(
       if (!itemConsumed.itemId) {
         throw 'No ammo was selected';
       }
-      const item = getSingleProperty(action.creatureId, itemConsumed.itemId);
+      const item = await getSingleProperty(action.creatureId, itemConsumed.itemId);
       if (!item || item.root.id !== prop.root.id) {
         throw 'The prop\'s ammo was not found on the creature';
       }

@@ -8,9 +8,9 @@ import { getSingleProperty } from '/imports/api/engine/loadCreatures';
 import resolve from '/imports/parser/resolve';
 import { getEffectiveActionScope } from '/imports/api/engine/action/functions/getEffectiveActionScope';
 import { CalculatedField } from '/imports/api/properties/subSchemas/computedField';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
-import ResolveLevel from '/imports/parser/types/ResolveLevel';
+import type { ResolveLevel } from '/imports/parser/types/ResolveLevel';
 import constant from '/imports/parser/parseTree/constant';
 
 export default async function recalculateCalculation(
@@ -32,14 +32,17 @@ export default async function recalculateCalculation(
   if (calcObj.effectIds || calcObj.proficiencyIds) {
     calcObj.unaffected = toPrimitiveOrString(calcObj.valueNode);
   }
+  const referencedIds = [...new Set([...(calcObj.effectIds || []), ...(calcObj.proficiencyIds || [])])];
+  const referencedProps = new Map(await Promise.all(referencedIds.map(async id => [id, await getSingleProperty(action.creatureId, id)] as const)));
+  // Aggregation callbacks are synchronous; finish async lookups before applying them.
   // Apply all the effects and proficiencies
   aggregateCalculationEffects(
     calcObj,
-    (id: string) => getSingleProperty(action.creatureId, id)
+    (id: string) => referencedProps.get(id)
   );
   aggregateCalculationProficiencies(
     calcObj,
-    (id: string) => getSingleProperty(action.creatureId, id),
+    (id: string) => referencedProps.get(id),
     scope['proficiencyBonus']?.value || 0
   );
 

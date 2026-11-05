@@ -1,5 +1,5 @@
 import SCHEMA_VERSION from '/imports/constants/SCHEMA_VERSION';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import Creatures from '/imports/api/creature/creatures/Creatures';
@@ -17,7 +17,7 @@ if (Meteor.isServer) {
   migrateArchive = require('/imports/migrations/archive/migrateArchive').default;
 }
 
-function restoreCreature(archive, userId) {
+async function restoreCreature(archive, userId) {
   if (SCHEMA_VERSION < archive.meta.schemaVersion) {
     throw new Meteor.Error('Incompatible',
       'The archive file is from a newer version. Update required to read.')
@@ -30,7 +30,7 @@ function restoreCreature(archive, userId) {
   verifyArchiveSafety(archive);
 
   // Don't upload creatures twice
-  const existingCreature = Creatures.findOne(archive.creature._id, {
+  const existingCreature = await Creatures.findOneAsync(archive.creature._id, {
     fields: { _id: 1 }
   });
   if (existingCreature) throw new Meteor.Error('Already exists',
@@ -41,21 +41,27 @@ function restoreCreature(archive, userId) {
 
   // Insert the creature sub documents
   // They still have their original _id's
-  Creatures.insert(archive.creature);
+  await Creatures.insertAsync(archive.creature);
   try {
     // Add all the properties
     if (archive.properties && archive.properties.length) {
-      CreatureProperties.batchInsert(archive.properties);
+      for (const prop of archive.properties) {
+        await CreatureProperties.insertAsync(prop);
+      }
     }
     if (archive.experiences && archive.experiences.length) {
-      Experiences.batchInsert(archive.experiences);
+      for (const exp of archive.experiences) {
+        await Experiences.insertAsync(exp);
+      }
     }
     if (archive.logs && archive.logs.length) {
-      CreatureLogs.batchInsert(archive.logs);
+      for (const log of archive.logs) {
+        await CreatureLogs.insertAsync(log);
+      }
     }
   } catch (e) {
     // If the above fails, delete the inserted creature
-    removeCreatureWork(archive.creature._id);
+    await removeCreatureWork(archive.creature._id);
     throw e;
   }
 }
@@ -74,8 +80,9 @@ const restoreCreaturefromFile = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run({ fileId }) {
+    if (!Meteor.isServer) return;
     // fetch the file
-    const file = ArchiveCreatureFiles.findOne({ _id: fileId }).get();
+    const file = (await ArchiveCreatureFiles.findOneAsync({ _id: fileId }))?.get();
     if (!file) {
       throw new Meteor.Error('File not found',
         'The requested creature archive does not exist');
@@ -87,17 +94,17 @@ const restoreCreaturefromFile = new ValidatedMethod({
         'You can only restore creatures you own');
     }
 
-    assertHasCharactersSlots(this.userId);
+    await assertHasCharactersSlots(this.userId);
 
     if (Meteor.isServer) {
       // Read the file data
       const archive = await ArchiveCreatureFiles.readJSONFile(file);
-      restoreCreature(archive, this.userId);
+      await restoreCreature(archive, this.userId);
     }
     //Remove the archive once the restore succeeded
-    ArchiveCreatureFiles.remove({ _id: fileId });
+    await ArchiveCreatureFiles.removeAsync({ _id: fileId });
     // Update the user's file storage limits
-    incrementFileStorageUsed(userId, -file.size);
+    await incrementFileStorageUsed(userId, -file.size);
   },
 });
 

@@ -173,7 +173,7 @@ describe('Triggers', function () {
     ];
     for (const log of expectedLogs) try {
       const type = log.type;
-      const actionProp = CreatureProperties.findOne(idMap[type]);
+      const actionProp = await CreatureProperties.findOneAsync(idMap[type]);
       assert.deepEqual(actionProp?.triggerIds, {
         before: [idMap[type + 'Before']],
         after: [idMap[type + 'After']],
@@ -228,7 +228,7 @@ describe('Triggers', function () {
     };
     await createTestCreature(creature);
     const action = await runActionById(actionId, [creature._id]);
-    const actionProp = CreatureProperties.findOne(actionId);
+    const actionProp = await CreatureProperties.findOneAsync(actionId);
     assert.exists(actionProp);
     assert.deepEqual(actionProp?.triggerIds, {
       before: [triggerId],

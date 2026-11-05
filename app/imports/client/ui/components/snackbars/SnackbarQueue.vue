@@ -1,15 +1,89 @@
+<script setup lang="ts">
+// Modified from https://gitlab.com/tozd/vue/snackbar-queue
+import { ref, watch, watchEffect, onMounted } from 'vue';
+import { globalState } from '/imports/client/ui/components/snackbars/SnackbarQueue';
+import LogContent from '/imports/client/ui/log/LogContent.vue';
+
+const props = withDefaults(defineProps<{
+  timeout?: number;
+  pause?: number;
+}>(), {
+  timeout: 15000,
+  pause: 300,
+});
+
+const isShown = ref(false);
+const snackbar = ref<Record<string, any> | null>(null);
+
+let handle: ReturnType<typeof setTimeout> | null = null;
+let unwait: (() => void) | null = null;
+
+watch(isShown, (newValue) => {
+  if (newValue === false && snackbar.value) {
+    const snackbarIndex = globalState.queue.findIndex((element) => element.id === snackbar.value?.id);
+    if (snackbarIndex > -1) {
+      globalState.queue.splice(snackbarIndex, 1);
+    }
+    snackbar.value = null;
+  }
+});
+
+function clearSnackbarState() {
+  if (handle) {
+    clearTimeout(handle);
+    handle = null;
+  }
+  if (unwait) {
+    unwait();
+    unwait = null;
+  }
+}
+
+function showNextSnackbar() {
+  clearSnackbarState();
+
+  const stop = watchEffect(() => {
+    const next = globalState.queue.find((element) => element.shown === false);
+    if (!next) return;
+
+    stop();
+    unwait = null;
+
+    next.shown = true;
+    snackbar.value = next;
+    isShown.value = true;
+
+    handle = setTimeout(() => {
+      handle = null;
+      showNextSnackbar();
+    }, props.timeout + props.pause);
+  });
+  unwait = stop;
+}
+
+function closeSnackbar() {
+  clearSnackbarState();
+  isShown.value = false;
+  setTimeout(() => {
+    showNextSnackbar();
+  }, props.pause);
+}
+
+onMounted(() => {
+  showNextSnackbar();
+});
+</script>
+
 <template lang="html">
   <v-snackbar
-    bottom
-    left
-    outlined
+    location="bottom start"
     color="accent"
     v-bind="$attrs"
-    :value="isShown"
+    :model-value="isShown"
     :timeout="timeout"
-    @input="value => isShown = value"
+    @update:model-value="value => isShown = value"
   >
-    <div class="layout align-center">
+    <div class="d-flex align-center">
       <template v-if="snackbar && snackbar.data">
         <div v-if="snackbar.data.text">
           {{ snackbar.data.text }}
@@ -21,17 +95,17 @@
         <v-btn
           v-if="snackbar.data.callback"
           color="primary"
-          text
+          variant="text"
           @click="closeSnackbar(); snackbar.data.callback()"
         >
           {{ snackbar.data.callbackName }}
         </v-btn>
       </template>
     </div>
-    <template #action="{ attrs }">
+    <template #actions="{ isActive }">
       <v-btn
         icon
-        v-bind="attrs"
+        v-bind="isActive"
         @click="closeSnackbar"
       >
         <v-icon>mdi-close</v-icon>
@@ -39,92 +113,3 @@
     </template>
   </v-snackbar>
 </template>
-
-<script lang="js">
-// Modified from https://gitlab.com/tozd/vue/snackbar-queue
-import { globalState } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import LogContent from '/imports/client/ui/log/LogContent.vue';
-
-export default {
-  components: {
-    LogContent,
-  },
-  props: {
-    timeout: {
-      type: Number,
-      default: 15000,
-    },
-    pause: {
-      type: Number,
-      default: 300,
-    },
-  },
-  data() {
-    return {
-      isShown: false,
-      snackbar: null,
-    };
-  },
-  watch: {
-    isShown(newValue) {
-      if (newValue === false && this.snackbar) {
-        const snackbarIndex = globalState.queue.findIndex((element) => element.id === this.snackbar.id);
-        if (snackbarIndex > -1) {
-          globalState.queue.splice(snackbarIndex, 1);
-        }
-        this.snackbar = null;
-      }
-    },
-  },
-  created() {
-    this.handle = null;
-    this.unwait = null;
-    this.showNextSnackbar();
-  },
-  methods: {
-    clearSnackbarState() {
-      if (this.handle) {
-        clearTimeout(this.handle);
-        this.handle = null;
-      }
-
-      if (this.unwait) {
-        this.unwait();
-        this.unwait = null;
-      }
-    },
-    showNextSnackbar() {
-      this.clearSnackbarState();
-
-      // Wait for the first next snackbar to be available.
-      this.unwait = this.$wait(function () {
-        // Snackbars are enqueued from oldest to newest and "find" searches array elements in
-        // same order as well, so the first one which matches is also the oldest one.
-        return globalState.queue.find((element) => element.shown === false);
-      }, function (snackbar) {
-        this.unwait = null;
-
-        snackbar.shown = true;
-
-        this.snackbar = snackbar;
-        this.isShown = true;
-
-        this.handle = setTimeout(() => {
-          this.handle = null;
-
-          this.showNextSnackbar();
-        }, this.timeout + this.pause);
-      });
-    },
-    closeSnackbar() {
-      this.clearSnackbarState();
-
-      this.isShown = false;
-
-      setTimeout(() => {
-        this.showNextSnackbar();
-      }, this.pause);
-    },
-  },
-};
-</script>

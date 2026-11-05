@@ -1,6 +1,6 @@
 import { some, includes, difference, intersection } from 'lodash';
 
-import { getConstantValueFromScope } from '/imports/api/creature/creatures/CreatureVariables';
+import { getConstantValueFromScope } from '../../shared/scope';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
 import { applyDefaultAfterPropTasks } from '/imports/api/engine/action/functions/applyTaskGroups';
 import { getEffectiveActionScope } from '/imports/api/engine/action/functions/getEffectiveActionScope';
@@ -12,7 +12,7 @@ import resolve from '/imports/parser/resolve';
 import toString from '/imports/parser/toString';
 import { getPropertiesOfType } from '/imports/api/engine/loadCreatures';
 import applyTask from '/imports/api/engine/action/tasks/applyTask';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import getEffectivePropTags from '/imports/api/engine/computation/utility/getEffectivePropTags';
 import Context from '/imports/parser/types/Context';
 import applySavingThrowProperty from '/imports/api/engine/action/applyProperties/applySavingThrowProperty';
@@ -270,7 +270,7 @@ async function dealDamage(
   targetId: string, damageType: string, amount: number
 ) {
   // Get all the health bars and do damage to them
-  let healthBars = getPropertiesOfType(targetId, 'attribute');
+  let healthBars = await getPropertiesOfType(targetId, 'attribute');
 
   // Keep only the healthbars that can take damage/healing
   healthBars = healthBars.filter((bar) => {

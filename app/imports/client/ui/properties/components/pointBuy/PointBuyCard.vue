@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import { ref, computed, inject } from 'vue';
+import { useTheme } from 'vuetify';
+import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
+
+withDefaults(defineProps<{
+  model?: Record<string, any>;
+}>(), {
+  model: undefined,
+});
+
+const theme = inject('theme', { isDark: false } as any);
+const vuetify = useTheme();
+const hover = ref(false);
+
+const accentColor = computed(() => {
+  if ((theme).isDark) {
+    return vuetify.themes.value['dark']?.colors?.primary;
+  } else {
+    return vuetify.themes.value['light']?.colors?.primary;
+  }
+});
+</script>
+
 <template>
   <v-card
     v-if="model"
@@ -35,38 +59,3 @@
     </v-card-actions>
   </v-card>
 </template>
-
-<script lang="js">
-import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
-
-export default {
-  components: {
-    CardHighlight,
-  },
-  inject: {
-    theme: {
-      default: {
-        isDark: false,
-      },
-    },
-  },
-  props: {
-    model: {
-      type: Object,
-      default: undefined,
-    },
-  },
-  data(){ return {
-    hover: false,
-  }},
-  computed: {
-    accentColor(){
-      if (this.theme.isDark){
-        return this.$vuetify.theme.themes.dark.primary;
-      } else {
-        return this.$vuetify.theme.themes.light.primary;
-      }
-    }
-  },
-}
-</script>

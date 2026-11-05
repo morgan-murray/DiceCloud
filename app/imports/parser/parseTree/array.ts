@@ -1,27 +1,21 @@
 import { serialMap } from '/imports/api/utility/asyncMap';
 import constant from '/imports/parser/parseTree/constant';
-import ParseNode from '/imports/parser/parseTree/ParseNode';
-import ResolveFunction from '/imports/parser/types/ResolveFunction';
-import MapFunction from '/imports/parser/types/MapFunction';
-import TraverseFunction from '/imports/parser/types/TraverseFunction';
-import ToStringFunction from '/imports/parser/types/ToStringFunction';
+import type { ParseNode } from '/imports/parser/parseTree/ParseNode';
+import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
+import type { ResolveFunction } from '/imports/parser/types/ResolveFunction';
 
 export type ArrayNode = {
   parseType: 'array';
   values: ParseNode[];
 }
 
-type ArrayFactory = {
-  create(node: Partial<ArrayNode>): ArrayNode;
+type ArrayFactory = ParseNodeFactory<ArrayNode> & {
   fromConstantArray(array: (string | number | boolean | undefined)[]): ArrayNode;
   resolve: ResolveFunction<ArrayNode>;
-  toString: ToStringFunction<ArrayNode>;
-  traverse: TraverseFunction<ArrayNode>;
-  map: MapFunction<ArrayNode>;
 }
 
 const arrayFactory: ArrayFactory = {
-  create({ values }: { values: ParseNode[] }) {
+  create({ values }: { values: ParseNode[] }): ArrayNode {
     return {
       parseType: 'array',
       values,

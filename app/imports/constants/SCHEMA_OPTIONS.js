@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 
 const SCHEMA_OPTIONS = {
   clean: {

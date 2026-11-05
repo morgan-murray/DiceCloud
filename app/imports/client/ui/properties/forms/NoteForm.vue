@@ -1,3 +1,12 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), {
+  errors: () => ({}),
+});
+</script>
+
 <template lang="html">
   <div class="feature-form">
     <inline-computation-field
@@ -26,11 +35,3 @@
     </form-sections>
   </div>
 </template>
-
-<script lang="js">
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-
-export default {
-  mixins: [propertyFormMixin],
-}
-</script>

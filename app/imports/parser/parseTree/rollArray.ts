@@ -1,10 +1,11 @@
 import constant from '/imports/parser/parseTree/constant';
-import ResolveLevelFunction from '/imports/parser/types/ResolveLevelFunction';
-import ToStringFunction from '/imports/parser/types/ToStringFunction';
+import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
+import type { ResolveLevelFunction } from '/imports/parser/types/ResolveLevelFunction';
 
 type RollValue = {
   value: number,
   disabled?: true,
+  disabledBy?: string,
   italics?: true,
   bold?: true,
   underline?: true,
@@ -17,11 +18,11 @@ export type RollArrayNode = {
   diceNum: number,
 }
 
-type RollArrayFactory = {
-  create(input: { values: number[], diceSize: number, diceNum: number }): RollArrayNode;
+type RollArrayFactory = ParseNodeFactory<RollArrayNode, {
+  values: number[], diceSize: number, diceNum: number
+}> & {
   compile: ResolveLevelFunction<RollArrayNode>;
   reduce: ResolveLevelFunction<RollArrayNode>;
-  toString: ToStringFunction<RollArrayNode>;
 }
 
 const rollArray: RollArrayFactory = {
@@ -35,27 +36,33 @@ const rollArray: RollArrayFactory = {
       diceNum,
     };
   },
-  async compile(node, scope, context) {
-    return {
+  compile(node, scope, context) {
+    return Promise.resolve({
       result: node,
       context
-    };
+    });
   },
   toString(node) {
     return `${node.diceNum || ''}d${node.diceSize} [${valuesToString(node.values)}]`;
   },
-  async reduce(node, scope, context) {
+  reduce(node, scope, context) {
     const total = node.values.reduce((a, b) => {
       if (b.disabled) return a;
       return a + b.value;
     }, 0);
-    return {
+    return Promise.resolve({
       result: constant.create({
         value: total,
       }),
       context,
-    };
+    });
   },
+  traverse(node, fn) {
+    return fn(node);
+  },
+  map(node, fn) {
+    return fn(node);
+  }
 }
 
 function valuesToString(values: RollValue[]) {

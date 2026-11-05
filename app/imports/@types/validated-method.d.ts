@@ -1,27 +1,35 @@
 declare module 'meteor/mdg:validated-method' {
-  interface ValidatedMethodOptionsMixinFields<TRunArg, TRunReturn> {
-    rateLimit: {
-      numRequests: number,
-      timeInterval: number,
+  type Mixin = (options: ValidatedMethodOptions<unknown, unknown>) => ValidatedMethodOptions<unknown, unknown>;
+
+  interface ValidatedMethodOptions<TArgs, TResult> {
+    name: string;
+    validate: ((args: TArgs) => void) | null;
+    run: (this: MethodContext, args: TArgs) => TResult;
+    mixins?: Mixin[];
+    rateLimit?: {
+      numRequests: number;
+      timeInterval: number;
     };
+    [key: string]: unknown;
   }
-  type Return<TFunc> = TFunc extends (...args: any[]) => infer TReturn ? TReturn : never;
-  type Argument<TFunc> = TFunc extends (...args: infer TArgs) => any ? TArgs extends [infer TArg] ? TArg
-    : NoArguments
-    : never;
-  interface ValidatedMethod<TName extends string, TRun extends (...args: any[]) => any> {
-    callAsync: Argument<TRun> extends NoArguments
-    // methods with no argument can be called with () or just a callback
-    ?
-    & ((unusedArg: any, callback?: (error: Meteor.Error, result: Return<TRun>) => void) => void)
-    & ((callback?: (error: Meteor.Error | undefined, result: Return<TRun>) => void) => void)
-    & (() => Return<TRun>)
-    // methods with arguments require those arguments to be called
-    :
-    & ((
-      arg: Argument<TRun>,
-      callback?: (error: Meteor.Error | undefined, result: Return<TRun>) => void,
-    ) => void)
-    & ((arg: Argument<TRun>) => Return<TRun>);
+
+  interface MethodContext {
+    userId: string | null;
+    isSimulation: boolean;
+    connection: Meteor.Connection | null;
+    setUserId(userId: string | null): void;
+    unblock(): void;
   }
+
+  export class ValidatedMethod<TArgs, TResult> {
+    constructor(options: ValidatedMethodOptions<TArgs, TResult>);
+    name: string;
+    call(args: TArgs, callback?: (error: Meteor.Error | undefined, result?: TResult) => void): TResult | undefined;
+    callAsync(args: TArgs): Promise<TResult>;
+    _execute(context: Partial<MethodContext>, args: TArgs): TResult;
+  }
+}
+
+declare module 'ddp-rate-limiter-mixin' {
+  export const RateLimiterMixin: <T>(options: T) => T;
 }

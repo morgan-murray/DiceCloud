@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import PropertyDescription from '/imports/client/ui/properties/viewers/shared/PropertyDescription.vue';
+
+const props = defineProps<{ model: Record<string, any> }>();
+</script>
+
 <template>
   <div
     class="octagon-border my-1"
@@ -27,22 +33,3 @@
     />
   </div>
 </template>
-
-<script lang="js">
-import PropertyDescription from '/imports/client/ui/properties/viewers/shared/PropertyDescription.vue';
-
-export default {
-  components: {
-    PropertyDescription,
-  },
-  props: {
-    model: {
-      type: Object,
-      required: true,
-    },
-  },
-  computed: {
-    
-  }
-}
-</script>

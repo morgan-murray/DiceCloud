@@ -2,7 +2,6 @@ import '/imports/api/simpleSchemaConfig.js';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
 import propsFromForest, { ForestProp } from '/imports/api/engine/computation/utility/propsFromForest.testFn';
 import Creatures from '/imports/api/creature/creatures/Creatures';
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import computeCreature from '/imports/api/engine/computeCreature';
 import { loadCreature, unloadAllCreatures } from '/imports/api/engine/loadCreatures';
 import EngineActions, { EngineAction } from '/imports/api/engine/action/EngineActions';
@@ -14,16 +13,14 @@ import inputProvider from './userInput/inputProviderForTests.testFn';
  */
 export async function removeAllCreaturesAndProps() {
   if (Meteor.isServer) {
-    unloadAllCreatures();
+    await unloadAllCreatures();
     return Promise.all([
       CreatureProperties.removeAsync({}),
       Creatures.removeAsync({}),
-      CreatureVariables.removeAsync({}),
     ]);
   } else {
     CreatureProperties.find({}).forEach(doc => CreatureProperties.remove(doc._id));
     Creatures.find({}).forEach(doc => Creatures.remove(doc._id));
-    CreatureVariables.find({}).forEach((doc: any) => CreatureVariables.remove(doc._id));
   }
 }
 
@@ -44,7 +41,7 @@ export async function createTestCreature(creature: TestCreature) {
     return CreatureProperties.insertAsync(prop);
   });
   await Promise.all(propsInserted);
-  loadCreature(creature._id, dummySubscription);
+  await loadCreature(creature._id, dummySubscription);
   await computeCreature(creature._id,);
 }
 

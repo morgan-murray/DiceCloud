@@ -6,7 +6,7 @@ import { getPropertiesOfType, getPropertyAncestors } from '/imports/api/engine/l
 import getEffectivePropTags from '/imports/api/engine/computation/utility/getEffectivePropTags';
 import { applyDefaultAfterPropTasks, applyTaskToEachTarget } from '/imports/api/engine/action/functions/applyTaskGroups';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
 
 export default async function applyBuffRemoverProperty(
@@ -40,7 +40,7 @@ export default async function applyBuffRemoverProperty(
   // Remove buffs
   if (prop.targetParentBuff) {
     // Remove nearest ancestor buff
-    const ancestors = getPropertyAncestors(action.creatureId, prop._id);
+    const ancestors = await getPropertyAncestors(action.creatureId, prop._id);
     const nearestBuff = findLast(ancestors, ancestor => ancestor.type === 'buff');
     if (!nearestBuff) {
       result.appendLog({
@@ -53,7 +53,7 @@ export default async function applyBuffRemoverProperty(
     removeBuff(nearestBuff, prop, result);
   } else {
     // Get all the buffs targeted by tags
-    const allBuffs = getPropertiesOfType(targetId, 'buff');
+    const allBuffs = await getPropertiesOfType(targetId, 'buff');
     const targetedBuffs = filter(allBuffs, (buff): boolean => {
       if (buff.inactive) return false;
       if (buffRemoverMatchTags(prop, buff)) return true;

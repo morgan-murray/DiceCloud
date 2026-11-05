@@ -1,33 +1,165 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import { autorun, subscribe } from 'vue-meteor-tracker';
+import {
+  setPublic,
+  setReadersCanCopy,
+  updateUserSharePermissions,
+} from '/imports/api/sharing/sharing';
+import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
+import type { Shared } from '/imports/api/sharing/SharingSchema';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = defineProps<{
+  docRef: any;
+}>();
+
+const store = useStore(key);
+const userSearched = ref<string | undefined>(undefined);
+const userFoundState = ref<'idle' | 'found' | 'notFound' | 'failed'>('idle');
+const userId = ref<string | undefined>(undefined);
+
+const { result: model } = autorun(() => {
+  if (!props.docRef || !props.docRef.id) return undefined;
+  return fetchDocByRef<Shared & { _id: string }>(props.docRef);
+});
+
+const { ready: userProfilesReady } = subscribe(() => {
+  if (!model.value) return false;
+  const m = model.value;
+  return ['userPublicProfiles', m.owner, ...m.writers, ...m.readers];
+});
+
+const location = ref(window.location);
+
+const { result: sharedUsers } = autorun(() => {
+  if (!model.value) return [];
+  const m = model.value as any;
+  const users: any[] = [];
+  Meteor.users.find({ _id: { $in: m.readers } }).forEach((user: any) => {
+    user.permission = 'reader';
+    users.push(user);
+  });
+  Meteor.users.find({ _id: { $in: m.writers } }).forEach((user: any) => {
+    user.permission = 'writer';
+    users.push(user);
+  });
+  users.sort((a, b) => {
+    if (a.username < b.username) return -1;
+    if (a.username > b.username) return 1;
+    return 0;
+  });
+  return users;
+});
+
+async function setSheetPublic({ value, ack }: { value: string; ack: Function }) {
+  try {
+    await setPublic.callAsync({
+      docRef: props.docRef,
+      isPublic: value === 'true',
+    });
+    ack();
+  } catch (error: any) {
+    ack(error.reason || error);
+  }
+}
+
+async function setReadersCanCopyFn({ value, ack }: { value: string; ack: Function }) {
+  try {
+    await setReadersCanCopy.callAsync({
+      docRef: props.docRef,
+      readersCanCopy: value === 'true',
+    });
+    ack();
+  } catch (error: any) {
+    ack(error.reason || error);
+  }
+}
+
+async function getUser({ value, ack }: { value: string; ack: Function }) {
+  userSearched.value = value;
+  if (!value) {
+    userFoundState.value = 'idle';
+    ack();
+    return;
+  }
+  try {
+    const result = await Meteor.users.findUserByUsernameOrEmail.callAsync({
+      usernameOrEmail: value,
+    });
+    userId.value = result;
+    if (result) {
+      if (result === (model.value as any)?.owner) {
+        userFoundState.value = 'failed';
+        ack('User is already the owner');
+      } else {
+        userFoundState.value = 'found';
+        ack();
+      }
+    } else {
+      userFoundState.value = 'notFound';
+      ack('User not found');
+    }
+  } catch (error: any) {
+    ack(error.reason || error);
+    userFoundState.value = 'failed';
+  }
+}
+
+function updateSharing(uid: string | undefined, role: string) {
+  if (!uid) return;
+  updateUserSharePermissions.callAsync({
+    docRef: props.docRef,
+    userId: uid,
+    role,
+  });
+}
+
+function makeOwner(user: any) {
+  store.commit('pushDialogStack', {
+    component: 'transfer-ownership-dialog',
+    elementId: 'menu-' + user._id,
+    data: {
+      docRef: props.docRef,
+      user,
+    },
+  });
+}
+</script>
+
 <template lang="html">
   <dialog-base>
-    <v-toolbar-title slot="toolbar">
-      Sharing
-    </v-toolbar-title>
+    <template #toolbar>
+      <v-toolbar-title>
+        Sharing
+      </v-toolbar-title>
+    </template>
     <div v-if="model">
       <smart-select
         label="Who can view"
         :items="[
-          {text: 'Only people I share with', value: 'false'},
-          {text: 'Anyone with link', value: 'true'}
+          { text: 'Only people I share with', value: 'false' },
+          { text: 'Anyone with link', value: 'true' }
         ]"
         :value="!!model.public + ''"
-        @change="(value, ack) => setSheetPublic({value, ack})"
+        @change="(value, ack) => setSheetPublic({ value, ack })"
       />
       <smart-select
         v-if="docRef.collection === 'libraries'"
         label="Who can copy from this library"
         :items="[
-          {text: 'Only people with edit permission', value: 'false'},
-          {text: 'Anyone with read permission', value: 'true'}
+          { text: 'Only people with edit permission', value: 'false' },
+          { text: 'Anyone with read permission', value: 'true' }
         ]"
         :value="!!model.readersCanCopy + ''"
-        @change="(value, ack) => setReadersCanCopy({value, ack})"
+        @change="(value, ack) => setReadersCanCopyFn({ value, ack })"
       />
       <text-field
         v-if="model.public && docRef.collection === 'libraries'"
         readonly
         label="Link"
-        :value="window.location.origin + $router.resolve({
+        :value="location.origin + $router.resolve({
           name: 'singleLibrary',
           params: { id: model._id },
         }).href"
@@ -37,7 +169,7 @@
           label="Username or email"
           :value="userSearched"
           :debounce-time="300"
-          @change="(value, ack) => getUser({value, ack})"
+          @change="(value, ack) => getUser({ value, ack })"
         />
         <v-btn
           class="ml-2 mt-2"
@@ -47,32 +179,27 @@
           Share
         </v-btn>
       </div>
-      <v-list
-        two-lines
-        class="sharedWith"
-      >
+      <v-list class="sharedWith">
         <v-list-item
           v-for="user in sharedUsers"
           :key="user._id"
         >
-          <v-list-item-content>
-            <v-list-item-title>
-              {{ user.username || user._id }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              {{ user.permission === 'writer' ? 'Can edit' : 'Can view' }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
+          <v-list-item-title>
+            {{ user.username || user._id }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ user.permission === 'writer' ? 'Can edit' : 'Can view' }}
+          </v-list-item-subtitle>
+          <template #append>
             <v-menu
-              bottom
-              left
+              location="bottom left"
+              
               :data-id="'menu-' + user._id"
             >
-              <template #activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   icon
-                  v-on="on"
+                  v-bind="props"
                 >
                   <v-icon>mdi-dots-vertical</v-icon>
                 </v-btn>
@@ -82,183 +209,55 @@
                   v-if="user.permission === 'reader'"
                   @click="updateSharing(user._id, 'writer')"
                 >
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-pencil</v-icon>
-                  </v-list-item-action>
+                  </template>
                   <v-list-item-title>Can edit</v-list-item-title>
                 </v-list-item>
                 <v-list-item
                   v-if="user.permission === 'writer'"
                   @click="updateSharing(user._id, 'reader')"
                 >
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-eye</v-icon>
-                  </v-list-item-action>
+                  </template>
                   <v-list-item-title>View only</v-list-item-title>
                 </v-list-item>
                 <v-list-item
                   v-if="user.permission === 'writer'"
                   @click="makeOwner(user)"
                 >
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-signature</v-icon>
-                  </v-list-item-action>
+                  </template>
                   <v-list-item-title>Transfer Ownership</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="updateSharing(user._id, 'none')">
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-delete</v-icon>
-                  </v-list-item-action>
+                  </template>
                   <v-list-item-title>Remove</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
-          </v-list-item-action>
+          </template>
         </v-list-item>
       </v-list>
       <v-fade-transition>
         <v-progress-circular
-          v-if="!$subReady.userPublicProfiles"
+          v-if="!userProfilesReady"
           indeterminate
         />
       </v-fade-transition>
     </div>
-    <v-spacer slot="actions" />
-    <v-btn
-      slot="actions"
-      text
-      @click="$store.dispatch('popDialogStack')"
-    >
-      Done
-    </v-btn>
+    <template #actions>
+      <v-spacer />
+      <v-btn
+        variant="text"
+        @click="store.dispatch('popDialogStack')"
+      >
+        Done
+      </v-btn>
+    </template>
   </dialog-base>
 </template>
-
-<script lang="js">
-import {
-  setPublic,
-  setReadersCanCopy,
-  updateUserSharePermissions
-} from '/imports/api/sharing/sharing';
-import { fetchDocByRef } from '/imports/api/parenting/parentingFunctions';
-import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
-
-export default {
-  components: {
-    DialogBase,
-  },
-  props: {
-    docRef: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      userSearched: undefined,
-      userFoundState: 'idle',
-      userId: undefined,
-    }
-  },
-  methods: {
-    setSheetPublic({ value, ack }) {
-      setPublic.call({
-        docRef: this.docRef,
-        isPublic: value === 'true',
-      }, (error) => {
-        ack(error && error.reason || error);
-      });
-    },
-    setReadersCanCopy({ value, ack }) {
-      setReadersCanCopy.call({
-        docRef: this.docRef,
-        readersCanCopy: value === 'true',
-      }, (error) => {
-        ack(error && error.reason || error);
-      });
-    },
-    getUser({ value, ack }) {
-      this.userSearched = value;
-      if (!value) {
-        this.userFoundState = 'idle';
-        ack();
-        return;
-      }
-      Meteor.users.findUserByUsernameOrEmail.call({
-        usernameOrEmail: value
-      }, (error, result) => {
-        if (error) {
-          ack(error && error.reason || error);
-          this.userFoundState = 'failed';
-        } else {
-          this.userId = result;
-          if (result) {
-            if (result === this.model.owner) {
-              this.userFoundState = 'failed';
-              ack('User is already the owner')
-            } else {
-              this.userFoundState = 'found';
-              ack();
-            }
-          } else {
-            this.userFoundState = 'notFound';
-            ack('User not found');
-          }
-        }
-      });
-    },
-    updateSharing(userId, role) {
-      updateUserSharePermissions.call({
-        docRef: this.docRef,
-        userId,
-        role,
-      });
-    },
-    makeOwner(user) {
-      this.$store.commit('pushDialogStack', {
-        component: 'transfer-ownership-dialog',
-        elementId: 'menu-' + user._id,
-        data: {
-          docRef: this.docRef,
-          user,
-        },
-      });
-    },
-  },
-  meteor: {
-    model() {
-      if (!this.docRef || !this.docRef.id) return;
-      let model = fetchDocByRef(this.docRef);
-      return model;
-    },
-    sharedUsers() {
-      let users = [];
-      Meteor.users.find({ _id: { $in: this.model.readers } }).forEach(user => {
-        user.permission = 'reader';
-        users.push(user);
-      });
-      Meteor.users.find({ _id: { $in: this.model.writers } }).forEach(user => {
-        user.permission = 'writer';
-        users.push(user);
-      });
-      users.sort(function (a, b) {
-        if (a.username < b.username) return -1;
-        if (a.username > b.username) return 1;
-        return 0;
-      });
-      return users;
-    },
-    $subscribe: {
-      'userPublicProfiles'() {
-        let model = this.model;
-        if (!model) return false;
-        return [[model.owner, ...model.writers, ...model.readers]];
-      },
-    },
-  },
-}
-</script>
-
-<style lang="css" scoped>
-
-</style>

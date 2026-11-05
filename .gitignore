@@ -1,1 +1,12 @@
 build
+.env
+.env.*
+!.env.example
+.secrets/
+backups/
+artifacts/
+test-results/
+playwright-report/
+
+__pycache__/
+*.pyc

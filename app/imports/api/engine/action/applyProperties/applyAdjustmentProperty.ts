@@ -1,5 +1,5 @@
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { applyDefaultAfterPropTasks, applyTaskToEachTarget } from '/imports/api/engine/action/functions/applyTaskGroups';
 import recalculateCalculation from '/imports/api/engine/action/functions/recalculateCalculation';
 import { PropTask } from '/imports/api/engine/action/tasks/Task';
@@ -53,7 +53,7 @@ export default async function applyAdjustmentProperty(
   let stat: CreatureProperty | undefined;
   if (targetId && prop.stat) {
     const statId = getVariables(targetId)?.[prop.stat]?._propId;
-    stat = statId && getSingleProperty(targetId, statId);
+    stat = statId && await getSingleProperty(targetId, statId);
     if (!stat?.type) {
       result.appendLog({
         name: 'Error',

@@ -1,9 +1,10 @@
-import SimpleSchema from 'simpl-schema';
+import 'meteor/aldeed:collection2/static';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import ChildSchema from '/imports/api/parenting/ChildSchema';
 
-let TabletopObjects = new Mongo.Collection('tabletopObjects');
+const TabletopObjects = new Mongo.Collection('tabletopObjects');
 
-let TabletopObjectSchema = new SimpleSchema({
+const TabletopObjectSchema = new SimpleSchema({
   name: {
     type: String,
     optional: true,

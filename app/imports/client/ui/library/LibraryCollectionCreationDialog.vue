@@ -1,6 +1,57 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { autorun } from 'vue-meteor-tracker';
+import { Meteor } from 'meteor/meteor';
+import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
+import Libraries from '/imports/api/library/Libraries';
+
+const libraryCollection = ref({
+  name: 'New Collection',
+  description: undefined as string | undefined,
+  libraries: [] as string[],
+});
+const valid = ref(true);
+
+const { result: libraryOptions } = autorun(() => {
+  const userId = Meteor.userId();
+  return Libraries.find(
+    {
+      $or: [
+        { owner: userId },
+        { writers: userId },
+        { readers: userId },
+        { public: true },
+      ]
+    },
+    { sort: { name: 1 } }
+  ).map((library: any) => ({ text: library.name, value: library._id }));
+});
+
+function nameChanged(val: string, ack: (error?: string) => void) {
+  if (val) {
+    libraryCollection.value.name = val;
+    valid.value = true;
+    ack();
+  } else {
+    valid.value = false;
+    ack('Name is required');
+  }
+}
+
+function descriptionChanged(val: string, ack: () => void) {
+  libraryCollection.value.description = val;
+  ack();
+}
+
+function librariesChanged(val: string[], ack: () => void) {
+  libraryCollection.value.libraries = val;
+  ack();
+}
+</script>
+
 <template lang="html">
   <dialog-base>
-    <template slot="toolbar">
+    <template #toolbar>
       <v-toolbar-title>
         New Collection
       </v-toolbar-title>
@@ -30,10 +81,10 @@
         @change="librariesChanged"
       />
     </template>
-    <template slot="actions">
+    <template #actions>
       <v-spacer />
       <v-btn
-        text
+        variant="text"
         :disabled="!valid"
         @click="$store.dispatch('popDialogStack', libraryCollection)"
       >
@@ -42,66 +93,6 @@
     </template>
   </dialog-base>
 </template>
-
-<script lang="js">
-import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
-import Libraries from '/imports/api/library/Libraries';
-
-export default {
-  components: {
-    DialogBase,
-  },
-  data(){ return {
-    libraryCollection: {
-      name: 'New Collection',
-      description: undefined,
-      libraries: [],
-    },
-    valid: true,
-  }},
-  meteor: {
-    libraryOptions() {
-      const userId = Meteor.userId();
-      return Libraries.find(
-        {
-          $or: [
-            { owner: userId },
-            { writers: userId },
-            { readers: userId },
-            { public: true },
-          ]
-        },
-        {sort: {name: 1}}
-      ).map(library => {
-        return {
-          text: library.name,
-          value: library._id,
-        };
-      });
-    }
-  },
-  methods: {
-    nameChanged(val, ack){
-      if (val){
-        this.libraryCollection.name = val;
-        this.valid = true,
-        ack();
-      } else {
-        this.valid = false;
-        ack('Name is required')
-      }
-    },
-    descriptionChanged(val, ack){
-      this.libraryCollection.description = val;
-      ack();
-    },
-    librariesChanged(val, ack){
-      this.libraryCollection.libraries = val;
-      ack();
-    },
-  },
-};
-</script>
 
 <style lang="css" scoped>
 </style>

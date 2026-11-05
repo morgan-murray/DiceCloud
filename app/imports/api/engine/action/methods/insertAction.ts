@@ -1,5 +1,5 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import EngineActions, { EngineAction, ActionSchema } from '/imports/api/engine/action/EngineActions';
 import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
 import { getCreature } from '/imports/api/engine/loadCreatures';
@@ -13,9 +13,9 @@ export const insertAction = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 1000,
   },
-  run: function ({ action }: { action: EngineAction }) {
-    const creature = getCreature(action.creatureId);
-    assertEditPermission(getCreature(creature), this.userId);
+  run: async function ({ action }: { action: EngineAction }) {
+    const creature = await getCreature(action.creatureId);
+    await assertEditPermission(creature, this.userId);
     // Make sure the action shares the creature's tabletopId
     // It is assumed that if a character you control is in a tabletop, you have the rights
     // to do actions in that tabletop
@@ -23,20 +23,20 @@ export const insertAction = new ValidatedMethod({
 
     // Ensure that all the targeted creatures exist and share a tabletop
     if (action.task.targetIds) for (const targetId of action.task.targetIds) {
-      const target = getCreature(targetId);
+      const target = await getCreature(targetId);
       if (!target) {
         throw new Meteor.Error('not-found', 'Target creature does not exist');
       }
-      if (target.tabletopId !== action.tabletopId) {
+      if (targetId !== action.creatureId && (!action.tabletopId || target.tabletopId !== action.tabletopId)) {
         throw new Meteor.Error('permission-denied', 'Target creature does not share a tabletop with the acting creature');
       }
     }
 
     // First remove all other actions on this creature
     // only do one action at a time, don't wait for this to finish
-    EngineActions.remove({ creatureId: action.creatureId });
+    await EngineActions.removeAsync({ creatureId: action.creatureId });
     // Force a random id even if one was provided, we may use it later as the seed for PRNG
     delete action._id;
-    return EngineActions.insert(action);
+    return EngineActions.insertAsync(action);
   },
 });

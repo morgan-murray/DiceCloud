@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { incrementFileStorageUsed } from '/imports/api/users/methods/updateFileStorageUsed';
@@ -18,12 +18,13 @@ const removeUserImage = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run({ fileId }) {
+    if (!Meteor.isServer) return;
     if (!this.userId) {
       throw new Meteor.Error('logged-out',
         'The user must be logged in to remove a file');
     }
     // fetch the file
-    const file = UserImages.findOne({ _id: fileId }).get();
+    const file = (await UserImages.findOneAsync({ _id: fileId }))?.get();
     if (!file) {
       throw new Meteor.Error('File not found',
         'The requested creature archive does not exist');
@@ -35,9 +36,9 @@ const removeUserImage = new ValidatedMethod({
         'You can only restore creatures you own');
     }
     //Remove the archive once the restore succeeded
-    UserImages.remove({ _id: fileId });
+    await UserImages.removeAsync({ _id: fileId });
     // Update the user's file storage limits
-    incrementFileStorageUsed(userId, -file.size);
+    await incrementFileStorageUsed(userId, -file.size);
   },
 });
 

@@ -1,8 +1,8 @@
 import { Store } from 'vuex';
 import { insertAction } from '/imports/api/engine/action/methods/insertAction';
-import Task from '/imports/api/engine/action/tasks/Task';
+import type { Task } from '/imports/api/engine/action/tasks/Task';
 import EngineActions, { EngineAction } from '/imports/api/engine/action/EngineActions';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import applyAction from '/imports/api/engine/action/functions/applyAction';
 import { runAction } from '/imports/api/engine/action/methods/runAction';
 import getDeterministicDiceRoller from '/imports/api/engine/action/functions/userInput/getDeterministicDiceRoller';
@@ -40,7 +40,7 @@ export default async function doAction({
   if (!task) {
     targetIds ??= [];
     if (!propId) throw new Meteor.Error('no-prop-id', 'Either propId or task must be provided');
-    const prop = getSingleProperty(creatureId, propId);
+    const prop = await getSingleProperty(creatureId, propId);
     if (!prop) throw new Meteor.Error('not-found', 'Property not found');
     task = {
       prop,
@@ -49,7 +49,7 @@ export default async function doAction({
     };
   }
   // Create the action
-  const actionId = insertAction.call({
+  const actionId = await insertAction.callAsync({
     action: {
       creatureId,
       task,
@@ -60,7 +60,7 @@ export default async function doAction({
   });
 
   // Get the inserted and cleaned action instance
-  const action = EngineActions.findOne(actionId);
+  const action = await EngineActions.findOneAsync(actionId);
 
   if (!action) throw new Meteor.Error('not-found', 'The action could not be found');
 

@@ -6,7 +6,7 @@ import {
   fieldToCompute,
   computedOnlyField,
 } from '/imports/api/properties/subSchemas/computedField';
-import { Definition, InferSchema, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { type Definition, type InferSchema, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 
 // Search through the schema for keys whose type is 'fieldToCompute' etc.
 // replace the type with Object and attach extend the schema with
@@ -22,7 +22,7 @@ export default function createPropertySchema<D extends Definition>(definition: D
 
   for (const key in definition) {
     const def = definition[key];
-    if (typeof def === 'object' && 'type' in def && computedKeys.includes(def.type)) {
+    if (typeof def === 'object' && 'type' in def && typeof def.type === 'string' && computedKeys.includes(def.type)) {
       computationFields[def.type].push(key);
       applyDefaultCalculationValue(definition, key);
       def.type = Object;

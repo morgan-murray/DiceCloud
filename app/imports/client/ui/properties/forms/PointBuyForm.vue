@@ -1,3 +1,46 @@
+<script setup lang="ts">
+import { ref, computed, inject } from 'vue';
+import { PointBuySchema } from '/imports/api/properties/PointBuys';
+import PointBuySpendForm from '/imports/client/ui/properties/forms/PointBuySpendForm.vue';
+
+const props = withDefaults(defineProps<{
+  model: Record<string, any>;
+  errors?: Record<string, string>;
+}>(), {
+  errors: () => ({}),
+});
+
+const emit = defineEmits(['change', 'push']);
+
+const context = inject<any>('context', {});
+
+function change(path: string | string[], value: any, ack?: Function) {
+  const pathArray = Array.isArray(path) ? path : [path];
+  emit('change', { path: pathArray, value, ack });
+}
+
+const addRowLoading = ref(false);
+
+const rowsFull = computed(() => {
+  if (!props.model.values) return false;
+  const maxCount = PointBuySchema.get('values', 'maxCount');
+  return props.model.values.length >= maxCount;
+});
+
+function addRow() {
+  addRowLoading.value = true;
+  emit('push', {
+    path: ['values'],
+    value: {
+      _id: Random.id(),
+    },
+    ack() {
+      addRowLoading.value = false;
+    },
+  });
+}
+</script>
+
 <template lang="html">
   <div class="point-buy-form">
     <point-buy-spend-form 
@@ -73,7 +116,7 @@
           <v-row
             v-for="(row, i) in model.values"
             :key="row._id"
-            dense
+            class="density"
           >
             <v-divider
               v-if="i"
@@ -135,7 +178,7 @@
             >
               <v-btn
                 icon
-                large
+                size="large"
                 @click="$emit('pull', {path: ['values', i]})"
               >
                 <v-icon>mdi-delete</v-icon>
@@ -144,9 +187,8 @@
           </v-row>
           <v-row
             key="addButton"
-            dense
             justify="end"
-            class="mb-4"
+            class="mb-4 density"
           >
             <v-col
               cols="1"
@@ -154,7 +196,7 @@
             >  
               <v-btn
                 icon
-                outlined
+                variant="outlined"
                 :loading="addRowLoading"
                 :disabled="rowsFull"
                 @click="addRow"
@@ -171,49 +213,3 @@
     </form-sections>
   </div>
 </template>
-
-<script lang="js">
-import attributeListMixin from '/imports/client/ui/properties/forms/shared/lists/attributeListMixin';
-import propertyFormMixin from '/imports/client/ui/properties/forms/shared/propertyFormMixin';
-import { PointBuySchema } from '/imports/api/properties/PointBuys';
-import CalculationErrorList from '/imports/client/ui/properties/forms/shared/CalculationErrorList.vue';
-import PointBuySpendForm from '/imports/client/ui/properties/forms/PointBuySpendForm.vue';
-
-export default {
-  components: {
-    CalculationErrorList,
-    PointBuySpendForm,
-  },
-  mixins: [propertyFormMixin, attributeListMixin],
-  inject: {
-    context: { default: {} }
-  },
-  data() {
-    return {
-      addRowLoading: false,
-    };
-  },
-  computed: {
-    rowsFull(){
-      if (!this.model.values) return false;
-      let maxCount = PointBuySchema.get('values', 'maxCount');
-      return this.model.values.length >= maxCount;
-    },
-  },
-  methods: {
-    acknowledgeAddResult(){
-      this.addRowLoading = false;
-    },
-    addRow(){
-      this.addRowLoading = true;
-      this.$emit('push', {
-        path: ['values'],
-        value: {
-          _id: Random.id(),
-        },
-        ack: this.acknowledgeAddResult,
-      });
-    },
-  },
-}
-</script>

@@ -1,5 +1,6 @@
+import type { ApplyTask } from '/imports/api/engine/action/tasks/applyTask';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { PropTask } from '/imports/api/engine/action/tasks/Task';
 import TaskResult from '/imports/api/engine/action/tasks/TaskResult';
 
@@ -18,7 +19,7 @@ import toggle from './applyToggleProperty';
 import trigger from './applyTriggerProperty';
 
 const applyPropertyByType: {
-  [key: string]: (task: PropTask, action: EngineAction, result: TaskResult, input: InputProvider) => Promise<void>
+  [key: string]: (task: PropTask, action: EngineAction, result: TaskResult, input: InputProvider, applyTask: ApplyTask) => Promise<void>
 } = {
   action,
   adjustment,

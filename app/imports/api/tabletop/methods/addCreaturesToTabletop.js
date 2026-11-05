@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertUserInTabletop } from './shared/tabletopPermissions';
@@ -32,17 +32,17 @@ const addCreaturesToTabletop = new ValidatedMethod({
     timeInterval: 5000,
   },
 
-  run({ tabletopId, creatureIds }) {
+  async run({ tabletopId, creatureIds }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.addCreatures.denied',
         'You need to be logged in to remove a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    const tabletop = Tabletops.findOne(tabletopId);
+    await assertUserHasPaidBenefits(this.userId);
+    const tabletop = await Tabletops.findOneAsync(tabletopId);
     assertUserInTabletop(tabletop, this.userId);
     assertTabletopHasPropSpace(tabletop);
 
-    Creatures.update({
+    await Creatures.updateAsync({
       _id: { $in: creatureIds },
       // You must have write permission for the creatures you
       $or: [

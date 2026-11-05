@@ -1,8 +1,150 @@
+<script setup lang="ts">
+import { computed, watch, provide, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
+import { autorun, subscribe } from 'vue-meteor-tracker';
+import Creatures from '/imports/api/creature/creatures/Creatures';
+import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
+import PrintedStats from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedStats.vue';
+import PrintedInventory from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedInventory.vue';
+import PrintedSpells from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedSpells.vue';
+import { assertEditPermission } from '/imports/client/permissions/creaturePermissions';
+import { CreatureVariables } from '/imports/client/localCollections/CreatureVariables';
+import QrcodeVue from 'qrcode.vue';
+import { getFilter } from '/imports/api/parenting/parentingFunctions';
+import { key } from '/imports/client/ui/vuexStore';
+
+const store = useStore(key);
+const route = useRoute();
+const router = useRouter();
+
+const creatureId = computed(() => route.params.id as string);
+
+const creatureUrl = computed(() => {
+  const resolved = router.resolve({
+    name: 'characterSheet',
+    params: { id: creatureId.value },
+  });
+  return new URL(resolved?.href, 'https://dicecloud.com').href;
+});
+
+const { ready: characterReady } = subscribe(() => ['singleCharacter', creatureId.value]);
+
+const { result: creature } = autorun(() =>
+  Creatures.findOne(creatureId.value)
+);
+
+const { result: variables } = autorun(() =>
+  CreatureVariables.findOne({ _creatureId: creatureId.value }) || {}
+);
+
+const { result: classProperties } = autorun(() =>
+  CreatureProperties.find({
+    ...getFilter.descendantsOfRoot(creatureId.value),
+    type: 'class',
+    removed: { $ne: true },
+    inactive: { $ne: true },
+  }, { sort: { left: 1 } }).fetch()
+);
+
+const { result: classLevels } = autorun(() => {
+  const classVariableNames = (classProperties.value || []).map((c: any) => c.variableName);
+  return CreatureProperties.find({
+    ...getFilter.descendantsOfRoot(creatureId.value),
+    type: 'classLevel',
+    variableName: { $nin: classVariableNames },
+    removed: { $ne: true },
+    inactive: { $ne: true },
+  }, { sort: { left: 1 } }).fetch();
+});
+
+const { result: race } = autorun(() => {
+  if ((variables.value as any)?.race?.value?.valueType === 'string') {
+    return (variables.value as any).race.value.value;
+  }
+  const prop = CreatureProperties.findOne({
+    ...getFilter.descendantsOfRoot(creatureId.value),
+    tags: 'race',
+    removed: { $ne: true },
+    inactive: { $ne: true },
+    overridden: { $ne: true },
+  });
+  return prop?.name || '';
+});
+
+const { result: background } = autorun(() => {
+  if ((variables.value as any)?.background?.value?.valueType === 'string') {
+    return (variables.value as any).background.value.value;
+  }
+  const prop = CreatureProperties.findOne({
+    ...getFilter.descendantsOfRoot(creatureId.value),
+    tags: 'background',
+    removed: { $ne: true },
+    inactive: { $ne: true },
+    overridden: { $ne: true },
+  });
+  return prop?.name || '';
+});
+
+const { result: editPermission } = autorun(() => {
+  try {
+    assertEditPermission(creature.value, Meteor.userId());
+    return true;
+  } catch (e) {
+    return false;
+  }
+});
+
+provide('context', reactive({ creatureId, editPermission }));
+
+const level = computed(() => (variables.value as any)?.level?.value);
+
+const highestLevels = computed(() => {
+  const map: Record<string, any> = {};
+  (classLevels.value || []).forEach((classLevel: any) => {
+    const name = classLevel.variableName;
+    if (!map[name] || map[name].level < classLevel.level) {
+      map[name] = classLevel;
+    }
+  });
+  return Object.values(map).sort((a, b) => a.level - b.level);
+});
+
+const classes = computed(() =>
+  [...highestLevels.value, ...(classProperties.value || [])].sort((a: any, b: any) => a.order - b.order)
+);
+
+watch(() => creature.value?.name, (value) => {
+  store.commit('setPageTitle', value ? ('Print ' + value) : 'Print Character Sheet');
+});
+
+let nameObserver: any;
+
+onMounted(() => {
+  const name = creature.value?.name;
+  store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet');
+  nameObserver = Creatures.find({
+    _id: creatureId.value,
+  }, {
+    fields: { name: 1 },
+  }).observe({
+    added: ({ name }: any) =>
+      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
+    changed: ({ name }: any) =>
+      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
+  });
+});
+
+onBeforeUnmount(() => {
+  nameObserver?.stop();
+});
+</script>
+
 <template>
   <div class="character-sheet-printed fill-height">
     <v-fade-transition mode="out-in">
       <div
-        v-if="!$subReady.singleCharacter"
+        v-if="!characterReady"
         key="character-loading"
         class="fill-height layout justify-center align-center"
       >
@@ -13,11 +155,7 @@
         />
       </div>
       <div v-else-if="!creature">
-        <v-layout
-          column
-          align-center
-          justify-center
-        >
+        <div class="d-flex flex-column align-center justify-center">
           <h2 style="margin: 48px 28px 16px">
             Character not found
           </h2>
@@ -25,7 +163,7 @@
             Either this character does not exist, or you don't have permission
             to view it.
           </h3>
-        </v-layout>
+        </div>
       </div>
       <v-theme-provider
         v-else
@@ -73,7 +211,7 @@
           />
           <printed-spells
             v-if="!creature.settings.hideSpellsTab"
-            class="page-break-before" 
+            class="page-break-before"
             :creature-id="creatureId"
           />
         </div>
@@ -81,162 +219,6 @@
     </v-fade-transition>
   </div>
 </template>
-
-<script lang="js">
-import Creatures from '/imports/api/creature/creatures/Creatures';
-import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
-import PrintedStats from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedStats.vue';
-import PrintedInventory from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedInventory.vue';
-import PrintedSpells from '/imports/client/ui/creature/character/printedCharacterSheet/PrintedSpells.vue';
-import { assertEditPermission } from '/imports/api/creature/creatures/creaturePermissions';
-import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
-import QrcodeVue from 'qrcode.vue'
-import { getFilter } from '/imports/api/parenting/parentingFunctions';
-
-export default {
-  components: {
-    PrintedStats,
-    PrintedInventory,
-    PrintedSpells,
-    QrcodeVue,
-  },
-  computed: {
-    creatureId() {
-      return this.$route.params.id
-    },
-    creatureUrl() {
-      let props = this.$router.resolve({ 
-        name: 'characterSheet',
-        params: { id: this.creatureId},
-      });
-      return new URL(props?.href, 'https://dicecloud.com').href
-    },
-    level() {
-      return this.variables?.level?.value;
-    },
-    highestLevels(){
-      let highestLevels = {};
-      let highestLevelsList = [];
-      this.classLevels.forEach(classLevel => {
-        let name = classLevel.variableName;
-        if (
-          !highestLevels[name] ||
-          highestLevels[name].level < classLevel.level
-        ){
-          highestLevels[name] = classLevel;
-        }
-      });
-      for (let name in highestLevels){
-        highestLevelsList.push(highestLevels[name]);
-      }
-      highestLevelsList.sort((a, b) => a.level - b.level);
-      return highestLevelsList;
-    },
-    classes() {
-      return [
-        ...this.highestLevels,
-        ...this.classProperties
-      ].sort((a, b) => a.order - b.order);
-    },
-  },
-  reactiveProvide: {
-    name: 'context',
-    include: ['creatureId', 'editPermission'],
-  },
-  watch: {
-    'creature.name'(value) {
-      this.$store.commit('setPageTitle', value ? ('Print ' + value) : 'Print Character Sheet');
-    },
-  },
-  mounted() {
-    this.$store.commit('setPageTitle',
-      (this.creature && this.creature.name) ?
-        ('Print ' + this.creature.name) :
-        'Print Character Sheet'
-    );
-    this.nameObserver = Creatures.find({
-      creatureId: this.creatureId,
-    }, {
-      fields: { name: 1 },
-    }).observe({
-      added: ({ name }) =>
-        this.$store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
-      changed: ({ name }) =>
-        this.$store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
-    });
-  },
-  beforeDestroy() {
-    this.nameObserver.stop();
-  },
-  meteor: {
-    $subscribe: {
-      'singleCharacter'() {
-        return [this.creatureId];
-      },
-    },
-    creature() {
-      return Creatures.findOne(this.creatureId);
-    },
-    variables() {
-      return CreatureVariables.findOne({ _creatureId: this.creatureId }) || {};
-    },
-    race() {
-      if (this.variables?.race?.value?.valueType === 'string') return this.variables.race.value.value;
-      const prop = CreatureProperties.findOne({
-        ...getFilter.descendantsOfRoot(this.creatureId),
-        tags: 'race',
-        removed: { $ne: true },
-        inactive: { $ne: true },
-        overridden: { $ne: true },
-      });
-      if (prop?.name) return prop.name;
-      return '';
-    },
-    background() {
-      if (this.variables?.background?.value?.valueType === 'string') return this.variables.background.value.value;
-      const prop = CreatureProperties.findOne({
-        ...getFilter.descendantsOfRoot(this.creatureId),
-        tags: 'background',
-        removed: { $ne: true },
-        inactive: { $ne: true },
-        overridden: { $ne: true },
-      });
-      if (prop?.name) return prop.name;
-      return '';
-    },
-    classProperties(){
-      return CreatureProperties.find({
-        ...getFilter.descendantsOfRoot(this.creatureId),
-        type: 'class',
-        removed: {$ne: true},
-        inactive: {$ne: true},
-      }, {
-        sort: {left: 1}
-      }).fetch();
-    },
-    classLevels() {
-      const classVariableNames = this.classProperties.map(c => c.variableName)
-      return CreatureProperties.find({
-        ...getFilter.descendantsOfRoot(this.creatureId),
-        type: 'classLevel',
-        variableName: {$nin: classVariableNames},
-        removed: {$ne: true},
-        inactive: {$ne: true},
-      }, {
-        sort: {left: 1}
-      });
-    },
-    editPermission() {
-      try {
-        assertEditPermission(this.creature, Meteor.userId());
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
-  },
-}
-</script>
 
 <style>
 .character-sheet-printed {
@@ -263,8 +245,9 @@ export default {
   margin-bottom: 8px;
 }
 
-.character-sheet-printed .column-layout, .character-sheet-printed .column-layout.wide-columns {
-  position:relative;
+.character-sheet-printed .column-layout,
+.character-sheet-printed .column-layout.wide-columns {
+  position: relative;
   width: 100%;
   widows: 0;
   orphans: 0;
@@ -276,12 +259,13 @@ export default {
   column-width: 200px;
 }
 
-.character-sheet-printed .column-layout>div {
+.character-sheet-printed .column-layout > div {
   position: relative;
   display: inline-block;
   margin-top: 4px;
   margin-bottom: 4px;
 }
+
 .character-sheet-printed .column-layout > div > * {
   page-break-inside: avoid;
 }
@@ -289,6 +273,7 @@ export default {
 .character-sheet-printed .inactive {
   opacity: 1 !important;
 }
+
 .character-sheet-printed .creature-name {
   font-size: 16pt;
   background-color: white;
@@ -304,7 +289,7 @@ export default {
 }
 
 .character-sheet-printed .v-divider {
-  border-color: rgba(0,0,0,0.3);
+  border-color: rgba(0, 0, 0, 0.3);
   max-width: unset;
 }
 
@@ -337,6 +322,7 @@ export default {
   page-break-after: avoid;
   break-after: avoid;
 }
+
 .span-all + div {
   page-break-before: avoid;
   break-before: avoid;
@@ -372,40 +358,56 @@ export default {
     flex-direction: column;
     align-items: center;
   }
+
   .character-sheet-printed .page {
     width: 210mm;
   }
 }
+
 @media print {
-  @page { 
-      size: auto;
-      margin: 8mm;  
+  @page {
+    size: auto;
+    margin: 8mm;
   }
-  body {  
-      margin: 0;
-      padding: 2mm;
+
+  body {
+    margin: 0;
+    padding: 2mm;
   }
+
   .character-sheet-printed .page {
     width: 100%;
     padding: 0 !important;
   }
+
   .character-sheet-printed .column-layout {
     padding: 4px 0 !important;
   }
+
   .character-sheet-printed .title-block {
     padding-left: 0 !important;
     padding-right: 4px !important;
   }
-  .v-main, .v-application, .v-application--wrap, .character-sheet-printed {
+
+  .v-main,
+  .v-application,
+  .v-application--wrap,
+  .character-sheet-printed {
     display: block !important;
     background-color: white !important;
   }
+
   html {
     background-color: white !important;
   }
-  header, nav, .v-snack, .dialog-stack {
+
+  header,
+  nav,
+  .v-snack,
+  .dialog-stack {
     display: none !important;
   }
+
   .v-main {
     padding: 0 !important;
   }

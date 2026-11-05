@@ -1,31 +1,27 @@
+<script setup lang="ts">
+import { defer } from 'lodash';
+
+function portalEvent(e: TouchEvent) {
+  // Stop everything in the document listening for this touch event
+  e.stopPropagation();
+  // But also send it to straight to the root for draggable.js
+  defer(() => {
+    (e.target as Element)?.ownerDocument?.dispatchEvent(e);
+  });
+}
+</script>
+
 <template>
   <v-icon
     class="handle"
     v-bind="$attrs"
-    @click.native="e => { }"
-    @touchstart.native.stop="e => { }"
-    @touchend.native="portalEvent"
+    @click="e => { }"
+    @touchstart.stop="e => { }"
+    @touchend="portalEvent"
   >
     mdi-drag
   </v-icon>
 </template>
-
-<script lang="js">
-import { defer } from 'lodash'
-
-export default {
-  methods: {
-    portalEvent(e) {
-      // Stop everything in the document listening for this touch event
-      e.stopPropagation();
-      // But also send it to straight to the root for draggable.js
-      defer(() => {
-        e.target.ownerDocument.dispatchEvent(e);
-      });
-    }
-  }
-}
-</script>
 
 <style scoped>
 .handle {

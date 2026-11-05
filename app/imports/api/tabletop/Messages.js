@@ -1,12 +1,13 @@
-import SimpleSchema from 'simpl-schema';
+import 'meteor/aldeed:collection2/static';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import Tabletops, { assertUserInTabletop } from '/imports/api/tabletop/Tabletops';
 
-let Messages = new Mongo.Collection('messages');
+const Messages = new Mongo.Collection('messages');
 
-let MessagesSchema = new SimpleSchema({
+const MessagesSchema = new SimpleSchema({
   tabletopId: {
     type: String,
     max: 32,
@@ -17,7 +18,6 @@ let MessagesSchema = new SimpleSchema({
   },
   timestamp: {
     type: Date,
-    index: 1,
   },
   userId: {
     type: String,
@@ -52,7 +52,7 @@ const sendMessage = new ValidatedMethod({
   },
 
   run({ content, tabletopId }) {
-    let user = Meteor.user();
+    const user = Meteor.user();
     if (!user) {
       throw new Meteor.Error('messages.send.denied',
         'You need to be logged in to send a message');
@@ -92,13 +92,13 @@ const removeMessages = new ValidatedMethod({
       throw new Meteor.Error('messages.remove.denied',
         'You need to be logged in to remove a tabletop');
     }
-    let message = Messages.findOne(messageId);
-    let tabletop = Tabletops.findOne(message.tabletopId);
+    const message = Messages.findOne(messageId);
+    const tabletop = Tabletops.findOne(message.tabletopId);
     if (this.userId !== message.userId && this.userId !== tabletop.gameMaster) {
       throw new Meteor.Error('messages.remove.denied',
         'You don\'t have permission to remove this message');
     }
-    let removed = Messages.remove({
+    const removed = Messages.remove({
       _id: messageId,
     });
     Creatures.update({

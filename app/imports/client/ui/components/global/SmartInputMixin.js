@@ -121,7 +121,7 @@ export default {
       this.$emit('change', val, this.acknowledgeChange);
     },
     hasChangeListener() {
-      return this.$listeners && this.$listeners.change;
+      return this.$attrs && this.$attrs.onChange;
     },
     forceSafeValueUpdate() {
       // hack to force the value to update on the child component
@@ -134,7 +134,7 @@ export default {
   },
   computed: {
     errors() {
-      let errors = this.ackErrors ? [this.ackErrors] : [];
+      const errors = this.ackErrors ? [this.ackErrors] : [];
       if (Array.isArray(this.rulesErrors)) {
         errors.push(...this.rulesErrors)
       }
@@ -161,7 +161,7 @@ export default {
   created() {
     this.debouncedChange = debounce(this.change, this.debounceTime);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.debouncedChange.flush();
   },
 };

@@ -11,7 +11,7 @@ const updateTabletop = new ValidatedMethod({
   validate({ _id, path }) {
     if (!_id) return false;
     // Allowed fields
-    let allowedFields = [
+    const allowedFields = [
       'name',
       'description',
       'imageUrl',
@@ -30,20 +30,20 @@ const updateTabletop = new ValidatedMethod({
     timeInterval: 5000,
   },
 
-  run({ _id, path, value }) {
+  async run({ _id, path, value }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.update.denied',
         'You need to be logged in to update a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertCanEditTabletop(_id, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertCanEditTabletop(await Tabletops.findOneAsync(_id), this.userId);
 
     if (value === undefined || value === null) {
-      Tabletops.update(_id, {
+      await Tabletops.updateAsync(_id, {
         $unset: { [path.join('.')]: 1 },
       });
     } else {
-      Tabletops.update(_id, {
+      await Tabletops.updateAsync(_id, {
         $set: { [path.join('.')]: value },
       });
     }

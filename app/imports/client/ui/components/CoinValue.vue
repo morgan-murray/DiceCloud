@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import valueToCoins from '/imports/client/ui/utility/valueToCoins';
+
+const props = defineProps<{
+  value?: number;
+}>();
+
+const coinValue = computed(() => valueToCoins(props.value));
+</script>
+
 <template lang="html">
   <div>
     <span
@@ -17,24 +28,6 @@
     </span>
   </div>
 </template>
-
-<script lang="js">
-import valueToCoins from '/imports/client/ui/utility/valueToCoins';
-
-export default {
-  props:{
-    value: {
-      type: Number,
-      default: undefined,
-    },
-  },
-  computed:{
-    coinValue(){
-      return valueToCoins(this.value);
-    }
-  },
-}
-</script>
 
 <style lang="css" scoped>
 </style>

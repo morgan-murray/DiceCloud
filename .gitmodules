@@ -1,3 +1,0 @@
-[submodule "app/packages/redis-oplog"]
-	path = app/packages/redis-oplog
-	url = https://github.com/ramezrafla/redis-oplog.git

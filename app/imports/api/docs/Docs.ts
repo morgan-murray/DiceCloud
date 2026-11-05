@@ -1,37 +1,23 @@
+import 'meteor/aldeed:collection2/static';
 import { Meteor } from 'meteor/meteor';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { softRemove } from '/imports/api/parenting/softRemove';
 import SoftRemovableSchema from '/imports/api/parenting/SoftRemovableSchema';
-import { storedIconsSchema } from '/imports/api/icons/Icons';
+import { storedIconsSchema } from '/imports/api/icons/storedIconsSchema';
 import '/imports/api/library/methods/index';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import { restore } from '/imports/api/parenting/softRemove';
 import { getFilter, rebuildNestedSets, moveDocWithinRoot } from '/imports/api/parenting/parentingFunctions';
-import ChildSchema, { TreeDoc } from '/imports/api/parenting/ChildSchema';
+import ChildSchema from '/imports/api/parenting/ChildSchema';
+import { Roles } from 'meteor/roles';
+import { TypedSimpleSchema, type InferType } from '/imports/api/utility/TypedSimpleSchema';
 
 // Give the docs a common root, so they can share parenting logic
 export const DOC_ROOT_ID = 'DDDDDDDDDDDDDDDDD'
 
-type Doc = {
-  _id: string,
-  name: string,
-  urlName: string,
-  href: string,
-  description?: string,
-  published?: true,
-  icon?: {
-    name: string,
-    shape: string,
-  },
-} & TreeDoc;
-
-const Docs: Mongo.Collection<Doc> & {
-  getJsonDocs?: () => string
-} = new Mongo.Collection<Doc>('docs');
-
-const DocSchema = new SimpleSchema({
+const BaseDocSchema = TypedSimpleSchema.from({
   _id: {
     type: String,
     max: 32,
@@ -64,27 +50,34 @@ const DocSchema = new SimpleSchema({
   },
 });
 
-const schema = new SimpleSchema({});
-schema.extend(DocSchema);
-schema.extend(ChildSchema);
-schema.extend(SoftRemovableSchema);
-// @ts-expect-error No attach schema in types
-Docs.attachSchema(schema);
+const DocSchema = TypedSimpleSchema.from({})
+  .extend(BaseDocSchema)
+  .extend(ChildSchema(['docs' as const]))
+  .extend(SoftRemovableSchema);
 
-function assertDocsEditPermission(userId) {
+export type Doc = InferType<typeof DocSchema>;
+
+const Docs: Mongo.Collection<Doc> & {
+  getJsonDocs?: () => string
+} = new Mongo.Collection<Doc>('docs');
+
+Docs.attachSchema(DocSchema);
+
+async function assertDocsEditPermission(userId: string | null) {
   if (!userId || typeof userId !== 'string') throw new Meteor.Error('No user id provided');
-  const user = Meteor.users.findOne(userId);
-  if (!user) throw new Meteor.Error('User does not exist');
-  if (!user?.roles?.includes?.('docsWriter')) throw ('Permission denied')
+  const canEdit = await Roles.userIsInRoleAsync(userId, 'DOCS_EDIT');
+  if (!canEdit) {
+    throw new Meteor.Error('permission-denied', 'You don\'t have permission to edit the docs');
+  }
 }
 
-function getDocLink(doc: Doc, urlName?: string) {
+async function getDocLink(doc: Doc, urlName?: string) {
   if (!urlName) urlName = doc.urlName;
   const address = ['/docs'];
-  const ancestorDocs = Docs.find(getFilter.ancestors(doc));
-  ancestorDocs?.forEach(a => {
+  const ancestorDocs = await Docs.find(getFilter.ancestors(doc)).fetchAsync();
+  for (const a of ancestorDocs) {
     address.push(a.urlName);
-  });
+  }
   address.push(urlName);
   return address.join('/');
 }
@@ -95,14 +88,17 @@ if (Meteor.isClient) {
     return JSON.stringify(Docs.find({}).fetch(), null, 2);
   }
 } else if (Meteor.isServer) {
-  Meteor.startup(() => {
-    if (!Docs.findOne()) {
+  Meteor.startup(async () => {
+    return;
+    // TODO this is not working in current meteor
+    if (!await Docs.findOneAsync()) {
       console.info('No docs found, filling documentation with defaults');
-      Assets.getText('docs/defaultDocs.json', (error, string) => {
-        const docs = JSON.parse(string)
-        docs.forEach(doc => Docs.insert(doc));
-        rebuildNestedSets(Docs, DOC_ROOT_ID);
-      });
+      const string = Assets.getText('docs/defaultDocs.json') ?? '[]';
+      const docs = JSON.parse(string) as Doc[];
+      for (const doc of docs) {
+        await Docs.insertAsync(doc);
+      }
+      await rebuildNestedSets(Docs, DOC_ROOT_ID);
     }
   });
 }
@@ -115,32 +111,38 @@ const insertDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ doc, parentId }) {
-    delete doc._id;
-    assertDocsEditPermission(this.userId);
+  async run({ doc, parentId }: { doc: Omit<Doc, '_id'>, parentId: string | undefined }) {
+    await assertDocsEditPermission(this.userId);
 
+    // @ts-expect-error _id shoudn't exist
+    delete doc._id;
     doc.parentId = parentId;
     doc.root = {
       collection: 'docs',
       id: DOC_ROOT_ID,
     };
 
-    const lastOrder = Docs.find({}, { sort: { left: -1 }, limit: 1 }).fetch()[0]?.left || 0;
+    const previousDoc = parentId
+      ? await Docs.findOneAsync(parentId)
+      : await Docs.findOneAsync({}, { sort: { left: -1 }, limit: 1 });
+    const lastOrder = previousDoc?.left || 0;
     doc.urlName = 'new-doc-' + (lastOrder + 1);
-    doc.href = getDocLink(doc);
-    if (Docs.findOne({ href: doc.href })) {
+    doc.href = await getDocLink(doc as Doc);
+    doc.left = lastOrder + 0.5;
+    doc.right = doc.left;
+    if (await Docs.findOneAsync({ href: doc.href })) {
       throw new Meteor.Error('Link collision', 'A document with the same URL already exists');
     }
 
-    const docId = Docs.insert(doc);
-    rebuildNestedSets(Docs, DOC_ROOT_ID);
+    const docId = await Docs.insertAsync(doc as Doc);
+    await rebuildNestedSets(Docs, DOC_ROOT_ID);
     return docId;
   },
 });
 
 const updateDoc = new ValidatedMethod({
   name: 'docs.update',
-  validate({ _id, path }) {
+  validate({ _id, path }: { _id: string, path: string[], value: unknown }) {
     if (!_id) return false;
     // We cannot change these fields with a simple update
     switch (path[0]) {
@@ -153,8 +155,8 @@ const updateDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ _id, path, value }) {
-    assertDocsEditPermission(this.userId);
+  async run({ _id, path, value }) {
+    await assertDocsEditPermission(this.userId);
     const pathString = path.join('.');
     let modifier;
     // unset empty values
@@ -164,17 +166,17 @@ const updateDoc = new ValidatedMethod({
       modifier = { $set: { [pathString]: value } };
     }
     if (pathString === 'urlName') {
-      const doc = Docs.findOne(_id);
+      const doc = await Docs.findOneAsync(_id);
       if (!doc) throw new Meteor.Error('Not Found', 'The document you are trying to edit was not found');
-      const newLink = getDocLink(doc, value);
-      if (Docs.findOne({ href: newLink })) {
+      const newLink = await getDocLink(doc, value as string);
+      if (await Docs.findOneAsync({ href: newLink })) {
         throw new Meteor.Error('Link collision', 'A document with the same URL already exists');
       }
       modifier.$set = modifier.$set || {};
       modifier.$set.href = newLink;
     }
-    const updates = Docs.update(_id, modifier);
-    rebuildNestedSets(Docs, DOC_ROOT_ID);
+    const updates = await Docs.updateAsync(_id, modifier);
+    await rebuildNestedSets(Docs, DOC_ROOT_ID);
     return updates;
   },
 });
@@ -187,9 +189,9 @@ const pushToDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ _id, path, value }) {
-    assertDocsEditPermission(this.userId);
-    return Docs.update(_id, {
+  async run({ _id, path, value }: { _id: string, path: string[], value: unknown }) {
+    await assertDocsEditPermission(this.userId);
+    return await Docs.updateAsync(_id, {
       $push: { [path.join('.')]: value },
     });
   }
@@ -203,9 +205,9 @@ const pullFromDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ _id, path, itemId }) {
-    assertDocsEditPermission(this.userId);
-    return Docs.update(_id, {
+  async run({ _id, path, itemId }: { _id: string, path: string[], itemId: string }) {
+    await assertDocsEditPermission(this.userId);
+    return await Docs.updateAsync(_id, {
       $pull: { [path.join('.')]: { _id: itemId } },
     });
   }
@@ -221,10 +223,10 @@ const softRemoveDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ _id }) {
-    assertDocsEditPermission(this.userId);
-    softRemove(Docs, _id);
-    rebuildNestedSets(Docs, DOC_ROOT_ID);
+  async run({ _id }: { _id: string }) {
+    await assertDocsEditPermission(this.userId);
+    await softRemove(Docs, _id);
+    await rebuildNestedSets(Docs, DOC_ROOT_ID);
   }
 });
 
@@ -238,10 +240,10 @@ const restoreDoc = new ValidatedMethod({
     numRequests: 5,
     timeInterval: 5000,
   },
-  run({ _id }) {
-    assertDocsEditPermission(this.userId);
-    restore('docs', _id);
-    rebuildNestedSets(Docs, DOC_ROOT_ID);
+  async run({ _id }: { _id: string }) {
+    await assertDocsEditPermission(this.userId);
+    await restore(Docs, _id);
+    await rebuildNestedSets(Docs, DOC_ROOT_ID);
   }
 });
 
@@ -264,9 +266,9 @@ const organizeDoc = new ValidatedMethod({
     if (skipClient && this.isSimulation) {
       return;
     }
-    assertDocsEditPermission(this.userId);
+    await assertDocsEditPermission(this.userId);
 
-    const doc = Docs.findOne(docId);
+    const doc = await Docs.findOneAsync(docId);
     if (!doc) throw new Meteor.Error('not found', 'The doc you are moving was not found');
     // Move the doc
     await moveDocWithinRoot(doc, Docs, newPosition);

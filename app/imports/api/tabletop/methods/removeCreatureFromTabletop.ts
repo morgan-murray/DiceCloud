@@ -1,8 +1,9 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertUserInTabletop } from './shared/tabletopPermissions';
 import { assertUserHasPaidBenefits } from '/imports/api/users/patreon/tiers';
+import Tabletops from '/imports/api/tabletop/Tabletops';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import updateTabletopPropCount from '/imports/api/tabletop/functions/denormalizeTabletopPropCount';
 import { getCreature } from '/imports/api/engine/loadCreatures';
@@ -33,19 +34,19 @@ const removeCreatureFromTabletop = new ValidatedMethod({
     timeInterval: 5000,
   },
 
-  run({ tabletopId, creatureIds }) {
+  async run({ tabletopId, creatureIds }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.removeCreature.denied',
         'You need to be logged in to remove creatures from tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertUserInTabletop(tabletopId, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertUserInTabletop(await Tabletops.findOneAsync(tabletopId), this.userId);
 
     const creaturesToRemove: any[] = [];
     const creatureIdsToClearTabletopId: string[] = [];
 
     for (const creatureId of creatureIds) {
-      const creature = getCreature(creatureId);
+      const creature = await getCreature(creatureId);
       // Make sure the creature exists and is in this tabletop
       if (!creature || creature.tabletopId !== tabletopId) continue;
       switch (creature.type) {
@@ -62,7 +63,7 @@ const removeCreatureFromTabletop = new ValidatedMethod({
     }
 
     // Clear tabletopId from all player characters
-    if (creatureIdsToClearTabletopId.length) Creatures.update({
+    if (creatureIdsToClearTabletopId.length) await Creatures.updateAsync({
       _id: { $in: creatureIdsToClearTabletopId },
       $or: [
         { writers: this.userId },
@@ -76,8 +77,8 @@ const removeCreatureFromTabletop = new ValidatedMethod({
 
     // Remove all non player characters and monsters
     for (const creature of creaturesToRemove) {
-      assertOwnership(creature, this.userId)
-      removeCreatureWork(creature._id);
+      await assertOwnership(creature, this.userId)
+      await removeCreatureWork(creature._id);
     }
 
     if (Meteor.isServer) {

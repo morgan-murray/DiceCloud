@@ -1,3 +1,128 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import { autorun, subscribe } from 'vue-meteor-tracker';
+import { Meteor } from 'meteor/meteor';
+import { union } from 'lodash';
+import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
+import LibraryCollections, { insertLibraryCollection } from '/imports/api/library/LibraryCollections';
+import Libraries, { insertLibrary } from '/imports/api/library/Libraries';
+import { getUserTier } from '/imports/api/users/patreon/tiers';
+import LibraryListTile from '/imports/client/ui/library/LibraryListTile.vue';
+import LibraryCollectionHeader from '/imports/client/ui/library/LibraryCollectionHeader.vue';
+import { autorunAsync } from '/imports/client/ui/autorunAsync';
+import { key } from '/imports/client/ui/vuexStore';
+
+defineProps<{
+  selection?: boolean;
+  singleSelect?: boolean;
+  disabled?: boolean;
+  librariesSelected?: string[];
+  libraryCollectionsSelected?: string[];
+  librariesSelectedByCollections?: string[];
+}>();
+
+const store = useStore(key);
+const router = useRouter();
+
+const openCollections = ref<string[]>([]);
+
+const { ready: librariesReady } = subscribe('libraries');
+
+const { result: paidBenefits } = autorunAsync(async () => {
+  const tier = await getUserTier(Meteor.userId());
+  return tier && tier.paidBenefits;
+});
+
+const { result: libraryCollections } = autorun(() => {
+  const userId = Meteor.userId();
+  if (!userId) return;
+  const subCollections = Meteor.user()?.subscribedLibraryCollections || [];
+  return LibraryCollections.find({
+    $or: [
+      { owner: userId },
+      { writers: userId },
+      { readers: userId },
+      { _id: { $in: subCollections }, public: true },
+    ]
+  }, { sort: { name: 1 } }).map((libCollection: any) => {
+    libCollection.libraryDocuments = Libraries.find({
+      _id: { $in: libCollection.libraries },
+      $or: [
+        { owner: userId },
+        { writers: userId },
+        { readers: userId },
+        { public: true },
+      ]
+    }, { sort: { name: 1 } }).fetch();
+    return libCollection;
+  });
+});
+
+const { result: librariesWithoutCollection } = autorun(() => {
+  const userId = Meteor.userId();
+  if (!libraryCollections.value) return;
+  let collectedLibraries: string[] = [];
+  libraryCollections.value.forEach((libCollection: any) => {
+    collectedLibraries = union(collectedLibraries, libCollection.libraries);
+  });
+  return Libraries.find(
+    {
+      _id: { $nin: collectedLibraries },
+      $or: [
+        { owner: userId },
+        { writers: userId },
+        { readers: userId },
+        { public: true },
+      ]
+    },
+    { sort: { name: 1 } }
+  ).fetch();
+});
+
+function insertLibraryFn() {
+  if (paidBenefits.value) {
+    store.commit('pushDialogStack', {
+      component: 'library-creation-dialog',
+      elementId: 'insert-library-button',
+      async callback(library: any) {
+        if (!library) return;
+        try {
+          const libraryId = await insertLibrary.callAsync(library);
+          router.push({ name: 'singleLibrary', params: { id: libraryId } });
+        } catch (error: any) {
+          console.error(error);
+          snackbar({ text: error.reason });
+        }
+      },
+    });
+  } else {
+    store.commit('pushDialogStack', {
+      component: 'tier-too-low-dialog',
+      elementId: 'insert-library-button',
+    });
+  }
+}
+
+function insertLibraryCollectionFn() {
+  store.commit('pushDialogStack', {
+    component: 'library-collection-creation-dialog',
+    elementId: 'insert-library-collection-button',
+    async callback(libraryCollection: any) {
+      if (!libraryCollection) return;
+      try {
+        const id = await insertLibraryCollection.callAsync(libraryCollection);
+        return `library-collection-${id}`;
+      } catch (error: any) {
+        console.error(error);
+        snackbar({ text: error.reason });
+      }
+    },
+  });
+}
+</script>
+
 <template>
   <v-list
     expand
@@ -7,7 +132,7 @@
       v-for="library in librariesWithoutCollection"
       :key="library._id"
       :model="library"
-      :to="{ name: 'singleLibrary', params: { id: library._id }}"
+      :to="{ name: 'singleLibrary', params: { id: library._id } }"
       :selection="selection"
       :single-select="singleSelect"
       :is-selected="librariesSelected && librariesSelected.includes(library._id)"
@@ -24,7 +149,7 @@
     >
       <template #activator>
         <library-collection-header
-          :open="openCollections[libraryCollection._id]"
+          :open="!!openCollections[libraryCollection._id]"
           :model="libraryCollection"
           :selection="selection"
           :single-select="singleSelect"
@@ -37,7 +162,7 @@
         v-for="library in libraryCollection.libraryDocuments"
         :key="library._id"
         :model="library"
-        :to="{ name: 'singleLibrary', params: { id: library._id }}"
+        :to="{ name: 'singleLibrary', params: { id: library._id } }"
         :selection="selection"
         :single-select="singleSelect"
         :is-selected="librariesSelected && librariesSelected.includes(library._id)"
@@ -47,7 +172,7 @@
         @select="val => $emit('select-library', library._id, val)"
       />
     </v-list-group>
-    <v-list-item v-if="!$subReady.libraries">
+    <v-list-item v-if="!librariesReady">
       <v-spacer />
       <v-progress-circular
         indeterminate
@@ -57,144 +182,3 @@
     </v-list-item>
   </v-list>
 </template>
-
-<script lang="js">
-import { union } from 'lodash';
-import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import LibraryCollections, { insertLibraryCollection } from '/imports/api/library/LibraryCollections';
-import Libraries, { insertLibrary } from '/imports/api/library/Libraries';
-import LibraryListTile from '/imports/client/ui/library/LibraryListTile.vue'
-import LibraryCollectionHeader from '/imports/client/ui/library/LibraryCollectionHeader.vue';
-
-export default {
-  components: {
-    LibraryListTile,
-    LibraryCollectionHeader,
-  },
-  props: {
-    selection: Boolean,
-    singleSelect: Boolean,
-    disabled: Boolean,
-    librariesSelected: {
-      type: Array,
-      default: undefined,
-    },
-    libraryCollectionsSelected: {
-      type: Array,
-      default: undefined,
-    },
-    librariesSelectedByCollections: {
-      type: Array,
-      default: undefined,
-    },
-  },
-  data(){ return{
-    loadingInsertLibraryCollection: false,
-    openCollections: [],
-  }},
-  meteor: {
-    $subscribe: {
-      'libraries': [],
-    },
-    libraryCollections(){
-      const userId = Meteor.userId();
-      if (!userId) return;
-      const subCollections = Meteor.user()?.subscribedLibraryCollections || [];
-      return LibraryCollections.find({
-        $or: [
-          { owner: userId },
-          { writers: userId },
-          { readers: userId },
-          { _id: { $in: subCollections }, public: true },
-        ]
-      }, {
-        sort: { name: 1 }
-      }).map(libCollection => {
-        libCollection.libraryDocuments = Libraries.find({
-          _id: {$in: libCollection.libraries},
-          $or: [
-            { owner: userId },
-            { writers: userId },
-            { readers: userId },
-            { public: true },
-          ]
-        }, {
-          sort: { name: 1 }
-        }).fetch();
-        return libCollection;
-      });
-    },
-    librariesWithoutCollection() {
-      const userId = Meteor.userId();
-      if (!this.libraryCollections) return;
-      // Collate the IDs of all the libraries in collections
-      let collectedLibraries = [];
-      this.libraryCollections.forEach(libCollection => {
-        collectedLibraries = union(collectedLibraries, libCollection.libraries);
-      });
-      // return the libraries with IDs not in that list
-      return Libraries.find(
-        {
-          _id: {$nin: collectedLibraries},
-          $or: [
-            { owner: userId },
-            { writers: userId },
-            { readers: userId },
-            { public: true },
-          ]
-        },
-        {sort: {name: 1}}
-      );
-    },
-  },
-  methods: {
-    insertLibrary() {
-      const self = this;
-      if (this.paidBenefits){
-        this.$store.commit('pushDialogStack', {
-          component: 'library-creation-dialog',
-          elementId: 'insert-library-button',
-          callback(library){
-            if (!library) return;
-            return insertLibrary.call(library, (error, libraryId) => {
-              if (error){
-                console.error(error);
-                snackbar({
-                  text: error.reason,
-                });
-              } else {
-                self.$router.push({
-                  name: 'singleLibrary',
-                  params: { id: libraryId }
-                });
-              }
-            });
-          }
-        });
-      } else {
-        this.$store.commit('pushDialogStack', {
-          component: 'tier-too-low-dialog',
-          elementId: 'insert-library-button',
-        });
-      }
-    },
-    insertLibraryCollection() {
-      this.$store.commit('pushDialogStack', {
-        component: 'library-collection-creation-dialog',
-        elementId: 'insert-library-collection-button',
-        callback(libraryCollection){
-          if (!libraryCollection) return;
-          const id = insertLibraryCollection.call(libraryCollection, error => {
-            if (!error) return;
-            console.error(error);
-            snackbar({
-              text: error.reason,
-            });
-          });
-          return `library-collection-${id}`
-        }
-      });
-    },
-  },
-};
-</script>

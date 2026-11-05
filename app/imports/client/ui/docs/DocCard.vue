@@ -1,3 +1,15 @@
+<script setup lang="ts">
+import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
+import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
+import { ref } from 'vue';
+
+defineProps<{
+  doc: object;
+}>();
+
+const hovering = ref(false);
+</script>
+
 <template>
   <v-card
     :to="doc.href"
@@ -22,27 +34,6 @@
     <card-highlight :active="hovering" />
   </v-card>
 </template>
-
-<script lang="js">
-import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
-import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
-  
-export default {
-  components: {
-    MarkdownText,
-    CardHighlight,
-  },
-  props: { 
-    doc: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {return {
-    hovering: false,
-  }},
-}
-</script>
 
 <style scoped>
   .v-card {

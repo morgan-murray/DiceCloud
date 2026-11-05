@@ -1,9 +1,6 @@
+<script setup lang="ts">
+</script>
+
 <template lang="html">
   <div />
 </template>
-
-<script lang="js">
-
-export default {
-}
-</script>

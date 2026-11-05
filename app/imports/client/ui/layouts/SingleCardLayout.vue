@@ -1,6 +1,8 @@
+<script setup lang="ts">
+</script>
+
 <template
   lang="html"
-  functional
 >
   <div
     class="pa-4 layout column align-center card-background"
@@ -13,7 +15,3 @@
     </v-card>
   </div>
 </template>
-
-<script lang="js">
-  export default {}
-</script>

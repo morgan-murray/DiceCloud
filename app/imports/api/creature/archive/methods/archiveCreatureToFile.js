@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import SCHEMA_VERSION from '/imports/constants/SCHEMA_VERSION';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertOwnership } from '/imports/api/creature/creatures/creaturePermissions';
@@ -12,14 +12,14 @@ import { removeCreatureWork } from '/imports/api/creature/creatures/methods/remo
 import ArchiveCreatureFiles from '/imports/api/creature/archive/ArchiveCreatureFiles';
 import { getFilter } from '/imports/api/parenting/parentingFunctions';
 
-export function getArchiveObj(creatureId) {
+export async function getArchiveObj(creatureId) {
   // Build the archive document
-  const creature = Creatures.findOne(creatureId);
+  const creature = await Creatures.findOneAsync(creatureId);
   if (!creature) throw new Meteor.Error('creature-not-found', 'Creature not found');
-  const properties = CreatureProperties.find({ ...getFilter.descendantsOfRoot(creatureId) }).fetch();
-  const experiences = Experiences.find({ creatureId }).fetch();
-  const logs = CreatureLogs.find({ creatureId }).fetch();
-  let archiveCreature = {
+  const properties = await CreatureProperties.find({ ...getFilter.descendantsOfRoot(creatureId) }).fetchAsync();
+  const experiences = await Experiences.find({ creatureId }).fetchAsync();
+  const logs = await CreatureLogs.find({ creatureId }).fetchAsync();
+  const archiveCreature = {
     meta: {
       type: 'DiceCloud V2 Creature Archive',
       schemaVersion: SCHEMA_VERSION,
@@ -34,45 +34,32 @@ export function getArchiveObj(creatureId) {
   return archiveCreature;
 }
 
-export const archiveCreature = Meteor.wrapAsync(function archiveCreatureFn(creatureId, callback) {
-  const archive = getArchiveObj(creatureId);
+export async function archiveCreature(creatureId) {
+  const archive = await getArchiveObj(creatureId);
   const buffer = Buffer.from(JSON.stringify(archive, null, 2));
-  ArchiveCreatureFiles.write(buffer, {
+  const fileRef = await ArchiveCreatureFiles.writeAsync(buffer, {
     fileName: `${archive.creature.name || archive.creature._id}.json`,
-    type: 'application/json',
-    userId: archive.creature.owner,
-    meta: {
-      schemaVersion: SCHEMA_VERSION,
-      creatureId: archive.creature._id,
-      creatureName: archive.creature.name,
-    },
-  }, (error, fileRef) => {
-    if (error) {
-      // If there is an error already, just call the callback
-      callback(error);
-    } else if (!Meteor.settings.useS3) {
-      // If we aren't using s3, remove the creature and call the callback
-      removeCreatureWork(creatureId);
-      callback();
-    } else {
-      // Wait for s3Result event that occurs when the s3 attempt to write ends.
-      // If it's successful, remove the creature, otherwise callback with error
-      const resultHandler = (s3Error, resultRef) => {
-        // This event is for a different file, ignore it
-        if (resultRef._id !== fileRef._id) return;
-        // Remove this handler, we are only running it once for this fileId
-        ArchiveCreatureFiles.off('s3Result', resultHandler);
-        // Remove the creature if there was no error
-        if (!s3Error) {
-          removeCreatureWork(creatureId);
-        }
-        // Alert the callback that we're done
-        callback(s3Error);
-      }
-      ArchiveCreatureFiles.on('s3Result', resultHandler);
-    }
+    type: 'application/json', userId: archive.creature.owner,
+    meta: { schemaVersion: SCHEMA_VERSION, creatureId: archive.creature._id, creatureName: archive.creature.name },
   }, true);
-});
+  if (Meteor.settings.useS3) {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        ArchiveCreatureFiles.off('s3Result', resultHandler);
+        reject(new Meteor.Error('archive-upload-timeout', 'The remote archive was not confirmed; the original character has been retained'));
+      }, 30000);
+      const resultHandler = (error, resultRef) => {
+        if (resultRef?._id !== fileRef._id) return;
+        clearTimeout(timeout);
+        ArchiveCreatureFiles.off('s3Result', resultHandler);
+        if (error) reject(error); else resolve();
+      };
+      ArchiveCreatureFiles.on('s3Result', resultHandler);
+    });
+  }
+  await removeCreatureWork(creatureId);
+  return fileRef._id;
+}
 
 const archiveCreatureToFile = new ValidatedMethod({
   name: 'Creatures.methods.archiveCreatureToFile',
@@ -88,12 +75,9 @@ const archiveCreatureToFile = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run({ creatureId }) {
-    assertOwnership(creatureId, this.userId);
-    if (Meteor.isServer) {
-      archiveCreature(creatureId);
-    } else {
-      removeCreatureWork(creatureId);
-    }
+    if (!Meteor.isServer) return;
+    await assertOwnership(creatureId, this.userId);
+    return await archiveCreature(creatureId);
   },
 });
 

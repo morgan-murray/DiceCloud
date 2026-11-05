@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import ArchiveCreatureFiles from '/imports/api/creature/archive/ArchiveCreatureFiles';
@@ -18,8 +18,9 @@ const removeArchiveCreature = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run({ fileId }) {
+    if (!Meteor.isServer) return;
     // fetch the file
-    const file = ArchiveCreatureFiles.findOne({ _id: fileId }).get();
+    const file = (await ArchiveCreatureFiles.findOneAsync({ _id: fileId }))?.get();
     if (!file) {
       throw new Meteor.Error('File not found',
         'The requested creature archive does not exist');
@@ -31,9 +32,9 @@ const removeArchiveCreature = new ValidatedMethod({
         'You can only restore creatures you own');
     }
     //Remove the archive once the restore succeeded
-    ArchiveCreatureFiles.remove({ _id: fileId });
+    await ArchiveCreatureFiles.removeAsync({ _id: fileId });
     // Update the user's file storage limits
-    incrementFileStorageUsed(userId, -file.size);
+    await incrementFileStorageUsed(userId, -file.size);
   },
 });
 

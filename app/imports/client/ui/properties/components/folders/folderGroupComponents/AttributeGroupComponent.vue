@@ -1,3 +1,58 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useStore } from 'vuex';
+import AbilityListTile from '/imports/client/ui/properties/components/attributes/AbilityListTile.vue';
+import HitDiceListTile from '/imports/client/ui/properties/components/attributes/HitDiceListTile.vue';
+import HealthBar from '/imports/client/ui/properties/components/attributes/HealthBar.vue';
+import SpellSlotListTile from '/imports/client/ui/properties/components/attributes/SpellSlotListTile.vue';
+import ResourceCardContent from '/imports/client/ui/properties/components/attributes/ResourceCardContent.vue';
+import AttributeCardContent from '/imports/client/ui/properties/components/attributes/AttributeCardContent.vue';
+import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
+import FolderGroupChildren from '/imports/client/ui/properties/components/folders/folderGroupComponents/FolderGroupChildren.vue';
+import doAction from '/imports/client/ui/creature/actions/doAction';
+import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
+import getPropertyTitle from '/imports/client/ui/properties/shared/getPropertyTitle';
+import { key } from '/imports/client/ui/vuexStore';
+
+const props = defineProps<{
+  model: Record<string, any>;
+  dataId: string;
+}>();
+
+const store = useStore(key);
+const hover = ref(false);
+
+async function damageProperty({ value, type, ack }: { value: any; type: string; ack?: Function }) {
+  const model = props.model;
+  if (type === 'increment') value = -value;
+  try {
+    await doAction({
+      creatureId: model.root.id,
+      $store: store,
+      elementId: props.dataId,
+      task: {
+        subtaskFn: 'damageProp',
+        targetIds: [model.root.id],
+        params: {
+          title: getPropertyTitle(model),
+          operation: type,
+          value,
+          targetProp: model,
+        },
+      },
+    });
+    ack?.();
+  } catch (error: any) {
+    if (ack) {
+      ack(error);
+    } else {
+      snackbar({ text: error.reason || error.message || error.toString() });
+      console.error(error);
+    }
+  }
+}
+</script>
+
 <template>
   <div>
     <div
@@ -53,82 +108,12 @@
   </div>
 </template>
 
-<script lang="js">
-import AbilityListTile from '/imports/client/ui/properties/components/attributes/AbilityListTile.vue';
-import HitDiceListTile from '/imports/client/ui/properties/components/attributes/HitDiceListTile.vue';
-import HealthBar from '/imports/client/ui/properties/components/attributes/HealthBar.vue';
-import SpellSlotListTile from '/imports/client/ui/properties/components/attributes/SpellSlotListTile.vue';
-import ResourceCardContent from '/imports/client/ui/properties/components/attributes/ResourceCardContent.vue';
-import AttributeCardContent from '/imports/client/ui/properties/components/attributes/AttributeCardContent.vue';
-import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
-import FolderGroupChildren from '/imports/client/ui/properties/components/folders/folderGroupComponents/FolderGroupChildren.vue';
-import doAction from '/imports/client/ui/creature/actions/doAction';
-import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import getPropertyTitle from '/imports/client/ui/properties/shared/getPropertyTitle';
-
-export default {
-  components: {
-    AbilityListTile,
-    HitDiceListTile,
-    HealthBar,
-    SpellSlotListTile,
-    ResourceCardContent,
-    AttributeCardContent,
-    CardHighlight,
-    FolderGroupChildren,
-  },
-  props: {
-    model: {
-      type: Object,
-      required: true,
-    },
-    dataId: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-    hover: false,
-  }},
-  methods: {
-    damageProperty({value, type, ack}) {
-      const model = this.model;
-      if (type === 'increment') value = -value;
-      doAction({
-        creatureId: model.root.id,
-        $store: this.$store,
-        elementId: this.dataId,
-        task: {
-          subtaskFn: 'damageProp',
-          targetIds: [model.root.id],
-          params: {
-            title: getPropertyTitle(model),
-            operation: type,
-            value,
-            targetProp: model,
-          }
-        }
-      }).then(() => {
-        ack?.();
-      }).catch((error) => {
-        if (ack) {
-          ack(error);
-        } else  {
-          snackbar({ text: error.reason || error.message || error.toString() });
-          console.error(error);
-        }
-      });
-    },
-  }
-}
-</script>
-
 <style lang="css" scoped>
-  .attribute {
-    position: relative;
-  }
-  .pointer {
-    cursor: pointer;
-  }
+.attribute {
+  position: relative;
+}
+
+.pointer {
+  cursor: pointer;
+}
 </style>

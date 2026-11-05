@@ -1,6 +1,6 @@
-import { getFromScope } from '/imports/api/creature/creatures/CreatureVariables';
+import { getFromScope } from '../../shared/scope';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
-import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import type { InputProvider } from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { applyDefaultAfterPropTasks, applyTaskToEachTarget } from '/imports/api/engine/action/functions/applyTaskGroups';
 import getPropertyTitle from '/imports/api/utility/getPropertyTitle';
 import recalculateCalculation from '/imports/api/engine/action/functions/recalculateCalculation';
@@ -27,7 +27,7 @@ export default async function applySavingThrowProperty(
   }
 
   if (prop.dc) {
-    recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
+    await recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
   }
 
   if (!isFiniteNode(prop.dc?.valueNode)) {
@@ -60,7 +60,7 @@ export default async function applySavingThrowProperty(
   }
 
   // Each target makes the saving throw
-  const save = prop.stat ? getFromScope(prop.stat, getVariables(targetId)) : undefined;
+  const save = prop.stat ? await getFromScope(prop.stat, getVariables(targetId)) : undefined;
 
   if (!save) {
     result.appendLog({

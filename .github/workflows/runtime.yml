@@ -1,0 +1,93 @@
+name: Runtime build
+on:
+  # Feature branches are checked by pull_request; checking their pushes too
+  # creates duplicate check runs and leaves a cancelled status on the PR.
+  push:
+    branches: [develop]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: runtime-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  linux-amd64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check browser test syntax
+        run: node --check deployment/browser/runtime.spec.mjs
+      - name: Build checked-out source
+        run: |
+          docker build --progress=plain --target test .
+          docker build --progress=plain --target runtime --build-arg SOURCE_REVISION="$GITHUB_SHA" -t dicecloud:runtime .
+      - name: Exercise recovery refusal paths
+        run: python3 -m unittest discover -s deployment -p 'test_*.py' -v
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.23.4
+      - name: Prepare browser tests
+        working-directory: deployment/browser
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Check non-root runtime
+        run: test "$(docker image inspect dicecloud:runtime --format '{{.Config.User}}')" = node
+      - name: Initialize isolated private stack
+        run: |
+          python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-config"
+          ALLOW_REGISTRATION=true docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
+          curl --fail --retry 5 --retry-all-errors http://127.0.0.1:31080/api/status
+      - name: Verify browser workflows and ownership boundaries
+        working-directory: deployment/browser
+        env:
+          DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-browser-fixture.json
+        run: npm test -- --grep 'root mode'
+      - name: Verify restart persistence and closed registration
+        run: |
+          docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app
+          cd deployment/browser
+          DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration'
+      - name: Consistent backup and guarded restore
+        run: |
+          python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-config/runtime.env" --project dicecloud-ci backup --destination "$RUNNER_TEMP/dicecloud-backup"
+          python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-restore-config" --port 31081
+          IMAGE_ID=$(docker image inspect dicecloud:runtime --format '{{.Id}}')
+          sed -i "s|DICECLOUD_IMAGE=.*|DICECLOUD_IMAGE=$IMAGE_ID|" "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"
+          python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --project dicecloud-restore-ci restore --backup "$RUNNER_TEMP/dicecloud-backup"
+          curl --fail http://127.0.0.1:31081/api/status
+          cd deployment/browser
+          DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration'
+      - name: Export built image for private VPS verification
+        if: always()
+        run: |
+          if docker image inspect dicecloud:runtime >/dev/null 2>&1; then
+            docker save dicecloud:runtime | gzip -1 > runtime-image.tar.gz
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always() && hashFiles('runtime-image.tar.gz') != ''
+        with:
+          name: runtime-image
+          path: runtime-image.tar.gz
+          retention-days: 1
+          compression-level: 0
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: browser-diagnostics
+          path: deployment/browser/test-results/
+          retention-days: 1
+      - name: Show bounded diagnostics on failure
+        if: failure()
+        run: docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci logs --tail 80
+      - name: Remove disposable stack
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/dicecloud-config/runtime.env"; then
+            docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci down -v
+          fi
+          if test -f "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"; then
+            docker compose --env-file "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" -p dicecloud-restore-ci down -v
+          fi

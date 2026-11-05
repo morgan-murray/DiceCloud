@@ -1,9 +1,13 @@
+<script setup lang="ts">
+import MAINTENANCE_MODE from '/imports/constants/MAINTENANCE_MODE';
+
+const maintenanceMode = MAINTENANCE_MODE;
+</script>
+
 <template>
-  <v-layout
+  <div
     style="height: 100%;"
-    column
-    align-center
-    justify-center
+    class="d-flex flex-column align-center justify-center"
   >
     <h1
       v-if="maintenanceMode"
@@ -30,14 +34,5 @@
     >
       {{ maintenanceMode.reason }}
     </h1>
-  </v-layout>
+  </div>
 </template>
-
-<script lang="js">
-  import MAINTENANCE_MODE from '/imports/constants/MAINTENANCE_MODE';
-  export default {
-    data(){return {
-      maintenanceMode: MAINTENANCE_MODE,
-    }},
-  }
-</script>

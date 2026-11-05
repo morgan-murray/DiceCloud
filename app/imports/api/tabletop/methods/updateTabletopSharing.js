@@ -32,13 +32,13 @@ const updateTabletopSharing = new ValidatedMethod({
     timeInterval: 5000,
   },
 
-  run({ tabletopId, userId, role }) {
+  async run({ tabletopId, userId, role }) {
     if (!this.userId) {
       throw new Meteor.Error('tabletops.update.denied',
         'You need to be logged in to update a tabletop');
     }
-    const tabletop = Tabletops.findOne(tabletopId);
-    assertUserHasPaidBenefits(this.userId);
+    const tabletop = await Tabletops.findOneAsync(tabletopId);
+    await assertUserHasPaidBenefits(this.userId);
     assertCanEditTabletop(tabletop, this.userId);
 
     if (role === 'owner') {
@@ -47,7 +47,7 @@ const updateTabletopSharing = new ValidatedMethod({
 
     // Check that the new user exists
     if (Meteor.isServer) {
-      const userToAdd = Meteor.users.findOne({ _id: userId }, { fields: { _id: 1 } });
+      const userToAdd = await Meteor.users.findOneAsync({ _id: userId }, { fields: { _id: 1 } });
       if (!userToAdd) {
         throw new Meteor.Error('User not found',
           'The user could not be found'
@@ -113,7 +113,7 @@ const updateTabletopSharing = new ValidatedMethod({
         break;
     }
     if (!update) return;
-    return Tabletops.update(tabletopId, update)
+    return Tabletops.updateAsync(tabletopId, update)
   },
 
 });

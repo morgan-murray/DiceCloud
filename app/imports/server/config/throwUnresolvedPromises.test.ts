@@ -3,3 +3,4 @@ process.on('unhandledRejection', (error, p) => {
   console.error('Unhandled Rejection at:', p, 'reason:', error)
   process.exit(1)
 });
+export {};

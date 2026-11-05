@@ -1,0 +1,53 @@
+import CreatureFolders from '/imports/api/creature/creatureFolders/CreatureFolders';
+import { ValidatedMethod } from 'meteor/mdg:validated-method';
+import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
+
+const insertCreatureFolder = new ValidatedMethod({
+  name: 'creatureFolders.methods.insert',
+  validate: null,
+  mixins: [RateLimiterMixin],
+  rateLimit: {
+    numRequests: 5,
+    timeInterval: 5000,
+  },
+  async run() {
+    // if (Meteor.isClient) return;
+    // Ensure logged in
+    const userId = this.userId;
+    if (!userId) {
+      throw new Meteor.Error('creatureFolders.methods.insert.denied',
+        'You need to be logged in to insert a folder');
+    }
+    // Limit folders to 50 per user
+    const existingFolderCount = await CreatureFolders.find({
+      owner: userId
+    }, {
+      fields: { order: 1 },
+      sort: { order: -1 }
+    }).countAsync();
+    if (existingFolderCount >= 50) {
+      throw new Meteor.Error('creatureFolders.methods.insert.denied',
+        'You can not have more than 50 folders');
+    }
+    // Make the new folder the last in the order
+    let order = 0;
+    const lastFolder = await CreatureFolders.findOneAsync({
+      owner: userId
+    }, {
+      fields: { order: 1 },
+      sort: { order: -1 }
+    });
+    if (lastFolder) {
+      order = (lastFolder.order || 0) + 1;
+    }
+    // Insert
+    return CreatureFolders.insertAsync({
+      name: 'Folder',
+      creatures: [],
+      owner: userId,
+      order,
+    });
+  },
+});
+
+export default insertCreatureFolder;

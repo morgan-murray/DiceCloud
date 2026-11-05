@@ -1,9 +1,26 @@
+<script setup lang="ts">
+import VerticalHex from '/imports/client/ui/components/VerticalHex.vue';
+
+const props = defineProps<{
+  value: number;
+}>();
+
+const emit = defineEmits<{
+  continue: [];
+  input: [value: number];
+}>();
+
+function emitInput(e: number) {
+  emit('input', e || 0);
+}
+</script>
+
 <template>
   <div class="d-flex flex-column justify-center align-center">
     <v-btn-toggle
-      :value="value"
+      :model-value="value"
       color="accent"
-      @change="emitInput"
+      @update:model-value="emitInput"
     >
       <v-btn :value="-1">
         Disadvantage
@@ -26,7 +43,7 @@
       </v-scale-transition>
       <vertical-hex
         id="roll-hex"
-        @click="$emit('continue')"
+        @click="emit('continue')"
       >
         <div>
           Roll
@@ -35,25 +52,3 @@
     </div>
   </div>
 </template>
-
-<script lang="js">
-import VerticalHex from '/imports/client/ui/components/VerticalHex.vue';
-
-export default {
-  components: {
-    VerticalHex
-  },
-  props: {
-    value: {
-      type: Number,
-      required: true,
-    }
-  },
-  methods: {
-    emitInput(e) {
-      e = e || 0;
-      this.$emit('input', e)
-    }
-  }
-};
-</script>

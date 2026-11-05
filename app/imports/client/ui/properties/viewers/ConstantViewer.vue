@@ -1,3 +1,7 @@
+<script setup lang="ts">
+defineProps<{ model: Record<string, any> }>();
+</script>
+
 <template lang="html">
   <div class="buff-viewer">
     <v-row dense>
@@ -13,11 +17,3 @@
     </v-row>
   </div>
 </template>
-
-<script lang="js">
-import propertyViewerMixin from '/imports/client/ui/properties/viewers/shared/propertyViewerMixin'
-
-export default {
-  mixins: [propertyViewerMixin],
-}
-</script>
