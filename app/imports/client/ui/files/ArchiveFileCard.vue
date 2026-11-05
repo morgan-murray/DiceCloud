@@ -4,7 +4,8 @@ import { useStore } from 'vuex';
 import { autorun } from 'vue-meteor-tracker';
 import restoreCreatureFromFile from '/imports/api/creature/archive/methods/restoreCreatureFromFile';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import { characterSlotsRemainingAsync } from '/imports/api/creature/creatures/methods/assertHasCharacterSlots';
+import { getUserTier } from '/imports/api/users/patreon/tiers';
+import Creatures from '/imports/api/creature/creatures/Creatures';
 import removeArchiveCreature from '/imports/api/creature/archive/methods/removeArchiveCreature';
 import { key } from '/imports/client/ui/vuexStore';
 
@@ -16,7 +17,13 @@ const store = useStore(key);
 const restoreLoading = ref(false);
 const removeLoading = ref(false);
 
-const { result: characterSlots } = autorun(() => characterSlotsRemainingAsync(Meteor.userId()));
+const { result: characterSlots } = autorun(() => {
+  const userId = Meteor.userId();
+  if (!userId) return 0;
+  const tier = getUserTier(userId);
+  if (tier.characterSlots === -1) return Number.POSITIVE_INFINITY;
+  return tier.characterSlots - Creatures.find({ owner: userId }).count();
+});
 
 async function restore() {
   restoreLoading.value = true;

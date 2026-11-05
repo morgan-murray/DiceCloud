@@ -90,7 +90,7 @@ def backup(args):
             'format': 2, 'completed_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
             'source_project': args.project, 'image_id': image_id,
             'database_bytes': database_bytes, 'files_bytes': files_bytes,
-            'image_revision': details.get('Config', {}).get('Labels', {}).get('org.opencontainers.image.revision', 'unknown'),
+            'image_revision': (details.get('Config', {}).get('Labels') or {}).get('org.opencontainers.image.revision', 'unknown'),
             'tooling_git_commit': run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip(),
             'compose_sha256': config_digest(args.env, args.project),
             'schema_note': 'Schema/migration records are included in the logical database dump.',

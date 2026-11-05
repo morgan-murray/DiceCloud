@@ -139,6 +139,25 @@ them before switching traffic. Do not downgrade an image against a newer schema
 and assume it is safe. Future importer originals and content manifests must join
 the persistent file volume and backup set.
 
+## Known validation limits
+
+Static type checking currently reports substantial upstream diagnostics, including
+Vue component declarations and strict typing of legacy JavaScript. It is not a
+passing check. Do not relax compiler settings to hide these diagnostics; track
+runtime-relevant findings through targeted regressions and review the remaining
+type debt before accepting this migration.
+
+The application dependency audit reports two moderate findings within bundled
+`meteor-node-stubs` dependencies (`qs` and `pbkdf2`). The locked generated server
+bundle audits clean. The stubs are browser compatibility code, not the server's
+request parser or authentication implementation; their bundled copies cannot be
+replaced by an npm override. The fork maintainer owns reassessment on the next
+stub/Meteor update. This is a proposed nonblocking disposition requiring review,
+not a claim that every transitive dependency is free of advisories.
+
+Optional S3 archive storage, SMTP, third-party authentication and architectures
+other than Linux amd64 have not been exercised by this baseline.
+
 ## Acceptance evidence
 
 See the runtime PR for actual clean-build, server-test, browser and recovery
