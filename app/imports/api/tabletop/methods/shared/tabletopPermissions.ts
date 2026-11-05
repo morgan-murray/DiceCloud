@@ -31,7 +31,7 @@ export function assertUserInTabletop(tabletopOrId: TabletopOrId, userId: string)
 export function assertUserGameMasterOfTabletop(tabletopOrId: TabletopOrId, userId: string) {
   const tabletop = getTabletop(tabletopOrId);
   assertTabletopExists(tabletop);
-  if (tabletop.gameMasters.includes(userId)) {
+  if (!tabletop.gameMasters.includes(userId)) {
     throw new Meteor.Error('not-game-master',
       'You are not a game master in the tabletop');
   }
@@ -40,7 +40,7 @@ export function assertUserGameMasterOfTabletop(tabletopOrId: TabletopOrId, userI
 export function assertCanEditTabletop(tabletopOrId: TabletopOrId, userId: string) {
   const tabletop = getTabletop(tabletopOrId);
   assertTabletopExists(tabletop);
-  if (tabletop.owner !== userId && tabletop.gameMasters.includes(userId)) {
+  if (tabletop.owner !== userId && !tabletop.gameMasters.includes(userId)) {
     throw new Meteor.Error('not-editor',
       'You are not an owner or game master of the tabletop');
   }

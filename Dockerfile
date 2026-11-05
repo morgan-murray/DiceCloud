@@ -27,6 +27,8 @@ ENV TEST_CLIENT=0 MOCHA_TIMEOUT=10000
 RUN npm run test:server
 
 FROM ${NODE_IMAGE} AS runtime
+ARG SOURCE_REVISION=unknown
+LABEL org.opencontainers.image.revision=${SOURCE_REVISION}
 ENV NODE_ENV=production PORT=3000 BIND_IP=0.0.0.0
 WORKDIR /opt/dicecloud
 COPY --from=build --chown=node:node /home/node/bundle/bundle/ ./

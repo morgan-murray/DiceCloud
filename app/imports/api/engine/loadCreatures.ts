@@ -369,7 +369,7 @@ class LoadedCreature {
   static changeDoc(doc: Record<string, unknown>, fields: Record<string, unknown>) {
     if (!doc) return;
     for (const key in fields) {
-      if (key === undefined) {
+      if (fields[key] === undefined) {
         delete doc[key];
       } else {
         doc[key] = fields[key];

@@ -4,7 +4,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { autorun, subscribe } from 'vue-meteor-tracker';
 import { union } from 'lodash';
-import { getUserTierAsync } from '/imports/api/users/patreon/tiers';
+import { getUserTier } from '/imports/api/users/patreon/tiers';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
 import LibraryCollections, { insertLibraryCollection } from '/imports/api/library/LibraryCollections';
 import Libraries, { insertLibrary } from '/imports/api/library/Libraries';
@@ -18,7 +18,7 @@ const { ready: librariesReady } = subscribe('libraries');
 const loadingInsertLibraryCollection = ref(false);
 
 const { result: paidBenefits } = autorun(() => {
-  const tier = getUserTierAsync(Meteor.userId());
+  const tier = getUserTier(Meteor.userId());
   return tier && tier.paidBenefits;
 });
 

@@ -29,8 +29,8 @@ const removeTabletop = new ValidatedMethod({
       throw new Meteor.Error('tabletops.remove.denied',
         'You need to be logged in to remove a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertUserIsTabletopOwner(tabletopId, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertUserIsTabletopOwner(await Tabletops.findOneAsync(tabletopId), this.userId);
 
     const removed = await Tabletops.removeAsync({
       _id: tabletopId,

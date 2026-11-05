@@ -38,7 +38,7 @@ const updateTabletopSharing = new ValidatedMethod({
         'You need to be logged in to update a tabletop');
     }
     const tabletop = await Tabletops.findOneAsync(tabletopId);
-    assertUserHasPaidBenefits(this.userId);
+    await assertUserHasPaidBenefits(this.userId);
     assertCanEditTabletop(tabletop, this.userId);
 
     if (role === 'owner') {

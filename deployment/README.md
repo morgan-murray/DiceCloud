@@ -40,7 +40,7 @@ that reserve is approached. Use a clean CI runner when the shared server cannot
 accommodate the build. Do not prune unrelated containers, images or volumes.
 
 ```sh
-docker build --progress=plain -t dicecloud:runtime .
+docker build --progress=plain --build-arg SOURCE_REVISION="$(git rev-parse HEAD)" -t dicecloud:runtime .
 python3 deployment/initialize.py --directory /srv/dicecloud-config
 docker compose --env-file /srv/dicecloud-config/runtime.env -p dicecloud-private up -d --no-build --wait
 curl --fail http://127.0.0.1:31080/api/status
@@ -104,8 +104,9 @@ against the same retained fixture. Extend this suite in the following URL phase.
 ## Consistent backup and recovery
 
 Backups stop the app to quiesce its writers, logically dump the application
-database, archive uploads and record the exact image ID, source revision and
-configuration hash. They restart the app if it had been running, including on
+database, archive uploads and record the exact image ID, embedded source revision and
+configuration hash. The tooling checkout revision is recorded separately; builds without
+a source label report an unknown image revision. They restart the app if it had been running, including on
 failure. Do not allow other writers to that database during the backup window.
 Copying live database files is not a backup strategy.
 

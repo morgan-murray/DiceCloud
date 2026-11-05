@@ -40,7 +40,7 @@ const addCreaturesFromLibraryToTabletop = new ValidatedMethod({
       throw new Meteor.Error('tabletops.addCreatures.denied',
         'You need to be logged in to remove a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
+    await assertUserHasPaidBenefits(this.userId);
     const tabletop = await Tabletops.findOneAsync(tabletopId);
     assertUserInTabletop(tabletop, this.userId);
     assertTabletopHasPropSpace(tabletop);

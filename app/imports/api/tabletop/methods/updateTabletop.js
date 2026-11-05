@@ -35,8 +35,8 @@ const updateTabletop = new ValidatedMethod({
       throw new Meteor.Error('tabletops.update.denied',
         'You need to be logged in to update a tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertCanEditTabletop(_id, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertCanEditTabletop(await Tabletops.findOneAsync(_id), this.userId);
 
     if (value === undefined || value === null) {
       await Tabletops.updateAsync(_id, {

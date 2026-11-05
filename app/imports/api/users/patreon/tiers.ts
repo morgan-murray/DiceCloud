@@ -94,6 +94,17 @@ export function getTierByEntitledCents(entitledCents = 0) {
   return findLast(TIERS, tier => entitledCents >= tier.minimumEntitledCents) || TIERS[0];
 }
 
+// Client computations must remain synchronous so Minimongo reads stay reactive.
+// Server callers use the async variant below.
+export function getUserTier(user: Meteor.User | string | null | undefined) {
+  if (typeof user === 'string') user = Meteor.users.findOne(user);
+  if (!user) return TIERS[0];
+  if (patreonDisabled) return PATREON_DISABLED_TIER;
+  const tier = getTierByEntitledCents(getEntitledCents(user));
+  if (tier.paidBenefits) return tier;
+  return Invites.findOne({ invitee: user._id, isFunded: true }) ? GUEST_TIER : tier;
+}
+
 export async function getUserTierAsync(user: Meteor.User | string) {
   if (!user) throw new Error('user must be provided');
   if (typeof user === 'string') {
@@ -117,7 +128,7 @@ export async function getUserTierAsync(user: Meteor.User | string) {
   }
 }
 
-export async function assertUserHasPaidBenefits(user: Meteor.User) {
+export async function assertUserHasPaidBenefits(user: Meteor.User | string) {
   const tier = await getUserTierAsync(user);
   if (!tier.paidBenefits) {
     throw new Meteor.Error('no paid benefits',

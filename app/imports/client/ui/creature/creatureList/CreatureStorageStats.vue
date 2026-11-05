@@ -2,14 +2,14 @@
 import { autorun } from 'vue-meteor-tracker';
 import { Meteor } from 'meteor/meteor';
 import Creatures from '/imports/api/creature/creatures/Creatures';
-import { getUserTierAsync } from '/imports/api/users/patreon/tiers';
+import { getUserTier } from '/imports/api/users/patreon/tiers';
 
 const { result: creatureCount } = autorun(() =>
   Creatures.find({ owner: Meteor.userId() }).count()
 );
 
 const { result: characterSlots } = autorun(() =>
-  getUserTierAsync(Meteor.userId()).characterSlots
+  getUserTier(Meteor.userId()).characterSlots
 );
 </script>
 

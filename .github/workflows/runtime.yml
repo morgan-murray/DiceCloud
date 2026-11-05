@@ -20,7 +20,7 @@ jobs:
       - name: Build checked-out source
         run: |
           docker build --progress=plain --target test .
-          docker build --progress=plain --target runtime -t dicecloud:runtime .
+          docker build --progress=plain --target runtime --build-arg SOURCE_REVISION="$GITHUB_SHA" -t dicecloud:runtime .
       - name: Exercise recovery refusal paths
         run: python3 -m unittest discover -s deployment -p 'test_*.py' -v
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

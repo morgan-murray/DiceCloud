@@ -17,7 +17,8 @@ async function ready(page, path = '/') {
 
 async function call(page, name, argument) {
   return page.evaluate(async ({ name, argument }) => {
-    return await window.Meteor.callAsync(name, argument);
+    try { return await window.Meteor.callAsync(name, argument); }
+    catch (error) { throw new Error(`${name}: ${error.reason || error.message}; ${JSON.stringify(error.details || error.error || '')}`); }
   }, { name, argument });
 }
 

@@ -3,6 +3,7 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertUserInTabletop } from './shared/tabletopPermissions';
 import { assertUserHasPaidBenefits } from '/imports/api/users/patreon/tiers';
+import Tabletops from '/imports/api/tabletop/Tabletops';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import updateTabletopPropCount from '/imports/api/tabletop/functions/denormalizeTabletopPropCount';
 import { getCreature } from '/imports/api/engine/loadCreatures';
@@ -38,8 +39,8 @@ const removeCreatureFromTabletop = new ValidatedMethod({
       throw new Meteor.Error('tabletops.removeCreature.denied',
         'You need to be logged in to remove creatures from tabletop');
     }
-    assertUserHasPaidBenefits(this.userId);
-    assertUserInTabletop(tabletopId, this.userId);
+    await assertUserHasPaidBenefits(this.userId);
+    assertUserInTabletop(await Tabletops.findOneAsync(tabletopId), this.userId);
 
     const creaturesToRemove: any[] = [];
     const creatureIdsToClearTabletopId: string[] = [];
