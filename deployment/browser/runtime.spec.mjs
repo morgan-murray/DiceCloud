@@ -229,7 +229,9 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   expect(new URL(page.url()).hash).toBe('#slot');
   await page.reload();
   await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
-  await ready(page, '/my-files');
+  // Exercise Vue's user-facing history, after navigation has actually finished.
+  await page.getByRole('link', { name: 'Files', exact: true }).click();
+  await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
   await page.goBack();
   await page.waitForFunction(() => window.Meteor?.status().connected);
   expect(new URL(page.url()).pathname).toContain(configured.pathname + `character/${creatureId}/`);
