@@ -20,7 +20,7 @@ async function importApiCreature(apiCreature, userId) {
 
   // Migrate and verify the archive meets the current schema
   if (Meteor.isServer) {
-    const migrateApiCreature = await import('../../../../migrations/apiCreature/migrateApiCreature');
+    const { default: migrateApiCreature } = await import('../../../../migrations/apiCreature/migrateApiCreature');
     migrateApiCreature(apiCreature);
   }
 

@@ -16,9 +16,7 @@ import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 import { type snackbar as snackbarType } from '../../../client/ui/components/snackbars/SnackbarQueue';
 let snackbar: typeof snackbarType | undefined;
 if (Meteor.isClient) {
-  snackbar = (await import(
-    '../../../client/ui/components/snackbars/SnackbarQueue'
-  )).snackbar
+  snackbar = require('../../../client/ui/components/snackbars/SnackbarQueue').snackbar
 }
 
 const DUPLICATE_CHILDREN_LIMIT = 500;

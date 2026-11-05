@@ -24,8 +24,8 @@ const UserImages = createS3FilesCollection({
     }
     return true
   },
-  onAfterUpload(file) {
-    if (Meteor.isServer) incrementFileStorageUsed(file.userId, file.size);
+  async onAfterUpload(file) {
+    if (Meteor.isServer) await incrementFileStorageUsed(file.userId, file.size);
   }
 });
 

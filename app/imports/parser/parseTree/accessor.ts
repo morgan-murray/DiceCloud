@@ -5,7 +5,6 @@ import type { ParseNodeFactory } from '/imports/parser/types/ParseNodeFactory';
 import type { ResolvedResult } from '/imports/parser/types/ResolvedResult';
 import type { ResolveLevelFunction } from '/imports/parser/types/ResolveLevelFunction';
 
-import { getFromScope } from '/imports/api/engine/shared/scope';
 
 export type AccessorNode = {
   parseType: 'accessor' | 'symbol';
@@ -35,6 +34,7 @@ const accessor: AccessorFactory = {
     };
   },
   async compile(node, scope, context) {
+    const { getFromScope } = await import('/imports/api/engine/shared/scope');
     // Get the value from the given path
     let value: ValueType = await getFromScope(node.name, scope);
     node.path?.forEach(name => {

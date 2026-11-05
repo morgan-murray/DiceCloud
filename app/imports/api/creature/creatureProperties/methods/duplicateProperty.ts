@@ -13,9 +13,7 @@ import { type snackbar as snackbarType } from '../../../../client/ui/components/
 import { getDocByRefAsync } from '/imports/api/parenting/reference';
 let snackbar: typeof snackbarType | undefined;
 if (Meteor.isClient) {
-  snackbar = (await import(
-    '../../../../client/ui/components/snackbars/SnackbarQueue'
-  )).snackbar
+  snackbar = require('../../../../client/ui/components/snackbars/SnackbarQueue').snackbar
 }
 
 const DUPLICATE_CHILDREN_LIMIT = 50;

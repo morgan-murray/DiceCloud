@@ -24,7 +24,7 @@ JsonRoutes.add('get', 'api/creature/:id', async function (req, res) {
   }
 
   // Check permissions
-  const creature = getCreature(creatureId);
+  const creature = await getCreature(creatureId);
   const userId = req.userId;
   try {
     await assertViewPermission(creature, userId)

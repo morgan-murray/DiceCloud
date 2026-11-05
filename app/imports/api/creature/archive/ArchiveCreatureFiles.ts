@@ -3,8 +3,8 @@ import { CreaturePropertySchema } from '/imports/api/creature/creatureProperties
 import { CreatureSchema } from '/imports/api/creature/creatures/Creatures';
 import assertUserHasFileSpace from '/imports/api/files/assertUserHasFileSpace';
 const s3FilesStorage = Meteor.isServer
-  ? await import('../../files/server/s3FileStorage')
-  : await import('../../files/client/s3FileStorage');
+  ? require('../../files/server/s3FileStorage')
+  : require('../../files/client/s3FileStorage');
 
 const ArchiveCreatureFiles = s3FilesStorage.createS3FilesCollection({
   collectionName: 'archiveCreatureFiles',
@@ -23,7 +23,7 @@ const ArchiveCreatureFiles = s3FilesStorage.createS3FilesCollection({
     return true;
   },
   onAfterUpload(file) {
-    if (Meteor.isServer) import('/imports/api/users/methods/updateFileStorageUsed')
+    if (Meteor.isServer) return import('/imports/api/users/methods/updateFileStorageUsed')
       .then((m) => m.incrementFileStorageUsed(file.userId, file.size))
       .catch((e) => console.error(e));
   }

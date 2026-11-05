@@ -15,7 +15,7 @@ const PER_CREATURE_LOG_LIMIT = 100;
 
 let sendWebhookAsCreature;
 if (Meteor.isServer) {
-  sendWebhookAsCreature = (await import('../../../server/discord/sendWebhook')).sendWebhookAsCreature;
+  sendWebhookAsCreature = require('../../../server/discord/sendWebhook').sendWebhookAsCreature;
 }
 
 const CreatureLogSchema = TypedSimpleSchema.from({

@@ -14,8 +14,8 @@ export const insertAction = new ValidatedMethod({
     timeInterval: 1000,
   },
   run: async function ({ action }: { action: EngineAction }) {
-    const creature = getCreature(action.creatureId);
-    await assertEditPermission(getCreature(creature), this.userId);
+    const creature = await getCreature(action.creatureId);
+    await assertEditPermission(creature, this.userId);
     // Make sure the action shares the creature's tabletopId
     // It is assumed that if a character you control is in a tabletop, you have the rights
     // to do actions in that tabletop
@@ -23,11 +23,11 @@ export const insertAction = new ValidatedMethod({
 
     // Ensure that all the targeted creatures exist and share a tabletop
     if (action.task.targetIds) for (const targetId of action.task.targetIds) {
-      const target = getCreature(targetId);
+      const target = await getCreature(targetId);
       if (!target) {
         throw new Meteor.Error('not-found', 'Target creature does not exist');
       }
-      if (target.tabletopId !== action.tabletopId) {
+      if (targetId !== action.creatureId && (!action.tabletopId || target.tabletopId !== action.tabletopId)) {
         throw new Meteor.Error('permission-denied', 'Target creature does not share a tabletop with the acting creature');
       }
     }

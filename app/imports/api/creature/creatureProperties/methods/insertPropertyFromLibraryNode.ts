@@ -3,7 +3,7 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import CreatureProperties, { creaturePropertyRootCollections, type CreatureProperty } from '/imports/api/creature/creatureProperties/CreatureProperties';
 import LibraryNodes, { type LibraryNode } from '/imports/api/library/LibraryNodes';
-import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertEditPermission, assertDocCopyPermission } from '/imports/api/sharing/sharingPermissions';
 import {
   renewDocIds,
   rebuildNestedSets,
@@ -28,6 +28,8 @@ const insertPropertyFromLibraryNode = new ValidatedMethod({
     root: {
       type: Object,
     },
+    'root.id': { type: String, max: 32 },
+    parentId: { type: String, max: 32, optional: true },
     'root.collection': {
       type: String,
       allowedValues: creaturePropertyRootCollections,
@@ -54,6 +56,7 @@ const insertPropertyFromLibraryNode = new ValidatedMethod({
 
     const insertedIds = await Promise.all(nodeIds.map((nodeId, index) => insertPropertyFromNode({
       nodeId,
+      userId: this.userId,
       root,
       parentId,
       // Add the properties to the end of the parent's children, in nodeId order
@@ -67,7 +70,8 @@ const insertPropertyFromLibraryNode = new ValidatedMethod({
   },
 });
 
-async function insertPropertyFromNode({ nodeId, root, parentId, left }: {
+async function insertPropertyFromNode({ nodeId, userId, root, parentId, left }: {
+  userId: string | null,
   nodeId: string,
   root: CreatureProperty['root'],
   parentId: string | null,
@@ -89,6 +93,7 @@ async function insertPropertyFromNode({ nodeId, root, parentId, left }: {
     }
   }
 
+  await assertDocCopyPermission(node, userId);
   let nodes = await LibraryNodes.find({
     ...getFilter.descendants(node),
     removed: { $ne: true },

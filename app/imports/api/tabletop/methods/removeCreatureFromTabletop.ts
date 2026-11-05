@@ -45,7 +45,7 @@ const removeCreatureFromTabletop = new ValidatedMethod({
     const creatureIdsToClearTabletopId: string[] = [];
 
     for (const creatureId of creatureIds) {
-      const creature = getCreature(creatureId);
+      const creature = await getCreature(creatureId);
       // Make sure the creature exists and is in this tabletop
       if (!creature || creature.tabletopId !== tabletopId) continue;
       switch (creature.type) {
@@ -76,7 +76,7 @@ const removeCreatureFromTabletop = new ValidatedMethod({
 
     // Remove all non player characters and monsters
     for (const creature of creaturesToRemove) {
-      assertOwnership(creature, this.userId)
+      await assertOwnership(creature, this.userId)
       await removeCreatureWork(creature._id);
     }
 

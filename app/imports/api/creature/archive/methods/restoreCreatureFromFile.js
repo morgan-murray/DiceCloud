@@ -80,8 +80,9 @@ const restoreCreaturefromFile = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run({ fileId }) {
+    if (!Meteor.isServer) return;
     // fetch the file
-    const file = ArchiveCreatureFiles.findOne({ _id: fileId }).get();
+    const file = (await ArchiveCreatureFiles.findOneAsync({ _id: fileId }))?.get();
     if (!file) {
       throw new Meteor.Error('File not found',
         'The requested creature archive does not exist');
@@ -101,7 +102,7 @@ const restoreCreaturefromFile = new ValidatedMethod({
       await restoreCreature(archive, this.userId);
     }
     //Remove the archive once the restore succeeded
-    ArchiveCreatureFiles.remove({ _id: fileId });
+    await ArchiveCreatureFiles.removeAsync({ _id: fileId });
     // Update the user's file storage limits
     await incrementFileStorageUsed(userId, -file.size);
   },

@@ -2,6 +2,7 @@ import 'meteor/aldeed:collection2/static';
 
 // Await module evaluation before Mocha starts, including async import chains.
 Meteor.startup(async () => {
+  await import('/imports/server/archiveRuntime.test');
   await import('/imports/server/runtimeMigration.test');
   await import('/imports/api/creature/creatureProperties/methods/getSlotFillFilter.test');
   await import('/imports/api/engine/action/applyProperties/applyActionProperty.test');
