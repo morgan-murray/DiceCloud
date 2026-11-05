@@ -1,3 +1,4 @@
+import '/imports/client/publicPath';
 import 'meteor/aldeed:collection2/static';
 import '/imports/api/simpleSchemaConfig';
 import '/imports/client/gameIconFont';
