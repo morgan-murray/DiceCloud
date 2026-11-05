@@ -1,7 +1,9 @@
 name: Runtime build
 on:
+  # Feature branches are checked by pull_request; checking their pushes too
+  # creates duplicate check runs and leaves a cancelled status on the PR.
   push:
-    branches: [chore/runtime-build, develop]
+    branches: [develop]
   pull_request:
   workflow_dispatch:
 permissions:
