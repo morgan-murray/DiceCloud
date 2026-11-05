@@ -2,8 +2,10 @@ https://localhost:8443 {
   tls internal
   @bare path /dnd
   handle @bare {
-    uri path_regexp ^/dnd$ /dnd/
-    redir {uri} 308
+    route {
+      uri path_regexp ^/dnd$ /dnd/
+      redir {uri} 308
+    }
   }
   handle /dnd/* {
     reverse_proxy app:3000

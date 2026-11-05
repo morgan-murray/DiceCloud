@@ -47,8 +47,10 @@ Redirect bare `/dnd` to `/dnd/`, retaining its query. The production snippet is:
 ```caddy
 @dicecloudBare path /dnd
 handle @dicecloudBare {
-    uri path_regexp ^/dnd$ /dnd/
-    redir {uri} 308
+    route {
+        uri path_regexp ^/dnd$ /dnd/
+        redir {uri} 308
+    }
 }
 handle /dnd/* {
     reverse_proxy dicecloud-web:3000
