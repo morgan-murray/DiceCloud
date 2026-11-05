@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import SCHEMA_VERSION from '/imports/constants/SCHEMA_VERSION';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import { assertOwnership } from '/imports/api/creature/creatures/creaturePermissions';

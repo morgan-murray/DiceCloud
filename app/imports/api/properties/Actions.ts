@@ -1,6 +1,6 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import createPropertySchema from '/imports/api/properties/subSchemas/createPropertySchema';
-import { storedIconsSchema } from '/imports/api/icons/Icons';
+import { storedIconsSchema } from '/imports/api/icons/storedIconsSchema';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import VARIABLE_NAME_REGEX from '/imports/constants/VARIABLE_NAME_REGEX';
 import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';

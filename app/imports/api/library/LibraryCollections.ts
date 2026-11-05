@@ -1,7 +1,7 @@
 import 'meteor/aldeed:collection2/static';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import SharingSchema from '/imports/api/sharing/SharingSchema';
 import { assertEditPermission, assertOwnership } from '/imports/api/sharing/sharingPermissions';
 import { getUserTierAsync } from '/imports/api/users/patreon/tiers'

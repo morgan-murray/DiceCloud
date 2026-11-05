@@ -2,7 +2,7 @@ import SimpleSchema, {
   type SimpleSchemaDefinition,
   type SchemaDefinition,
   type SchemaDefinitionType,
-} from 'simpl-schema';
+} from '/imports/api/utility/SimpleSchema';
 import type {
   FieldToCalculate, CalculatedOnlyField
 } from '/imports/api/properties/subSchemas/computedField';

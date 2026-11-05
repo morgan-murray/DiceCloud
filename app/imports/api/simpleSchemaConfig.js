@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import MeteorSimpleSchema from 'meteor/aldeed:simple-schema';
 import { set } from 'lodash';
 

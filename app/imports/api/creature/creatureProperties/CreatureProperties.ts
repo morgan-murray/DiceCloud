@@ -1,10 +1,10 @@
 import 'meteor/aldeed:collection2/static';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import ColorSchema from '/imports/api/properties/subSchemas/ColorSchema';
 import ChildSchema from '/imports/api/parenting/ChildSchema';
 import SoftRemovableSchema from '/imports/api/parenting/SoftRemovableSchema';
 import propertySchemasIndex from '/imports/api/properties/computedPropertySchemasIndex';
-import { storedIconsSchema } from '/imports/api/icons/Icons';
+import { storedIconsSchema } from '/imports/api/icons/storedIconsSchema';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import { type ConvertToUnion, type InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 import { type Simplify } from 'type-fest';

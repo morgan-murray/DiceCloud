@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import '/imports/api/users/Users';
 import Invites from '/imports/api/users/Invites';
 

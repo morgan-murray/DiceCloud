@@ -1,5 +1,5 @@
 import 'meteor/aldeed:collection2/static';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import TaskResult from './tasks/TaskResult';
 import LogContentSchema from '/imports/api/creature/log/LogContentSchema';
 import type { Task } from './tasks/Task';

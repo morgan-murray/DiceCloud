@@ -1,5 +1,5 @@
 import 'meteor/aldeed:collection2/static';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import ColorSchema from '/imports/api/properties/subSchemas/ColorSchema';
 import SharingSchema from '/imports/api/sharing/SharingSchema';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';

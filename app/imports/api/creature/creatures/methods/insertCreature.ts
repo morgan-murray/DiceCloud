@@ -9,7 +9,7 @@ import getSlotFillFilter from '/imports/api/creature/creatureProperties/methods/
 import getCreatureLibraryIds from '/imports/api/library/getCreatureLibraryIds';
 import LibraryNodes from '/imports/api/library/LibraryNodes';
 import { insertExperienceWork } from '/imports/api/creature/experience/Experiences';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 
 const insertCreature = new ValidatedMethod({

@@ -1,3 +1,4 @@
+import { storedIconsSchema } from '/imports/api/icons/storedIconsSchema';
 import 'meteor/aldeed:collection2/static';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
@@ -37,21 +38,15 @@ const Icons = new Mongo.Collection<Icon>('icons');
 Icons.attachSchema(iconsSchema);
 
 if (Meteor.isServer) {
-  await Icons.createIndexAsync({
+  Meteor.startup(async () => {
+    await Icons.createIndexAsync({
     'name': 'text',
     'description': 'text',
-    'tags': 'text',
+      'tags': 'text',
+    });
   });
 }
 
-const storedIconsSchema = TypedSimpleSchema.from({
-  name: {
-    type: String,
-  },
-  shape: {
-    type: String,
-  },
-});
 
 const writeIcons = new ValidatedMethod({
   name: 'icons.write',

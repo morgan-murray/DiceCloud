@@ -105,3 +105,14 @@ test('retained fixture survives restart or restore', async ({ page }) => {
   await ready(page, `/library/${libraryId}`);
   await expect(page.getByText('Runtime smoke library', { exact: true }).first()).toBeVisible();
 });
+
+
+test(closed registration rejects a new browser account, async ({ page }) => {
+  test.skip(!process.env.DICECLOUD_VERIFY_RESTORE, Registration is enabled only during initial private setup);
+  await ready(page);
+  const denied = await page.evaluate(() => new Promise(resolve => {
+    window.Accounts.createUser({ username: `blocked-${Date.now()}`, password: synthetic-registration-probe }, error => resolve(Boolean(error)));
+  }));
+  expect(denied).toBe(true);
+  expect(await page.evaluate(() => window.Meteor.userId())).toBeNull();
+});

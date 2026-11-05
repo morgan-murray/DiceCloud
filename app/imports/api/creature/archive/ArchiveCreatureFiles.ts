@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { CreaturePropertySchema } from '/imports/api/creature/creatureProperties/CreatureProperties';
 import { CreatureSchema } from '/imports/api/creature/creatures/Creatures';
 import assertUserHasFileSpace from '/imports/api/files/assertUserHasFileSpace';

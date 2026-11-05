@@ -1,7 +1,7 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import CreatureProperties, { type CreatureProperty } from '/imports/api/creature/creatureProperties/CreatureProperties';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
 import { rebuildNestedSets } from '/imports/api/parenting/parentingFunctions';
 import getParentByTag from './getParentByTag';

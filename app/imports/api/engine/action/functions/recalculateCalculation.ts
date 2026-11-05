@@ -32,14 +32,17 @@ export default async function recalculateCalculation(
   if (calcObj.effectIds || calcObj.proficiencyIds) {
     calcObj.unaffected = toPrimitiveOrString(calcObj.valueNode);
   }
+  const referencedIds = [...new Set([...(calcObj.effectIds || []), ...(calcObj.proficiencyIds || [])])];
+  const referencedProps = new Map(await Promise.all(referencedIds.map(async id => [id, await getSingleProperty(action.creatureId, id)] as const)));
+  // Aggregation callbacks are synchronous; finish async lookups before applying them.
   // Apply all the effects and proficiencies
   aggregateCalculationEffects(
     calcObj,
-    (id: string) => getSingleProperty(action.creatureId, id)
+    (id: string) => referencedProps.get(id)
   );
   aggregateCalculationProficiencies(
     calcObj,
-    (id: string) => getSingleProperty(action.creatureId, id),
+    (id: string) => referencedProps.get(id),
     scope['proficiencyBonus']?.value || 0
   );
 

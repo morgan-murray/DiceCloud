@@ -1,4 +1,4 @@
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import { JsonRoutes } from 'meteor/simple:json-routes';
 import { assertViewPermission } from '/imports/api/creature/creatures/creaturePermissions';
 import computeCreature from '/imports/api/engine/computeCreature';

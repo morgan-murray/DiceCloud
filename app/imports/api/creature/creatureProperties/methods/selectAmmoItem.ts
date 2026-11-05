@@ -1,6 +1,6 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
-import SimpleSchema from 'simpl-schema';
+import SimpleSchema from '/imports/api/utility/SimpleSchema';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
 import { assertDocEditPermission, assertDocExists } from '/imports/api/sharing/sharingPermissions';
 
