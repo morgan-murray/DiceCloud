@@ -21,7 +21,7 @@ const { result: items } = autorun(() =>
   }, {
     sort: { left: 1 },
     fields: { equipped: false },
-  }).fetchAsync()
+  }).fetch()
 );
 
 async function selectItem(itemId: string) {

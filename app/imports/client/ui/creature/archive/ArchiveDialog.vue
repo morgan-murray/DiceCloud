@@ -10,7 +10,7 @@ import ArchiveCreatureFiles from '/imports/api/creature/archive/ArchiveCreatureF
 import archiveCreatureToFile from '/imports/api/creature/archive/methods/archiveCreatureToFile';
 import restoreCreatureFromFile from '/imports/api/creature/archive/methods/restoreCreatureFromFile';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
-import { characterSlotsRemainingAsync } from '/imports/api/creature/creatures/methods/assertHasCharacterSlots';
+import { characterSlotsRemaining } from '/imports/client/permissions/characterSlots';
 import { useStore } from 'vuex';
 import { key } from '/imports/client/ui/vuexStore';
 
@@ -58,9 +58,7 @@ autorun(() => {
   subscribe('characterList');
 });
 
-const { result: characterSlots } = autorun(() =>
-  characterSlotsRemainingAsync(Meteor.userId())
-);
+const { result: characterSlots } = autorun(characterSlotsRemaining);
 
 const { result: folders } = autorun(() => {
   const userId = Meteor.userId();

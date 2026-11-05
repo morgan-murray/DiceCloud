@@ -7,7 +7,7 @@ import PropertyIcon from '/imports/client/ui/properties/shared/PropertyIcon.vue'
 import { getPropertyName } from '/imports/constants/PROPERTIES';
 import getThemeColor from '/imports/client/ui/utility/getThemeColor';
 import PROPERTIES from '/imports/constants/PROPERTIES';
-import { assertUserHasPaidBenefits } from '/imports/api/users/patreon/tiers';
+import { getUserTier } from '/imports/api/users/patreon/tiers';
 import { key } from '/imports/client/ui/vuexStore';
 
 const context = inject<{ editPermission?: boolean; copyPermission?: boolean }>('context', {});
@@ -31,14 +31,7 @@ const emit = defineEmits<{
   remove: [];
 }>();
 
-const { result: userPaid } = autorun(() => {
-  try {
-    assertUserHasPaidBenefits(Meteor.user());
-    return true;
-  } catch (e) {
-    return false;
-  }
-});
+const { result: userPaid } = autorun(() => getUserTier(Meteor.user()).paidBenefits);
 
 const color = computed(() => props.model?.color || getThemeColor('secondary'));
 const isDark = computed(() => isDarkColor(color.value));

@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: runtime-${{ github.ref }}
+  group: runtime-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   linux-amd64:

@@ -45,7 +45,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   const context = await browser.newContext();
   const page = await context.newPage();
   const errors = [];
-  page.on('pageerror', error => { errors.push(error.message); console.error('Browser runtime error:', error.message); });
+  page.on('pageerror', error => { errors.push(error.message); console.error('Browser runtime error:', error.stack || error.message); });
   await register(page, owner.username, owner.password);
   const creatureId = await call(page, 'creatures.insertCreature', {
     name: 'Runtime smoke character', gender: '', alignment: '', startingLevel: 1,
