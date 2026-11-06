@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { appPath } from '/imports/api/utility/basePath';
 const paragons = [
   { name: 'Kira Ametrine', title: 'Cleric of Lewd', avatar: 'kira' },
   { name: 'Satherian', title: 'Defender of Naptime', avatar: 'satherian' },
@@ -14,7 +15,7 @@ const paragons = [
   <div>
     <section>
       <v-parallax
-        src="/images/paper-dice-crown.webp"
+        :src="appPath('/images/paper-dice-crown.webp')"
         height="300"
       >
         <div class="d-flex flex-column align-center justify-center text-white">

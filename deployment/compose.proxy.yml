@@ -1,0 +1,19 @@
+services:
+  proxy:
+    image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    ports: ["127.0.0.1:${DICECLOUD_PROXY_PORT:-31082}:8443"]
+    volumes: ["./deployment/Caddyfile.test:/etc/caddy/Caddyfile:ro"]
+    networks: [egress]
+    depends_on:
+      app: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "wget", "--no-check-certificate", "-qO-", "https://localhost:8443/dnd/api/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    environment:
+      GOMEMLIMIT: 192MiB
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}

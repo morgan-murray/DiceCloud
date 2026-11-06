@@ -78,6 +78,7 @@ onMounted(() => {
   <v-snackbar
     location="bottom start"
     color="accent"
+    :close-on-back="false"
     v-bind="$attrs"
     :model-value="isShown"
     :timeout="timeout"

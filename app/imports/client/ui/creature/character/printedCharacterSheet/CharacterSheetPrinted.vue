@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { appPath } from '/imports/api/utility/basePath';
+const octagonBorder = `url("${appPath('images/print/octagonBorder.png')}")`;
+const doubleLineBorder = `url("${appPath('images/print/doubleLineImageBorder.png')}")`;
+const printLogo = `url("${appPath('crown-dice-logo-cropped-transparent.png')}")`;
 import { computed, watch, provide, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
@@ -25,7 +29,7 @@ const creatureUrl = computed(() => {
     name: 'characterSheet',
     params: { id: creatureId.value },
   });
-  return new URL(resolved?.href, 'https://dicecloud.com').href;
+  return new URL(resolved?.href, window.location.origin).href;
 });
 
 const { ready: characterReady } = subscribe(() => ['singleCharacter', creatureId.value]);
@@ -283,7 +287,7 @@ onBeforeUnmount(() => {
   width: 60px;
   height: 60px;
   margin-right: 8px;
-  background-image: url(/crown-dice-logo-cropped-transparent.png);
+  background-image: v-bind(printLogo);
   background-size: contain;
   background-position: 0 center;
 }
@@ -301,7 +305,7 @@ onBeforeUnmount(() => {
   position: relative;
   border-style: solid;
   border-width: 11px 10px;
-  border-image-source: url(/images/print/doubleLineImageBorder.png);
+  border-image-source: v-bind(doubleLineBorder);
   border-image-slice: 110 126 fill;
   border-image-width: 16px;
   border-image-repeat: stretch;
@@ -312,7 +316,7 @@ onBeforeUnmount(() => {
 .character-sheet-printed .octagon-border {
   position: relative;
   padding: 4px 20px;
-  border-image: url(/images/print/octagonBorder.png) 124 118 fill;
+  border-image: v-bind(octagonBorder) 124 118 fill;
   border-image-width: 22px;
   box-decoration-break: clone;
   page-break-inside: avoid;

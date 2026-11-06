@@ -2,16 +2,30 @@ import { test, expect } from '@playwright/test';
 import { randomBytes } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const baseURL = process.env.DICECLOUD_TEST_URL || 'http://127.0.0.1:31080';
+const baseURL = (process.env.DICECLOUD_TEST_URL || 'http://127.0.0.1:31080').replace(/\/?$/, '/');
+const appURL = path => new URL(path.replace(/^\//, ''), baseURL).href;
 const fixturePath = process.env.DICECLOUD_TEST_FIXTURE;
 const imageFixture = readFileSync(new URL('./fixtures/runtime.png', import.meta.url));
+
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  // Synthetic test state only: omit credentials, tokens and subscription args.
+  const state = await page.evaluate(() => ({
+    status: window.Meteor?.status(),
+    userPresent: Boolean(window.Meteor?.userId()),
+    subscriptions: Object.values(window.Meteor?.connection?._subscriptions || {}).map(sub => ({ name: sub.name, ready: sub.ready })),
+    trackerInFlush: window.Tracker?.inFlush,
+    route: document.querySelector('#app')?.__vue_app__?.config.globalProperties.$route?.fullPath,
+  })).catch(() => 'Browser state unavailable');
+  console.info('Failure browser state:', state);
+});
 
 async function propertyHasValue(page, id, value) {
   await page.waitForFunction(({ id, value }) => window.Mongo.getCollection('creatureProperties')?.findOne(id)?.value === value, { id, value }, { timeout: 30000 });
 }
 
 async function ready(page, path = '/') {
-  await page.goto(new URL(path, baseURL).href);
+  await page.goto(appURL(path));
   await page.waitForFunction(() => window.Meteor?.status().connected);
 }
 
@@ -38,7 +52,7 @@ async function register(page, username, password) {
   await page.waitForFunction(() => Boolean(window.Meteor.userId()));
 }
 
-test('root mode: accounts, character CRUD, libraries, reconnect and access boundaries', async ({ browser }) => {
+test('native workflow: accounts, character CRUD, libraries, reconnect and access boundaries', async ({ browser }) => {
   test.setTimeout(180_000);
   const owner = { username: `runtime-owner-${Date.now()}`, password: randomBytes(24).toString('hex') };
   const other = { username: `runtime-other-${Date.now()}`, password: randomBytes(24).toString('hex') };
@@ -61,6 +75,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   await page.waitForFunction(() => !window.Meteor.status().connected);
   await page.evaluate(() => window.Meteor.reconnect());
   await page.waitForFunction(() => window.Meteor.status().connected);
+  await expect(page.getByText('connecting', { exact: true })).not.toBeVisible();
   console.info('Verified character refresh and reconnect');
   const libraryId = await call(page, 'libraries.insert', {
     name: 'Runtime smoke library', description: 'Synthetic runtime fixture',
@@ -84,10 +99,12 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
     root: { collection: 'creatures', id: creatureId },
   } });
   await propertyHasValue(page, slotId, 1);
-  await call(page, 'creatureProperties.insert', { creatureProperty: {
+  const itemId = await call(page, 'creatureProperties.insert', { creatureProperty: {
     type: 'item', name: 'Runtime training focus', quantity: 1, weight: 2,
     root: { collection: 'creatures', id: creatureId },
   } });
+  await call(page, 'creatureProperties.update', { _id: itemId, path: ['quantity'], value: 3 });
+  await page.waitForFunction(id => window.Mongo.getCollection('creatureProperties').findOne(id)?.quantity === 3, itemId, { timeout: 30000 });
   await call(page, 'creatureProperties.insert', { creatureProperty: {
     type: 'spell', name: 'Runtime glow', level: 1, target: 'self', actionType: 'action',
     summary: { text: 'A synthetic spell fixture' }, root: { collection: 'creatures', id: creatureId },
@@ -98,7 +115,7 @@ test('root mode: accounts, character CRUD, libraries, reconnect and access bound
   await call(page, 'actions.runAction', { actionId });
   await propertyHasValue(page, slotId, 2);
   console.info('Verified native long-rest action');
-  const asset = await page.request.get(new URL('/crown-dice-logo-cropped-transparent.png', baseURL).href);
+  const asset = await page.request.get(appURL('/crown-dice-logo-cropped-transparent.png'));
   expect(asset.ok()).toBeTruthy();
   expect(asset.headers()['content-type']).toContain('image');
   await ready(page, '/my-files');
@@ -180,4 +197,88 @@ test('closed registration rejects a new browser account', async ({ page }) => {
   }));
   expect(denied).toBe(true);
   expect(await page.evaluate(() => window.Meteor.userId())).toBeNull();
+});
+
+test('URL contract: assets, scoped storage, navigation, print and private API', async ({ page }) => {
+  test.skip(!fixturePath, 'Requires the native workflow fixture');
+  const { owner, creatureId } = JSON.parse(readFileSync(fixturePath, 'utf8'));
+  const configured = new URL(baseURL);
+  const escaped = [];
+  const sockets = [];
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (url.origin === configured.origin && !url.pathname.startsWith(configured.pathname)) escaped.push(url.pathname);
+  });
+  page.on('websocket', socket => sockets.push(socket.url()));
+  await ready(page);
+  await page.waitForFunction(() => navigator.serviceWorker?.controller);
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.scope);
+  expect(new URL(scope).pathname).toBe(configured.pathname);
+  expect(await page.evaluate(() => new URL(document.baseURI).pathname)).toBe(configured.pathname);
+  for (const path of ['/manifest.json', '/fonts/game-icons.woff', '/favicon-32x32.png']) {
+    const response = await page.request.get(appURL(path));
+    expect(response.ok()).toBeTruthy();
+    expect(response.headers()['content-type']).not.toContain('text/html');
+  }
+  const manifest = await (await page.request.get(appURL('/manifest.json'))).json();
+  expect(new URL(manifest.start_url, appURL('/manifest.json')).pathname).toBe(configured.pathname);
+  const denied = await page.request.get(appURL(`/api/creature/${creatureId}`));
+  expect(denied.status()).toBe(403);
+  if (configured.pathname !== '/') {
+    const root = await page.request.get(configured.origin + '/');
+    expect(await root.text()).toBe('Shared-hostname sentinel');
+    const bare = await page.request.get(configured.origin + configured.pathname.slice(0, -1) + '?return=a%2Fb', { maxRedirects: 0 });
+    expect(bare.status()).toBe(308);
+    const target = new URL(bare.headers().location, configured.origin);
+    expect(target.pathname).toBe(configured.pathname);
+    expect(target.searchParams.get('return')).toBe('a/b');
+  }
+  await login(page, owner);
+  if (configured.pathname !== '/') {
+    expect(await page.evaluate(() => window.Accounts.LOGIN_TOKEN_KEY)).toContain(configured.pathname.slice(0, -1));
+  }
+  await ready(page, `/character/${creatureId}/Encoded%20name?tab=spells#slot`);
+  await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('tab')).toBe('spells');
+  expect(new URL(page.url()).hash).toBe('#slot');
+  await page.reload();
+  await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
+  // Exercise Vue's user-facing history, after navigation has actually finished.
+  await page.getByRole('link', { name: 'Files', exact: true }).click();
+  await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
+  await page.goBack();
+  await page.waitForFunction(() => window.Meteor?.status().connected);
+  await expect(page).toHaveURL(appURL(`/character/${creatureId}/Encoded%20name?tab=spells#slot`));
+  await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
+  await page.goForward();
+  await page.waitForFunction(() => window.Meteor?.status().connected);
+  await expect(page).toHaveURL(appURL('/my-files'));
+  await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
+  await page.locator('.sidebar').getByRole('link').filter({ hasText: 'Runtime verified character' }).click();
+  await expect(page.getByRole('button', { name: 'Long Rest', exact: true })).toBeVisible();
+  await page.locator('[data-id="creature-menu"]').click();
+  const print = page.getByRole('link', { name: 'Print', exact: true });
+  expect(new URL(await print.getAttribute('href'), baseURL).pathname).toContain(configured.pathname + 'print-character/');
+  await print.click();
+  await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(appURL(`/character/${creatureId}`), { exact: true })).toBeVisible();
+  await page.emulateMedia({ media: 'print' });
+  await page.evaluate(() => document.fonts.ready);
+  await call(page, 'sharing.setPublic', { docRef: { collection: 'creatures', id: creatureId }, isPublic: true });
+  try {
+    const shared = await page.request.get(appURL(`/api/creature/${creatureId}`));
+    expect(shared.ok()).toBeTruthy();
+    const data = await shared.json();
+    expect(data.creatures[0]._id).toBe(creatureId);
+    expect(Array.isArray(data.creatureProperties)).toBe(true);
+  } finally {
+    await call(page, 'sharing.setPublic', { docRef: { collection: 'creatures', id: creatureId }, isPublic: false });
+  }
+  expect(escaped).toEqual([]);
+  expect(sockets.length).toBeGreaterThan(0);
+  for (const socket of sockets) {
+    const url = new URL(socket);
+    expect(url.pathname.startsWith(configured.pathname)).toBe(true);
+    expect(url.protocol).toBe(configured.protocol === 'https:' ? 'wss:' : 'ws:');
+  }
 });

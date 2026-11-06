@@ -18,7 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check browser test syntax
-        run: node --check deployment/browser/runtime.spec.mjs
+        run: |
+          node --check deployment/browser/runtime.spec.mjs
+          node --test deployment/test_url_paths.mjs
       - name: Build checked-out source
         run: |
           docker build --progress=plain --target test .
@@ -44,7 +46,7 @@ jobs:
         working-directory: deployment/browser
         env:
           DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-browser-fixture.json
-        run: npm test -- --grep 'root mode'
+        run: npm test -- --grep 'native workflow|URL contract'
       - name: Verify restart persistence and closed registration
         run: |
           docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app
@@ -60,6 +62,8 @@ jobs:
           curl --fail http://127.0.0.1:31081/api/status
           cd deployment/browser
           DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration'
+      - name: Verify HTTPS prefix, restart and recovery
+        run: bash deployment/verify-prefix.sh
       - name: Export built image for private VPS verification
         if: always()
         run: |
@@ -81,7 +85,11 @@ jobs:
           retention-days: 1
       - name: Show bounded diagnostics on failure
         if: failure()
-        run: docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci logs --tail 80
+        run: |
+          docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci logs --tail 80
+          if test -f "$RUNNER_TEMP/dicecloud-prefix-config/runtime.env"; then
+            docker compose -f docker-compose.yml -f deployment/compose.proxy.yml --env-file "$RUNNER_TEMP/dicecloud-prefix-config/runtime.env" -p dicecloud-prefix-ci logs --tail 80
+          fi
       - name: Remove disposable stack
         if: always()
         run: |
@@ -90,4 +98,10 @@ jobs:
           fi
           if test -f "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"; then
             docker compose --env-file "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" -p dicecloud-restore-ci down -v
+          fi
+          if test -f "$RUNNER_TEMP/dicecloud-prefix-config/runtime.env"; then
+            docker compose -f docker-compose.yml -f deployment/compose.proxy.yml --env-file "$RUNNER_TEMP/dicecloud-prefix-config/runtime.env" -p dicecloud-prefix-ci down -v
+          fi
+          if test -f "$RUNNER_TEMP/dicecloud-prefix-restore-config/runtime.env"; then
+            docker compose --env-file "$RUNNER_TEMP/dicecloud-prefix-restore-config/runtime.env" -p dicecloud-restore-prefix-ci down -v
           fi

@@ -36,7 +36,7 @@ JsonRoutes.add('get', 'api/creature/:id', async function (req, res) {
   // Compute the creature first if need be
   if (creature.computeVersion !== VERSION) {
     try {
-      computeCreature(creatureId)
+      await computeCreature(creatureId)
     } catch (e) {
       e.statusCode = 500;
       console.error(e)
@@ -51,7 +51,7 @@ JsonRoutes.add('get', 'api/creature/:id', async function (req, res) {
         schemaVersion: SCHEMA_VERSION,
       },
       creatures: [creature],
-      creatureProperties: getProperties(creatureId),
+      creatureProperties: await getProperties(creatureId),
       creatureVariables: getVariables(creatureId),
     },
   });

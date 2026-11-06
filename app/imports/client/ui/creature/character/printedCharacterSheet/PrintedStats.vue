@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { appPath } from '/imports/api/utility/basePath';
+const upwardBorder = `url("${appPath('images/print/upwardPointingBorder.png')}")`;
+const shieldBorder = `url("${appPath('images/print/shieldBorder.png')}")`;
 import { computed } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import Creatures from '/imports/api/creature/creatures/Creatures';
@@ -491,7 +494,7 @@ const { result: notes } = autorun(() => {
   position: relative;
   aspect-ratio: 0.87;
   padding: 12px;
-  background: url(/images/print/shieldBorder.png);
+  background: v-bind(shieldBorder);
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -523,7 +526,7 @@ const { result: notes } = autorun(() => {
   position: relative;
   padding: 0 16px;
   border: solid white;
-  border-image-source: url(/images/print/upwardPointingBorder.png);
+  border-image-source: v-bind(upwardBorder);
   border-image-slice: 0 85 fill;
   border-image-width: 0 16px;
   border-image-outset: 0px 0px;

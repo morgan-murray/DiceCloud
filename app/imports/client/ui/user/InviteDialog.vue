@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Meteor } from 'meteor/meteor';
 import { ref, computed } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
@@ -21,7 +22,7 @@ const { result: username } = autorun(() => {
 
 const inviteLink = computed(() => {
   const token = inviteToken.value;
-  return token && `https://dicecloud.com/invite/${token}`;
+  return token && Meteor.absoluteUrl(`invite/${encodeURIComponent(token)}`);
 });
 
 async function getInviteLink() {
