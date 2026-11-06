@@ -289,7 +289,6 @@ test('URL contract: archive dialog close controls', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await login(page, owner);
-  await ready(page, '/');
   const openArchive = page.getByRole('button', { name: 'Archive characters', exact: true }).first();
   await expect(openArchive).toBeVisible();
   const originalPath = new URL(page.url()).pathname;
