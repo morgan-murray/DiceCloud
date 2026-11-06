@@ -19,6 +19,7 @@ export function mapSnapshot(snapshot, creatureId, owner, makeId) {
     return add('attribute', { name, variableName, attributeType, baseValue: field(value), ...extra });
   }
   for (const [name, score] of Object.entries(snapshot.abilities)) attribute(name, name, score, 'ability');
+  attribute('Level', 'level', snapshot.identity.level);
   attribute('Armor Class', 'armor', snapshot.armorClass);
   attribute('Initiative', 'initiative', snapshot.initiative, 'modifier', { ignoreLowerLimit: true });
   attribute('Proficiency Bonus', 'proficiencyBonus', snapshot.proficiency, 'modifier');
@@ -41,7 +42,8 @@ export function mapSnapshot(snapshot, creatureId, owner, makeId) {
   for (const attack of snapshot.attacks) add('note', { name: attack.name, description: { text: inertText([attack.attack, attack.damage, attack.range, attack.description].join('\n')) } });
   for (const feature of snapshot.features) add('feature', { name: feature.name, description: { text: inertText(feature.description) } });
   for (const [index, note] of snapshot.notes.entries()) add('note', { name: 'Aurora note ' + (index + 1), description: { text: inertText(note) } });
-  const provenance = { ...snapshot.provenance, adapterVersion: ADAPTER_VERSION };
+  const provenance = { ...snapshot.provenance, adapterVersion: ADAPTER_VERSION,
+    privateFiles: snapshot.provenance.privateFiles.map(({ name, sha256, bytes }) => ({ name, sha256, bytes })) };
   // Complete hashes/versions survive reload, source deletion and archive/restore.
   const history = ['One-way 2014 current-sheet snapshot. Review totals after any build or equipment change.',
     'Level: ' + snapshot.identity.level + '; race: ' + snapshot.identity.race,

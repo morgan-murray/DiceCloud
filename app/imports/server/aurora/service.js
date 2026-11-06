@@ -82,6 +82,9 @@ async function prepareSnapshot(snapshot, creatureId, userId) {
   for (const [ability, score] of Object.entries(snapshot.abilities)) if (byVariable[ability]?.total !== score) error('fidelity', 'Computed ability differs from the preview.');
   if (byVariable.hitPoints?.total !== snapshot.hitPoints.maximum || byVariable.armor?.total !== snapshot.armorClass) error('fidelity', 'Computed hit points or AC differ from the preview.');
   for (const [skill, values] of Object.entries(snapshot.skills)) if (byVariable[skill.replace(/ /g, '')]?.value !== values.bonus) error('fidelity', 'Computed skill differs from the preview.');
+  for (const [save, value] of Object.entries(snapshot.saves)) if (byVariable[save + 'Save']?.value !== value) error('fidelity', 'Computed saving throw differs from the preview.');
+  for (const [key, value] of [['initiative', snapshot.initiative], ['proficiencyBonus', snapshot.proficiency], ['level', snapshot.identity.level]]) if (byVariable[key]?.total !== value) error('fidelity', 'Computed statistic differs from the preview.');
+  for (const [index, resource] of snapshot.resources.entries()) if (byVariable['auroraSlots' + index]?.value !== resource.total) error('fidelity', 'Computed spell slots differ from the preview.');
   return { creature, cleaned, computation };
 }
 export async function commitSnapshot(job, userId, fault = () => {}) {
@@ -111,7 +114,7 @@ export const api = {
   },
   async list(userId) {
     owner(userId);
-    return { packs: await Packs.find({ owner: userId }, { fields: { name: 1, manifest: 1, createdAt: 1, size: 1 } }).fetchAsync(),
+    return { packs: await Packs.find({ owner: userId }, { fields: { name: 1, 'manifest.hash': 1, 'manifest.builtin': 1, 'manifest.elementCount': 1, createdAt: 1, size: 1 } }).fetchAsync(),
       history: await Jobs.find({ owner: userId, state: 'complete' }, { fields: { creatureId: 1, createdAt: 1, size: 1 } }).fetchAsync() };
   },
   async addPack(userId, request) {
@@ -156,7 +159,7 @@ export const api = {
     if (job.state === 'complete') return { creatureId: job.creatureId };
     if (job.adapterVersion !== ADAPTER_VERSION) error('expired', 'Importer version changed. Preview the file again.');
     if (job.expiresAt < new Date() || job.state !== 'preview') error('expired', 'Preview expired or is no longer available. Preview the file again.');
-    if (!Array.isArray(request.acknowledgedCodes) || job.snapshot.diagnostics.some(d => !request.acknowledgedCodes.includes(d.code))) error('acknowledgement', 'Acknowledge all import warnings before importing.');
+    if (!Array.isArray(request.acknowledgedCodes) || request.acknowledgedCodes.length > 100 || request.acknowledgedCodes.some(code => typeof code !== 'string' || code.length > 64) || job.snapshot.diagnostics.some(d => !request.acknowledgedCodes.includes(d.code))) error('acknowledgement', 'Acknowledge all import warnings before importing.');
     return userWork(userId, async () => {
       const claimed = await Jobs.updateAsync({ _id: job._id, owner: userId, state: 'preview', expiresAt: { $gt: new Date() } }, { $set: { state: 'committing' } });
       if (!claimed) error('busy', 'This preview is already being imported. Retry to retrieve the result.');
