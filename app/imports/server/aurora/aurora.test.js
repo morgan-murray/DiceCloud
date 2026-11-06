@@ -35,6 +35,8 @@ describe('Aurora import private preview and native fidelity', function () {
       await commitSnapshot({ snapshot:response.result,creatureId },userId);
       await computeCreature(creatureId);
       const props=await CreatureProperties.find({ 'root.id':creatureId }).fetchAsync();
+      // Computed definition metadata must also satisfy archive restore schemas.
+      for (const prop of props) { const schema=CreatureProperties.simpleSchema(prop); schema.validate(schema.clean(prop)); }
       const byVariable=Object.fromEntries(props.map(p=>[p.variableName,p]));
       assert.equal(byVariable.hitPoints.total,expected[name].hp);
       assert.equal(byVariable.armor.total,expected[name].ac);

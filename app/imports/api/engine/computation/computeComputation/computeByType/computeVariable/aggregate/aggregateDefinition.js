@@ -37,7 +37,7 @@ export default function aggregateDefinition({ node, linkedNode, link }) {
   if (prop.type === 'pointBuyRow') {
     node.data.definitions.push({ _id: prop.tableId, type: 'pointBuy', row: prop.index });
   } else {
-    node.data.definitions.push({ _id: prop._id, type: node.data.type });
+    node.data.definitions.push({ _id: prop._id, type: prop.type });
   }
   if (node.data.baseValue === undefined || propBaseValue > node.data.baseValue) {
     node.data.baseValue = propBaseValue;
