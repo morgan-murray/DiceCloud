@@ -16,6 +16,7 @@ async function call(page,name,argument) { return page.evaluate(({name,argument})
 async function verify(page,creatureId) {
   await ready(page,`/character/${creatureId}`);
   await page.waitForFunction(id=>window.Mongo?.getCollection('creatureProperties')?.findOne({'root.id':id,variableName:'hitPoints'})?.total===28,creatureId);
+  await page.waitForFunction(id=>window.Mongo?.getCollection('creatureProperties')?.findOne({'root.id':id,name:'Aurora import record'})?.description?.text?.includes('aurora-core-2014'),creatureId);
   const result=await page.evaluate(id=>{
     const props=window.Mongo.getCollection('creatureProperties').find({'root.id':id}).fetch();
     const value=name=>props.find(p=>p.variableName===name);

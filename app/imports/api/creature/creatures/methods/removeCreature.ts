@@ -8,6 +8,7 @@ import Experiences from '/imports/api/creature/experience/Experiences';
 import CreatureLogs from '/imports/api/creature/log/CreatureLogs';
 import { getFilter } from '/imports/api/parenting/parentingFunctions';
 import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { stopCreatureComputation } from '/imports/api/engine/loadCreatures';
 
 async function removeRelatedDocuments(creatureId: string) {
   await CreatureProperties.removeAsync(getFilter.descendantsOfRoot(creatureId));
@@ -36,6 +37,7 @@ const removeCreature = new ValidatedMethod({
 });
 
 export async function removeCreatureWork(creatureId: string) {
+  await stopCreatureComputation(creatureId);
   await Creatures.removeAsync(creatureId);
   await CreatureVariables.removeAsync({ _creatureId: creatureId });
   await removeRelatedDocuments(creatureId);
