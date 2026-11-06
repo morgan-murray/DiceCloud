@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 import { autorun, subscribe } from 'vue-meteor-tracker';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import CreatureFolders from '/imports/api/creature/creatureFolders/CreatureFolders';
@@ -14,6 +15,7 @@ import { uniq, flatten } from 'lodash';
 import { key } from '/imports/client/ui/vuexStore';
 
 const store = useStore(key);
+const router = useRouter();
 
 const characterTransform = function (char: any) {
   char.url = `/character/${char._id}/${getCreatureUrlName(char)}`;
@@ -95,7 +97,15 @@ function insertCharacter() {
 }
 
 function importAurora() {
-  store.commit('pushDialogStack', { component: 'aurora-import-dialog', elementId: 'aurora-import-button', callback: (creatureId) => creatureId });
+  store.commit('pushDialogStack', {
+    component: 'aurora-import-dialog', elementId: 'aurora-import-button',
+    callback: (creatureId) => {
+      // The callback runs after the dialog's history.back popstate. Navigating
+      // before that event races Firefox and returns to the character list.
+      if (creatureId) setTimeout(() => router.push({ name: 'characterSheet', params: { id: creatureId } }), 0);
+      return creatureId;
+    },
+  });
 }
 
 function importCharacter() {

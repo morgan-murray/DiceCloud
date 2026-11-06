@@ -1,7 +1,5 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-const router = useRouter();
 import { Meteor } from 'meteor/meteor';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 const emit = defineEmits(['pop']);
@@ -48,7 +46,6 @@ async function commit() {
   await work(async () => {
     const result = await call('commit', { previewId: preview.value.previewId, commitKey: preview.value.commitKey, acknowledgedCodes: preview.value.snapshot.diagnostics.map(d => d.code) });
     emit('pop', result.creatureId);
-    setTimeout(() => router.push({ name: 'characterSheet', params: { id: result.creatureId } }), 0);
   });
 }
 async function remove(kind, id) { await work(async () => { await call('remove', { kind, id }); selected.value = selected.value.filter(p => p !== id); await reload(); }); }
