@@ -1,0 +1,336 @@
+<?xml version='1.0' encoding='utf-8'?>
+<elements>
+  <element id="ID_INTERNAL_ASI_STRENGTH" name="Strength" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="strength" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_STRENGTH" name="Saving Throw Proficiency (Strength)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="strength:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_INTERNAL_ASI_DEXTERITY" name="Dexterity" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="dexterity" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_DEXTERITY" name="Saving Throw Proficiency (Dexterity)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="dexterity:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_INTERNAL_ASI_CONSTITUTION" name="Constitution" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="constitution" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_CONSTITUTION" name="Saving Throw Proficiency (Constitution)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="constitution:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_INTERNAL_ASI_INTELLIGENCE" name="Intelligence" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="intelligence" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_INTELLIGENCE" name="Saving Throw Proficiency (Intelligence)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="intelligence:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_INTERNAL_ASI_WISDOM" name="Wisdom" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="wisdom" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_WISDOM" name="Saving Throw Proficiency (Wisdom)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="wisdom:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_INTERNAL_ASI_CHARISMA" name="Charisma" type="Ability Score Improvement" source="Aurora Core Reference (2014)">
+    <description>Increase this ability by one, subject to its applicable maximum.</description>
+    <rules>
+      <stat name="charisma" value="1" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SAVINGTHROW_CHARISMA" name="Saving Throw Proficiency (Charisma)" type="Proficiency" source="Aurora Core Reference (2014)">
+    <rules>
+      <stat name="charisma:save:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_ACROBATICS" name="Acrobatics" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="acrobatics:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_ANIMALHANDLING" name="Animal Handling" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="animal handling:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_ARCANA" name="Arcana" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="arcana:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_ATHLETICS" name="Athletics" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="athletics:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_DECEPTION" name="Deception" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="deception:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_HISTORY" name="History" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="history:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_INSIGHT" name="Insight" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="insight:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_INTIMIDATION" name="Intimidation" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="intimidation:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_INVESTIGATION" name="Investigation" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="investigation:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_MEDICINE" name="Medicine" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="medicine:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_NATURE" name="Nature" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="nature:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_PERCEPTION" name="Perception" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="perception:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_PERFORMANCE" name="Performance" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="performance:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_PERSUASION" name="Persuasion" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="persuasion:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_RELIGION" name="Religion" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="religion:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_SLEIGHTOFHAND" name="Sleight Of Hand" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="sleight of hand:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_STEALTH" name="Stealth" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="stealth:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_PROFICIENCY_SKILL_SURVIVAL" name="Survival" type="Proficiency" source="Aurora Core Reference (2014)">
+    <description>Add the proficiency bonus to checks using this skill.</description>
+    <rules>
+      <stat name="survival:proficiency" value="proficiency" bonus="proficiency" />
+    </rules>
+  </element>
+  <element id="ID_ALIGNMENT_LAWFUL_GOOD" name="Lawful Good" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_NEUTRAL_GOOD" name="Neutral Good" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_CHAOTIC_GOOD" name="Chaotic Good" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_LAWFUL_NEUTRAL" name="Lawful Neutral" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_NEUTRAL" name="Neutral" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_CHAOTIC_NEUTRAL" name="Chaotic Neutral" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_LAWFUL_EVIL" name="Lawful Evil" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_NEUTRAL_EVIL" name="Neutral Evil" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_ALIGNMENT_CHAOTIC_EVIL" name="Chaotic Evil" type="Alignment" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_TINY" name="Tiny" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_SMALL" name="Small" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_MEDIUM" name="Medium" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_LARGE" name="Large" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_HUGE" name="Huge" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_SIZE_GARGANTUAN" name="Gargantuan" type="Size" source="Aurora Core Reference (2014)" />
+  <element id="ID_VISION_DARKVISION" name="Darkvision" type="Vision" source="Aurora Core Reference (2014)">
+    <description>A sense recorded on the source sheet. Apply its limitations manually.</description>
+    <rules>
+      <stat name="darkvision:range" value="60" bonus="base" />
+    </rules>
+  </element>
+  <element id="ID_VISION_SUPERIORDARKVISION" name="Superior Darkvision" type="Vision" source="Aurora Core Reference (2014)">
+    <description>A sense recorded on the source sheet. Apply its limitations manually.</description>
+    <rules>
+      <stat name="darkvision:range" value="120" bonus="base" />
+    </rules>
+  </element>
+  <element id="ID_VISION_BLINDSIGHT" name="Blindsight" type="Vision" source="Aurora Core Reference (2014)">
+    <description>A sense recorded on the source sheet. Apply its limitations manually.</description>
+  </element>
+  <element id="ID_VISION_TRUESIGHT" name="Truesight" type="Vision" source="Aurora Core Reference (2014)">
+    <description>A sense recorded on the source sheet. Apply its limitations manually.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_ACID" name="Resistance (Acid)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_ACID" name="Immunity (Acid)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_ACID" name="Vulnerability (Acid)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_BLUDGEONING" name="Resistance (Bludgeoning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_BLUDGEONING" name="Immunity (Bludgeoning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_BLUDGEONING" name="Vulnerability (Bludgeoning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_COLD" name="Resistance (Cold)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_COLD" name="Immunity (Cold)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_COLD" name="Vulnerability (Cold)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_FIRE" name="Resistance (Fire)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_FIRE" name="Immunity (Fire)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_FIRE" name="Vulnerability (Fire)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_FORCE" name="Resistance (Force)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_FORCE" name="Immunity (Force)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_FORCE" name="Vulnerability (Force)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_LIGHTNING" name="Resistance (Lightning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_LIGHTNING" name="Immunity (Lightning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_LIGHTNING" name="Vulnerability (Lightning)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_NECROTIC" name="Resistance (Necrotic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_NECROTIC" name="Immunity (Necrotic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_NECROTIC" name="Vulnerability (Necrotic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_PIERCING" name="Resistance (Piercing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_PIERCING" name="Immunity (Piercing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_PIERCING" name="Vulnerability (Piercing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_POISON" name="Resistance (Poison)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_POISON" name="Immunity (Poison)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_POISON" name="Vulnerability (Poison)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_PSYCHIC" name="Resistance (Psychic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_PSYCHIC" name="Immunity (Psychic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_PSYCHIC" name="Vulnerability (Psychic)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_RADIANT" name="Resistance (Radiant)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_RADIANT" name="Immunity (Radiant)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_RADIANT" name="Vulnerability (Radiant)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_SLASHING" name="Resistance (Slashing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_SLASHING" name="Immunity (Slashing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_SLASHING" name="Vulnerability (Slashing)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_RESISTANCE_THUNDER" name="Resistance (Thunder)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage resistance manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_IMMUNITY_THUNDER" name="Immunity (Thunder)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage immunity manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_CONDITION_DAMAGE_VULNERABILITY_THUNDER" name="Vulnerability (Thunder)" type="Condition" source="Aurora Core Reference (2014)">
+    <description>Apply this damage vulnerability manually when resolving damage; this snapshot does not automate it.</description>
+  </element>
+  <element id="ID_INTERNAL_OPTION_ALLOW_FEATS" name="Feats" type="Option" source="Aurora Core Reference (2014)">
+    <description>A source build choice. This import preserves a snapshot rather than offering future level progression.</description>
+  </element>
+  <element id="ID_INTERNAL_OPTION_ALLOW_AVERAGE_HP" name="Average Hit Points" type="Option" source="Aurora Core Reference (2014)">
+    <description>A source build choice. This import preserves a snapshot rather than offering future level progression.</description>
+  </element>
+  <element id="ID_INTERNAL_OPTION_ALLOW_MULTICLASSING" name="Multiclassing" type="Option" source="Aurora Core Reference (2014)">
+    <description>A source build choice. This import preserves a snapshot rather than offering future level progression.</description>
+  </element>
+</elements>

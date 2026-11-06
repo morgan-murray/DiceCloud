@@ -21,6 +21,7 @@ import TierTooLowDialog from '/imports/client/ui/user/TierTooLowDialog.vue';
 import TransferOwnershipDialog from '/imports/client/ui/sharing/TransferOwnershipDialog.vue';
 
 // Lazily load less common dialogs
+const AuroraImportDialog = defineAsyncComponent(() => import('/imports/client/ui/aurora/AuroraImportDialog.vue'));
 const ArchiveDialog = defineAsyncComponent(() => import('/imports/client/ui/creature/archive/ArchiveDialog.vue'));
 const CastSpellWithSlotDialog = defineAsyncComponent(() => import('/imports/client/ui/properties/components/spells/CastSpellWithSlotDialog.vue'));
 const CharacterImportDialog = defineAsyncComponent(() => import('/imports/client/ui/creature/character/CharacterImportDialog.vue'));
@@ -42,6 +43,7 @@ const UsernameDialog = defineAsyncComponent(() => import('/imports/client/ui/use
 
 export default {
   ActionDialog,
+  AuroraImportDialog,
   ArchiveDialog,
   CastSpellWithSlotDialog,
   CharacterCreationDialog,

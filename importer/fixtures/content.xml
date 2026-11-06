@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<elements>
+  <element id="ID_TEST_MARTIAL" name="Synthetic Sentinel" type="Class">
+    <setters>
+      <set name="hd">d10</set>
+    </setters>
+    <rules>
+      <stat name="speed" value="30" />
+    </rules>
+  </element>
+  <element id="ID_TEST_CASTER" name="Synthetic Arcanist" type="Class">
+    <setters>
+      <set name="hd">d6</set>
+    </setters>
+    <rules>
+      <stat name="speed" value="30" />
+    </rules>
+  </element>
+  <element id="ID_TEST_BINDER" name="Synthetic Binder" type="Class">
+    <setters>
+      <set name="hd">d8</set>
+    </setters>
+  </element>
+  <element id="ID_TEST_ARMOR" name="Synthetic Armor" type="Armor">
+    <setters>
+      <set name="armor">heavy</set>
+      <set name="ac">14</set>
+    </setters>
+  </element>
+  <element id="ID_TEST_SHIELD" name="Synthetic Shield" type="Armor">
+    <setters>
+      <set name="armor">shield</set>
+      <set name="ac">2</set>
+    </setters>
+  </element>
+  <element id="ID_TEST_MEDIUM" name="Synthetic Medium Armor" type="Armor">
+    <setters>
+      <set name="armor">medium</set>
+      <set name="ac">15</set>
+    </setters>
+  </element>
+  <element id="ID_TEST_CHARM" name="Synthetic Attuned Charm" type="Item">
+    <setters>
+      <set name="attunement">true</set>
+    </setters>
+    <rules>
+      <stat name="ac:misc" value="1" />
+    </rules>
+  </element>
+  <element id="ID_TEST_SET" name="Synthetic Strength Item" type="Item">
+    <rules>
+      <stat name="strength:score:set" value="21" />
+    </rules>
+  </element>
+  <element id="ID_TEST_EXPERTISE" name="Synthetic Expertise" type="Feature">
+    <rules>
+      <stat name="athletics:proficiency" value="4" />
+    </rules>
+  </element>
+  <element id="ID_TEST_SPELL" name="Synthetic Light" type="Spell">
+    <setters>
+      <set name="level">0</set>
+    </setters>
+  </element>
+</elements>

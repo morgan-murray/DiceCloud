@@ -1,0 +1,26 @@
+{
+  "martial": {
+    "hp": 28,
+    "ac": 16,
+    "strength": 16,
+    "athletics": 5
+  },
+  "caster": {
+    "hp": 32,
+    "ac": 12,
+    "strength": 8,
+    "arcana": 7
+  },
+  "multiclass": {
+    "hp": 29,
+    "ac": 12,
+    "strength": 8,
+    "arcana": 3
+  },
+  "equipment": {
+    "hp": 40,
+    "ac": 20,
+    "strength": 21,
+    "athletics": 9
+  }
+}

@@ -92,6 +92,10 @@ function insertCharacter() {
   });
 }
 
+function importAurora() {
+  store.commit('pushDialogStack', { component: 'aurora-import-dialog', elementId: 'aurora-import-button', callback: (creatureId) => creatureId });
+}
+
 function importCharacter() {
   store.commit('pushDialogStack', {
     component: 'character-import-dialog',
@@ -161,7 +165,8 @@ async function insertFolder() {
               :folders="folders"
             />
           </v-card>
-          <div class="d-flex justify-end mt-2">
+          <div class="d-flex flex-wrap justify-end mt-2">
+            <v-btn variant="text" data-id="aurora-import-button" :disabled="characterSpaceLeft <= 0" @click="importAurora">Import Aurora character</v-btn>
             <v-btn
               v-if="showImportButton"
               variant="text"

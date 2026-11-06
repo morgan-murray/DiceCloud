@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<character>
+  <display-properties>
+    <name>martial</name>
+    <level>3</level>
+    <race>Synthetic Lineage</race>
+  </display-properties>
+  <build>
+    <abilities>
+      <strength>16</strength>
+      <dexterity>14</dexterity>
+      <constitution>14</constitution>
+      <intelligence>10</intelligence>
+      <wisdom>12</wisdom>
+      <charisma>8</charisma>
+    </abilities>
+    <elements>
+      <element type="Level" name="1" rndhp="10,6,6">
+        <element type="Class" registered="ID_TEST_MARTIAL" />
+      </element>
+      <element type="Level" name="2" rndhp="10,6,6">
+        <element type="Class" registered="ID_TEST_MARTIAL" />
+      </element>
+      <element type="Level" name="3" rndhp="10,6,6">
+        <element type="Class" registered="ID_TEST_MARTIAL" />
+      </element>
+    </elements>
+    <sum>
+      <element id="ID_TEST_MARTIAL" type="Class" />
+      <element id="ID_PROFICIENCY_SAVINGTHROW_STRENGTH" type="Proficiency" />
+      <element id="ID_PROFICIENCY_SKILL_ATHLETICS" type="Proficiency" />
+      <element id="ID_PROFICIENCY_SKILL_STEALTH" type="Proficiency" />
+    </sum>
+  </build>
+  <equipment>
+    <item id="ID_TEST_ARMOR" amount="1">
+      <equipped>true</equipped>
+      <attunement>false</attunement>
+    </item>
+    <item id="ID_TEST_SHIELD" amount="1">
+      <equipped>true</equipped>
+      <attunement>false</attunement>
+    </item>
+  </equipment>
+  <magic />
+</character>

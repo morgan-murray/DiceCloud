@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<character>
+  <display-properties>
+    <name>caster</name>
+    <level>5</level>
+    <race>Synthetic Lineage</race>
+  </display-properties>
+  <build>
+    <abilities>
+      <strength>8</strength>
+      <dexterity>14</dexterity>
+      <constitution>14</constitution>
+      <intelligence>18</intelligence>
+      <wisdom>12</wisdom>
+      <charisma>10</charisma>
+    </abilities>
+    <elements>
+      <element type="Level" name="1" rndhp="6,4,4,4,4">
+        <element type="Class" registered="ID_TEST_CASTER" />
+      </element>
+      <element type="Level" name="2" rndhp="6,4,4,4,4">
+        <element type="Class" registered="ID_TEST_CASTER" />
+      </element>
+      <element type="Level" name="3" rndhp="6,4,4,4,4">
+        <element type="Class" registered="ID_TEST_CASTER" />
+      </element>
+      <element type="Level" name="4" rndhp="6,4,4,4,4">
+        <element type="Class" registered="ID_TEST_CASTER" />
+      </element>
+      <element type="Level" name="5" rndhp="6,4,4,4,4">
+        <element type="Class" registered="ID_TEST_CASTER" />
+      </element>
+    </elements>
+    <sum>
+      <element id="ID_TEST_CASTER" type="Class" />
+      <element id="ID_PROFICIENCY_SAVINGTHROW_INTELLIGENCE" type="Proficiency" />
+      <element id="ID_PROFICIENCY_SKILL_ARCANA" type="Proficiency" />
+    </sum>
+  </build>
+  <equipment />
+  <magic>
+    <spellcasting name="Arcanist" ability="intelligence" attack="7" dc="15" pool="spellcasting">
+      <slots s1="4" s2="3" s3="2" />
+      <spell id="ID_TEST_SPELL" level="0" known="true" prepared="true" always-prepared="false" />
+    </spellcasting>
+  </magic>
+</character>

@@ -21,6 +21,8 @@ jobs:
         run: |
           node --check deployment/browser/runtime.spec.mjs
           node --test deployment/test_url_paths.mjs
+          node --test deployment/test_aurora_adapter.mjs
+          PYTHONPATH=importer python3 -m unittest discover -s importer/tests -v
       - name: Build checked-out source
         run: |
           docker build --progress=plain --target test .
