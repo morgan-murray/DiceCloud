@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 
-const { result: meteorStatus } = autorun(() => Meteor.status());
+// Meteor mutates its status object; a fresh value lets Vue observe the update.
+const { result: meteorStatus } = autorun(() => ({ ...Meteor.status() }));
 
 const status = computed(() => meteorStatus.value?.status);
 const connected = computed(() => meteorStatus.value?.connected);

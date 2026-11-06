@@ -75,6 +75,7 @@ test('native workflow: accounts, character CRUD, libraries, reconnect and access
   await page.waitForFunction(() => !window.Meteor.status().connected);
   await page.evaluate(() => window.Meteor.reconnect());
   await page.waitForFunction(() => window.Meteor.status().connected);
+  await expect(page.getByText('connecting', { exact: true })).not.toBeVisible();
   console.info('Verified character refresh and reconnect');
   const libraryId = await call(page, 'libraries.insert', {
     name: 'Runtime smoke library', description: 'Synthetic runtime fixture',
