@@ -28,6 +28,41 @@ class CharacterTests(unittest.TestCase):
                 self.assertEqual(result['provenance']['builtin']['id'],'aurora-core-2014')
                 self.assertIsNone(result['hitPoints']['current'])
 
+    def test_aurora_movement_and_armor_conventions(self):
+        result=extract(fixture('martial'),pack())
+        self.assertEqual(result['movement']['walk'],30)
+        self.assertEqual(result['armorClass'],16)  # 14 armor + 2 shield once
+        self.assertEqual(extract(fixture('equipment'),pack())['armorClass'],20)
+
+    def test_display_armor_fallback_and_class_calculation(self):
+        content=pack()
+        raw=base64.b64decode(content[0]['data']).replace(b'<stat name="ac:armored:armor" value="14" />',b'')
+        raw=raw.replace(b'<stat name="ac:shield" value="2" />',b'')
+        content[0]['data']=base64.b64encode(raw).decode()
+        self.assertEqual(extract(fixture('martial'),content)['armorClass'],16)
+
+    def test_innate_speed_combines_with_additive_speed(self):
+        content=pack()
+        raw=base64.b64decode(content[0]['data']).replace(b'<stat name="innate speed" value="30" />',b'<stat name="innate speed" value="30" /><stat name="speed" value="5" />')
+        content[0]['data']=base64.b64encode(raw).decode()
+        self.assertEqual(extract(fixture('martial'),content)['movement']['walk'],35)
+
+    def test_alternative_armor_calculation_competes_with_baseline(self):
+        content=pack()
+        raw=base64.b64decode(content[0]['data']).replace(b'<stat name="innate speed" value="30" />',b'<stat name="innate speed" value="30" /><stat name="ac:calculation" value="17" bonus="calculation" equipped="[armor:none]" />')
+        content[0]['data']=base64.b64encode(raw).decode()
+        self.assertEqual(extract(fixture('caster'),content)['armorClass'],17)
+        self.assertEqual(extract(fixture('martial'),content)['armorClass'],16)
+
+    def test_duplicate_inventory_ids_preserve_each_equipped_state(self):
+        from xml.etree import ElementTree as ET
+        f=fixture('martial');root=ET.fromstring(base64.b64decode(f['data']))
+        first=ET.Element('item',id='ID_TEST_ARMOR',amount='1');ET.SubElement(first,'equipped').text='false'
+        root.find('equipment').insert(0,first)
+        result=extract(upload(ET.tostring(root),'duplicates.dnd5e'),pack())
+        self.assertEqual(result['armorClass'],16)
+        self.assertEqual([i['equipped'] for i in result['inventory']],[False,True,True])
+
     def test_pact_and_ordinary_resources_separate(self):
         result=extract(fixture('multiclass'),pack())
         self.assertEqual([(r['pool'],r['level'],r['total'],r['reset']) for r in result['resources']], [('spellcasting',1,4,'longRest'),('spellcasting',2,2,'longRest'),('pact',1,2,'shortRest')])

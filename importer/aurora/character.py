@@ -42,8 +42,8 @@ def extract(source, files):
         element=content.quick_query_id(item.get('id'))
         if element is None:fail('MISSING_CONTENT','equipment','Missing inventory element: '+str(item.get('id')))
         inventory.append(dict(id=item.get('id'),name=bounded(text(item.find('./details/name')) or element.get('name','Item'),'inventory.name',128),
-            quantity=number(item.get('amount','1'),'inventory.quantity',0,100000),equipped=item.get('id') in q.equipped,
-            attuned=item.get('id') in q.attuned,description=bounded(content.describe(element),'inventory.description'),
+            quantity=number(item.get('amount','1'),'inventory.quantity',0,100000),equipped=text(item.find('./equipped')).lower()=='true',
+            attuned=text(item.find('./attunement')).lower()=='true',description=bounded(content.describe(element),'inventory.description'),
             notes=bounded(text(item.find('./details/notes')),'inventory.notes')))
     currency={}
     for key in ['copper','silver','electrum','gold','platinum']:

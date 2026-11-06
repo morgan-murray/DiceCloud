@@ -38,7 +38,7 @@ class SecurityTests(unittest.TestCase):
     def test_numeric_cycles_fail_closed(self):
         from test_character import fixture, pack
         from aurora.character import extract
-        content=pack();content[0]['data']=base64.b64encode(base64.b64decode(content[0]['data']).replace(b'<stat name="speed" value="30"',b'<stat name="speed" value="speed"')).decode()
+        content=pack();content[0]['data']=base64.b64encode(base64.b64decode(content[0]['data']).replace(b'<stat name="innate speed" value="30"',b'<stat name="innate speed" value="innate speed"')).decode()
         with self.assertRaises(ImportErrorDetail) as error:extract(fixture('martial'),content)
         self.assertEqual(error.exception.diagnostic['code'],'CYCLIC_RULE')
 if __name__=='__main__':unittest.main()

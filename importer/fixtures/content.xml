@@ -5,7 +5,7 @@
       <set name="hd">d10</set>
     </setters>
     <rules>
-      <stat name="speed" value="30" />
+      <stat name="innate speed" value="30" />
     </rules>
   </element>
   <element id="ID_TEST_CASTER" name="Synthetic Arcanist" type="Class">
@@ -13,7 +13,7 @@
       <set name="hd">d6</set>
     </setters>
     <rules>
-      <stat name="speed" value="30" />
+      <stat name="innate speed" value="30" />
     </rules>
   </element>
   <element id="ID_TEST_BINDER" name="Synthetic Binder" type="Class">
@@ -24,20 +24,29 @@
   <element id="ID_TEST_ARMOR" name="Synthetic Armor" type="Armor">
     <setters>
       <set name="armor">heavy</set>
-      <set name="ac">14</set>
+      <set name="armorClass">14</set>
     </setters>
+    <rules>
+      <stat name="ac:armored:armor" value="14" />
+    </rules>
   </element>
   <element id="ID_TEST_SHIELD" name="Synthetic Shield" type="Armor">
     <setters>
       <set name="armor">shield</set>
-      <set name="ac">2</set>
+      <set name="armorClass">+2</set>
     </setters>
+    <rules>
+      <stat name="ac:shield" value="2" />
+    </rules>
   </element>
   <element id="ID_TEST_MEDIUM" name="Synthetic Medium Armor" type="Armor">
     <setters>
       <set name="armor">medium</set>
-      <set name="ac">15</set>
+      <set name="armorClass">15 + Dex modifier (max 2)</set>
     </setters>
+    <rules>
+      <stat name="ac:armored:armor" value="15" />
+    </rules>
   </element>
   <element id="ID_TEST_CHARM" name="Synthetic Attuned Charm" type="Item">
     <setters>

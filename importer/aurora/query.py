@@ -41,6 +41,20 @@ class Query:
         self.equipped = {item.get('id') for item in self.equipment if text(item.find('./equipped')).lower() == 'true'}
         self.attuned = {item.get('id') for item in self.equipment if text(item.find('./attunement')).lower() == 'true'}
         self._rules(selected)
+        self._movement()
+
+    def _movement(self):
+        # Aurora stores innate movement; its desktop engine creates final speed.
+        # Reconstruct the formula explicitly instead of silently returning zero.
+        for suffix in ['', ':climb', ':fly', ':swim', ':burrow']:
+            innate='innate speed'+suffix
+            final='speed'+suffix
+            if innate not in self.terms and innate not in self.base: continue
+            if not any(t['value'] in [innate, innate+':calculation'] for t in self.terms.get(final,[])):
+                self.terms[final].append(dict(value=innate,bonus='base',maximum=None,minimum=None,requirements=None,equipped=None,source='builtin:movement'))
+                for extra in [innate+':misc', final+':misc']:
+                    if extra in self.terms and not any(t['value']==extra for t in self.terms[final]):
+                        self.terms[final].append(dict(value=extra,bonus=None,maximum=None,minimum=None,requirements=None,equipped=None,source='builtin:movement'))
 
     def _levels(self):
         levels = self.root.findall('./build/elements/element[@type="Level"]')
@@ -80,6 +94,8 @@ class Query:
         seen = set()
         for source in selected + self.equipment:
             key = source.get('id')
+            is_item = source in self.equipment
+            if is_item and text(source.find('./equipped')).lower() != 'true': continue
             if not key or (key in seen and source.get('type') != 'Ability Score Improvement'): continue
             seen.add(key)
             node = self.compendium.quick_query_id(key)
@@ -95,7 +111,7 @@ class Query:
                     if entry is None: fail('MISSING_CONTENT','equipment','Missing item adorner: '+str(ident))
                     entries.append((ident,entry))
             for ident, entry in entries:
-                if is_item and (self.compendium.read_setter(entry,'attunement') or '').lower() in ['true','required'] and key not in self.attuned: continue
+                if is_item and (self.compendium.read_setter(entry,'attunement') or '').lower() in ['true','required'] and text(source.find('./attunement')).lower() != 'true': continue
                 context = self.class_context.get(key)
                 for rule in entry.findall('./rules/stat'):
                     allowed={'name','value','bonus','maximum','minimum','level','requirements','equipped','inline','merge','alt'}
@@ -200,21 +216,44 @@ class Query:
         return total+self.get_variable_value('hp'),dice
 
     def ac(self):
-        if 'ac' in self.terms: return self.get_variable_value('ac')
-        dex=self.get_variable_value('dexterity:modifier');base=10+dex;shields=0;armors=[]
+        dex=self.get_variable_value('dexterity:modifier');armors=[];shields=[]
         for item in self.equipment:
             key=item.get('id')
-            if key not in self.equipped: continue
+            if text(item.find('./equipped')).lower() != 'true': continue
             node=self.compendium.quick_query_id(key)
             if node is None or node.get('type')!='Armor': continue
             kind=(self.compendium.read_setter(node,'armor') or '').lower()
-            raw=self.compendium.read_setter(node,'ac')
-            if raw is None: fail('ARMOR_AC','armorClass','Equipped armor lacks an explicit AC setter.')
-            ac=number(raw,'armorClass',0,50)
-            if kind=='shield': shields+=ac
-            elif kind in ['light','medium','heavy']: armors.append(ac+(dex if kind=='light' else min(dex,2) if kind=='medium' else 0))
+            if kind=='shield': shields.append(node)
+            elif kind in ['light','medium','heavy']: armors.append((kind,node))
             else: fail('ARMOR_KIND','armorClass','Unknown equipped armor category.')
-        if len(armors)>1 or shields>5: fail('ARMOR_AMBIGUOUS','armorClass','Equipped armor/shield selection is ambiguous.')
-        if 'ac:calculation' in self.terms: base=self.get_variable_value('ac:calculation')
-        elif armors: base=armors[0]
-        return base+shields+self.get_variable_value('ac:shield')+self.get_variable_value('ac:misc')
+        if len(armors)>1 or len(shields)>1: fail('ARMOR_AMBIGUOUS','armorClass','Equipped armor/shield selection is ambiguous.')
+        def display_base(node):
+            value=self.compendium.read_setter(node,'armorClass') or self.compendium.read_setter(node,'ac')
+            # Display text is never evaluated; only these known SRD forms parse.
+            match=re.fullmatch(r'([+]?[0-9]{1,2})(?: \+ Dex modifier(?: \(max 2\))?)?',value or '',re.I)
+            if not match: fail('ARMOR_AC','armorClass','Armor needs numeric rules or a supported armorClass setter.')
+            return number(match.group(1),'armorClass',0,50)
+        base=10+dex
+        if armors:
+            kind,node=armors[0]
+            armor=self.get_variable_value('ac:armored:armor') if 'ac:armored:armor' in self.terms else display_base(node)
+            cap=self.get_variable_value('ac:armored:dexterity:cap') if 'ac:armored:dexterity:cap' in self.terms else 2
+            armor_dex=self.get_variable_value('ac:armored:dexterity') if 'ac:armored:dexterity' in self.terms else (dex if kind=='light' else min(dex,cap) if kind=='medium' else 0)
+            base=armor+armor_dex
+            for extra in ['ac:armored:enhancement','ac:armored:misc']:
+                if extra in self.terms: base+=self.get_variable_value(extra)
+        # A baseline competes with class-specific calculation bonuses rather than
+        # being added to them. Invalid cyclic references still fail closed.
+        self.terms['ac:calculation'].append(dict(value=str(base),bonus='calculation',maximum=None,minimum=None,requirements=None,equipped=None,source='builtin:armor'))
+        self.cache.pop('ac:calculation',None)
+        for term in self.terms['ac:calculation']:
+            if term['value'] in ['ac:shield','ac:misc']:
+                fail('UNSUPPORTED_ARMOR_ENGINE','armorClass','Legacy combined armor-engine definitions conflict with the built-in calculation.')
+        calculation=self.get_variable_value('ac:calculation')
+        shield=self.get_variable_value('ac:shield') if 'ac:shield' in self.terms else (display_base(shields[0]) if shields else 0)
+        misc=self.get_variable_value('ac:misc')
+        if 'ac' in self.terms:
+            if any(t['value'].lower()=='ac:calculation' for t in self.terms['ac']):
+                fail('UNSUPPORTED_ARMOR_ENGINE','armorClass','A second final armor engine is not supported; use the built-in calculation.')
+            return calculation+shield+misc+self.get_variable_value('ac')
+        return calculation+shield+misc
