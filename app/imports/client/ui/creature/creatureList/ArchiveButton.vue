@@ -21,6 +21,7 @@ function openArchive() {
     :icon="!text"
     :text="text"
     :data-id="randomId"
+    aria-label="Archive characters"
     v-bind="$attrs"
     @click="openArchive"
   >

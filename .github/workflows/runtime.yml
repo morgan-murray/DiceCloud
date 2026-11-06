@@ -34,7 +34,7 @@ jobs:
         working-directory: deployment/browser
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox
       - name: Check non-root runtime
         run: test "$(docker image inspect dicecloud:runtime --format '{{.Config.User}}')" = node
       - name: Initialize isolated private stack
@@ -64,6 +64,12 @@ jobs:
           DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration'
       - name: Verify HTTPS prefix, restart and recovery
         run: bash deployment/verify-prefix.sh
+      - name: Verify archive dialog controls in Firefox
+        working-directory: deployment/browser
+        env:
+          DICECLOUD_TEST_URL: https://localhost:31082/dnd/
+          DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-prefix-fixture.json
+        run: npx playwright test --config playwright.firefox.config.mjs --grep 'archive dialog close controls'
       - name: Export built image for private VPS verification
         if: always()
         run: |

@@ -278,7 +278,8 @@ async function leave(target: Element, done: () => void) {
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 6;
+  /* Keep custom dialogs above Vuetify app bars and navigation drawers. */
+  z-index: 2000;
 }
 
 .shake {
@@ -375,7 +376,8 @@ async function leave(target: Element, done: () => void) {
   }
 }
 
-.dialog > * {
+/* Fill the card with dialog content, without resizing Vuetify loader layers. */
+.dialog > .sized-dialog {
   height: 100%;
   width: 100%;
 }
