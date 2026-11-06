@@ -282,3 +282,28 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
     expect(url.protocol).toBe(configured.protocol === 'https:' ? 'wss:' : 'ws:');
   }
 });
+
+test('URL contract: archive dialog close controls', async ({ page }) => {
+  test.skip(!fixturePath, 'Requires the native workflow fixture');
+  const { owner } = JSON.parse(readFileSync(fixturePath, 'utf8'));
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await login(page, owner);
+  const openArchive = page.getByRole('button', { name: 'Archive characters', exact: true }).first();
+  await expect(openArchive).toBeVisible();
+  const originalPath = new URL(page.url()).pathname;
+  for (const control of ['Close', 'toolbar back', 'backdrop', 'browser back']) {
+    await openArchive.click();
+    const dialog = page.locator('.dialog-stack .dialog');
+    await expect(dialog).toHaveCount(1);
+    await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeVisible();
+    if (control === 'Close') await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    if (control === 'toolbar back') await dialog.locator('.base-dialog-toolbar button').first().click();
+    if (control === 'backdrop') await page.locator('.dialog-stack > .backdrop').click({ position: { x: 4, y: 4 } });
+    if (control === 'browser back') await page.goBack();
+    await expect(dialog).toHaveCount(0);
+    await expect(openArchive).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe(originalPath);
+  }
+  expect(errors).toEqual([]);
+});
