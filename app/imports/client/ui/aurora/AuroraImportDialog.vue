@@ -97,6 +97,17 @@ async function remove(kind, id) { await work(async () => { await call('remove', 
           <p>Level {{ preview.snapshot.identity.level }} · AC {{ preview.snapshot.armorClass }} · HP {{ preview.snapshot.hitPoints.maximum }} · initiative {{ preview.snapshot.initiative }}</p>
           <v-table density="compact"><thead><tr><th>Ability</th><th>Score</th></tr></thead><tbody><tr v-for="(value, ability) in preview.snapshot.abilities" :key="ability"><td>{{ ability }}</td><td>{{ value }}</td></tr></tbody></v-table>
           <p class="my-2">{{ preview.snapshot.inventory.length }} items · {{ preview.snapshot.features.length }} features · {{ preview.snapshot.spellcasting.length }} spellcasting lists. Preview expires {{ new Date(preview.expiresAt).toLocaleTimeString() }}.</p>
+          <v-expansion-panels class="my-4">
+            <v-expansion-panel title="Review saves, skills, movement and spellcasting">
+              <v-expansion-panel-text>
+                <v-table density="compact"><thead><tr><th>Saving throw</th><th>Bonus</th></tr></thead><tbody><tr v-for="(value, name) in preview.snapshot.saves" :key="name"><td>{{ name }}</td><td>{{ value }}</td></tr></tbody></v-table>
+                <v-table density="compact"><thead><tr><th>Skill</th><th>Bonus</th><th>Passive</th></tr></thead><tbody><tr v-for="(value, name) in preview.snapshot.skills" :key="name"><td>{{ name }}</td><td>{{ value.bonus }}</td><td>{{ value.passive }}</td></tr></tbody></v-table>
+                <p v-for="(value, mode) in preview.snapshot.movement" :key="mode">{{ mode }}: {{ value }} feet</p>
+                <p v-for="caster in preview.snapshot.spellcasting" :key="caster.name">{{ caster.name }}: attack {{ caster.attack }}, save DC {{ caster.dc }}, {{ caster.spells.length }} spells</p>
+                <p v-for="resource in preview.snapshot.resources" :key="resource.name">{{ resource.name }}: {{ resource.total }} slots; {{ resource.pool === 'pact' ? 'short-rest recovery' : 'long-rest recovery' }}</p>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
           <v-alert v-for="warning in preview.snapshot.diagnostics" :key="warning.code" type="warning" class="my-2">{{ warning.message }}</v-alert>
           <p class="text-caption">Reference pack {{ preview.snapshot.provenance.builtin.version }} · source fingerprint {{ preview.snapshot.provenance.sourceHash.slice(0,12) }} · content fingerprint {{ preview.snapshot.provenance.contentHash.slice(0,12) }}. Full provenance stays on the imported sheet.</p>
           <v-checkbox v-model="acknowledged" label="I have reviewed the warnings and agree to initialize HP and resources to full." :disabled="busy" />

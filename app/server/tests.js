@@ -7,6 +7,7 @@ Meteor.startup(async () => {
   await import('/imports/server/tabletopPermissions.test');
   await import('/imports/server/archiveRuntime.test');
   await import('/imports/server/runtimeMigration.test');
+  await import('/imports/server/aurora/aurora.test');
   await import('/imports/api/creature/creatureProperties/methods/getSlotFillFilter.test');
   await import('/imports/api/engine/action/applyProperties/applyActionProperty.test');
   await import('/imports/api/engine/action/applyProperties/applyAdjustmentProperty.test');

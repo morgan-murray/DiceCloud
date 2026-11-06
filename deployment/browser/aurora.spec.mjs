@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 const baseURL=(process.env.DICECLOUD_TEST_URL || 'http://127.0.0.1:31080').replace(/\/?$/, '/');
 const url=path=>new URL(path.replace(/^\//,''),baseURL).href;
 const fixturePath=process.env.DICECLOUD_TEST_FIXTURE;
@@ -37,10 +38,10 @@ test('Aurora workflow: built-in reference, private pack, explicit preview and na
   await expect(dialog.getByText(/Built in:/)).toBeVisible();
   await dialog.getByText('Manage private content and import history',{exact:true}).click();
   await dialog.getByLabel('Private pack name').fill('Synthetic browser content');
-  await dialog.locator('input[type=file][multiple]').setInputFiles(new URL('../../importer/fixtures/content.xml',import.meta.url).pathname);
+  await dialog.locator('input[type=file][multiple]').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/content.xml',import.meta.url)));
   await dialog.getByRole('button',{name:'Save private pack',exact:true}).click();
   await expect(dialog.getByRole('button',{name:'Delete pack',exact:true})).toBeVisible();
-  await dialog.locator('input[type=file]:not([multiple])').setInputFiles(new URL('../../importer/fixtures/martial.dnd5e',import.meta.url).pathname);
+  await dialog.locator('input[type=file]:not([multiple])').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/martial.dnd5e',import.meta.url)));
   await dialog.getByRole('button',{name:'Preview character',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:'martial',exact:true})).toBeVisible();
   await expect(dialog.getByRole('button',{name:'Import this snapshot',exact:true})).toBeDisabled();
@@ -50,6 +51,12 @@ test('Aurora workflow: built-in reference, private pack, explicit preview and na
   await page.waitForFunction(()=>/\/character\//.test(location.pathname));
   const creatureId=new URL(page.url()).pathname.split('/character/')[1].split('/')[0];
   await verify(page,creatureId);await page.reload();await verify(page,creatureId);
+  const hpId=await page.evaluate(id=>window.Mongo.getCollection('creatureProperties').findOne({'root.id':id,variableName:'hitPoints'})._id,creatureId);
+  await call(page,'creatureProperties.update',{_id:hpId,path:['damage'],value:4});
+  await page.waitForFunction(id=>window.Mongo.getCollection('creatureProperties').findOne(id)?.value===24,hpId);
+  const actionId=await call(page,'actions.insertAction',{action:{creatureId,task:{subtaskFn:'reset',eventName:'longRest',targetIds:[creatureId]}}});
+  await call(page,'actions.runAction',{actionId});
+  await page.waitForFunction(id=>window.Mongo.getCollection('creatureProperties').findOne(id)?.value===28,hpId);
   fixture.aurora={creatureId};writeFileSync(fixturePath,JSON.stringify(fixture),{mode:0o600});
   expect(errors).toEqual([]);
 });

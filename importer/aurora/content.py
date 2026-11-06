@@ -22,7 +22,7 @@ class CompendiumQuery:
             if root.find('append') is not None or root.find('remove') is not None:
                 fail('UNSUPPORTED_CONTENT_PATCH', 'content', 'Append/remove content patches are not yet supported; supply resolved element definitions.')
             ids = []
-            for element in root.iter('element'):
+            for element in root.findall('element'):
                 key = element.get('id')
                 if not key: continue
                 if not ID.fullmatch(key): fail('INVALID_ELEMENT_ID', 'content', 'Content element IDs must be bounded simple identifiers.')

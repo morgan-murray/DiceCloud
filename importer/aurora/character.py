@@ -97,9 +97,9 @@ def extract(source, files):
     for source_node in root.findall('./build/sum/element'):
         node=content.quick_query_id(source_node.get('id'))
         if node is None:continue
-        if node.get('type') in ['Feature','Class Feature','Racial Trait','Feat','Condition','Vision','Ability Score Improvement','Proficiency']:
+        if node.get('type') in ['Feature','Class Feature','Racial Trait','Feat','Condition','Vision','Ability Score Improvement','Proficiency','Language','Alignment','Size']:
             features.append(dict(id=source_node.get('id'),name=bounded(node.get('name','Feature'),'features.name',128),description=bounded(content.describe(node),'features.description')))
-            if node.get('type') not in ['Ability Score Improvement','Proficiency']:
+            if node.get('type') not in ['Ability Score Improvement','Proficiency','Language','Alignment','Size']:
                 warn('MANUAL_FEATURES','features','Feature descriptions, conditions and senses require manual use; unrecognized active effects/resources are not automated.')
     notes=[bounded(text(n),'notes') for n in root.findall('./build/input/notes/note') if text(n)]
     warn('SNAPSHOT_ONLY','character','This is a 2014 current-sheet snapshot. Level-up, equipment changes and ongoing conditional effects require manual review.')
