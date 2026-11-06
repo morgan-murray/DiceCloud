@@ -265,6 +265,7 @@ class LoadedCreature {
   properties: Map<string, CreatureProperty>;
   creature?: Creature;
   variables: Variables;
+  private cancelCompute: () => void = () => {};
 
   private constructor(sub: Subscription) {
     this.subs = new Set([sub]);
@@ -280,15 +281,20 @@ class LoadedCreature {
     await Tracker.nonreactive(async () => {
       const compute = debounce(async () => {
         // It's possible that the creature was unloaded before we get around to computing it
-        if (!loadedCreatures.has(creatureId)) return;
+        if (loadedCreatures.get(creatureId) !== loaded || !loaded.creature) return;
         console.log('Computing: ', creatureId)
         try {
           await computeCreature(creatureId);
         } catch (e) {
+          // Archiving can remove the character while an already-started build
+          // awaits its database read. That lifecycle race is not a compute error.
+          if (e instanceof Meteor.Error && e.error === 'not-found'
+            && !await creatures().findOneAsync(creatureId)) return;
           console.error(e);
           throw e;
         }
       }, COMPUTE_DEBOUNCE_TIME);
+      loaded.cancelCompute = () => compute.cancel();
 
       // Observe all creature properties which are needed for computation
       loaded.propertyObserver = await properties().find({
@@ -335,6 +341,7 @@ class LoadedCreature {
     return loaded;
   }
   stop() {
+    this.cancelCompute();
     this.propertyObserver?.stop();
     this.creatureObserver?.stop();
     this.variablesObserver?.stop();
@@ -355,6 +362,7 @@ class LoadedCreature {
     if (this.creature) LoadedCreature.changeDoc(this.creature, fields);
   }
   removeCreature() {
+    this.cancelCompute();
     delete this.creature;
   }
   changeVariables(id: string, fields: Record<string, unknown>) {
