@@ -7,6 +7,19 @@ const appURL = path => new URL(path.replace(/^\//, ''), baseURL).href;
 const fixturePath = process.env.DICECLOUD_TEST_FIXTURE;
 const imageFixture = readFileSync(new URL('./fixtures/runtime.png', import.meta.url));
 
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  // Synthetic test state only: omit credentials, tokens and subscription args.
+  const state = await page.evaluate(() => ({
+    status: window.Meteor?.status(),
+    userPresent: Boolean(window.Meteor?.userId()),
+    subscriptions: Object.values(window.Meteor?.connection?._subscriptions || {}).map(sub => ({ name: sub.name, ready: sub.ready })),
+    trackerInFlush: window.Tracker?.inFlush,
+    route: document.querySelector('#app')?.__vue_app__?.config.globalProperties.$route?.fullPath,
+  })).catch(() => 'Browser state unavailable');
+  console.info('Failure browser state:', state);
+});
+
 async function propertyHasValue(page, id, value) {
   await page.waitForFunction(({ id, value }) => window.Mongo.getCollection('creatureProperties')?.findOne(id)?.value === value, { id, value }, { timeout: 30000 });
 }
@@ -240,7 +253,8 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   await page.waitForFunction(() => window.Meteor?.status().connected);
   await expect(page).toHaveURL(appURL('/my-files'));
   await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
-  await ready(page, `/character/${creatureId}`);
+  await page.locator('.sidebar').getByRole('link').filter({ hasText: 'Runtime verified character' }).click();
+  await expect(page.getByRole('button', { name: 'Long Rest', exact: true })).toBeVisible();
   await page.locator('[data-id="creature-menu"]').click();
   const print = page.getByRole('link', { name: 'Print', exact: true });
   expect(new URL(await print.getAttribute('href'), baseURL).pathname).toContain(configured.pathname + 'print-character/');
@@ -249,7 +263,6 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   await expect(page.getByText(appURL(`/character/${creatureId}`), { exact: true })).toBeVisible();
   await page.emulateMedia({ media: 'print' });
   await page.evaluate(() => document.fonts.ready);
-  await ready(page, `/character/${creatureId}`);
   await call(page, 'sharing.setPublic', { docRef: { collection: 'creatures', id: creatureId }, isPublic: true });
   try {
     const shared = await page.request.get(appURL(`/api/creature/${creatureId}`));
