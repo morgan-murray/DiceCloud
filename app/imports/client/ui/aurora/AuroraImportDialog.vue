@@ -76,7 +76,7 @@ async function remove(kind, id) { await work(async () => { await call('remove', 
                 <v-list-item v-for="pack in packs" :key="pack._id" :title="pack.name" :subtitle="`${pack.manifest.elementCount} definitions`">
                   <template #append><v-btn variant="text" :aria-label="`Delete pack ${pack.name}`" @click="remove('pack', pack._id)">Delete pack</v-btn></template>
                 </v-list-item>
-                <v-list-item v-for="record in history" :key="record._id" title="Saved import source" :subtitle="new Date(record.createdAt).toLocaleString()">
+                <v-list-item v-for="record in history" :key="record._id" :title="record.state === 'preview' ? 'Pending preview' : 'Saved import source'" :subtitle="new Date(record.createdAt).toLocaleString()">
                   <template #append><v-btn variant="text" @click="remove('job', record._id)">Delete source</v-btn></template>
                 </v-list-item>
               </v-list>

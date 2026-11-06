@@ -40,7 +40,7 @@ test('Aurora workflow: built-in reference, private pack, explicit preview and na
   await dialog.getByLabel('Private pack name').fill('Synthetic browser content');
   await dialog.locator('input[type=file][multiple]').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/content.xml',import.meta.url)));
   await dialog.getByRole('button',{name:'Save private pack',exact:true}).click();
-  await expect(dialog.getByRole('button',{name:'Delete pack',exact:true})).toBeVisible();
+  await expect(dialog.getByRole('button',{name:'Delete pack Synthetic browser content',exact:true})).toBeVisible();
   await dialog.locator('input[type=file]:not([multiple])').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/martial.dnd5e',import.meta.url)));
   await dialog.getByRole('button',{name:'Preview character',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:'martial',exact:true})).toBeVisible();

@@ -115,7 +115,7 @@ export const api = {
   async list(userId) {
     owner(userId);
     return { packs: await Packs.find({ owner: userId }, { fields: { name: 1, 'manifest.hash': 1, 'manifest.builtin': 1, 'manifest.elementCount': 1, createdAt: 1, size: 1 } }).fetchAsync(),
-      history: await Jobs.find({ owner: userId, state: 'complete' }, { fields: { creatureId: 1, createdAt: 1, size: 1 } }).fetchAsync() };
+      history: await Jobs.find({ owner: userId, state: { $in: ['preview', 'complete'] } }, { fields: { creatureId: 1, createdAt: 1, size: 1, state: 1, expiresAt: 1 } }).fetchAsync() };
   },
   async addPack(userId, request) {
     owner(userId); keys(request, ['name', 'files']);
@@ -198,7 +198,10 @@ export async function cleanup() {
     if (await Creatures.findOneAsync({ _id: job.creatureId, owner: job.owner })) await Jobs.updateAsync(job._id, { $set: { state: 'complete' } });
     else { await rollback(job.creatureId); await Jobs.updateAsync(job._id, { $set: { state: 'preview' } }); }
   }
-  await Jobs.removeAsync({ state: 'preview', expiresAt: { $lt: new Date() } });
+  for (const job of await Jobs.find({ state: 'preview', expiresAt: { $lt: new Date() } }).fetchAsync()) {
+    if (!await Creatures.findOneAsync(job.creatureId)) await rollback(job.creatureId);
+    await Jobs.removeAsync({ _id: job._id, state: 'preview' });
+  }
   for (const collection of [Packs, Jobs]) for (const record of await collection.find({}, { fields: { owner: 1, creatureId: 1 } }).fetchAsync()) {
     if (!await Meteor.users.findOneAsync(record.owner)) {
       if (record.creatureId && !await Creatures.findOneAsync(record.creatureId)) await rollback(record.creatureId);
