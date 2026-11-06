@@ -11,7 +11,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
-    mem_limit: 128m
+    environment:
+      GOMEMLIMIT: 192MiB
+    mem_limit: 256m
     logging:
       driver: json-file
       options: {max-size: "10m", max-file: "3"}
