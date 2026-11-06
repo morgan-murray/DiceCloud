@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 import { autorun, subscribe } from 'vue-meteor-tracker';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import CreatureFolders from '/imports/api/creature/creatureFolders/CreatureFolders';
@@ -14,6 +15,7 @@ import { uniq, flatten } from 'lodash';
 import { key } from '/imports/client/ui/vuexStore';
 
 const store = useStore(key);
+const router = useRouter();
 
 const characterTransform = function (char: any) {
   char.url = `/character/${char._id}/${getCreatureUrlName(char)}`;
@@ -24,6 +26,8 @@ const characterTransform = function (char: any) {
 subscribe('characterList');
 
 const loadingInsertFolder = ref(false);
+const auroraEnabled = ref(false);
+onMounted(async () => { try { auroraEnabled.value = (await Meteor.callAsync('aurora.status')).enabled; } catch { /* Native character controls remain available. */ } });
 
 const { result: folders } = autorun(() => {
   const userId = Meteor.userId();
@@ -89,6 +93,18 @@ function insertCharacter() {
     component: 'character-creation-dialog',
     elementId: 'new-character-button',
     callback: (creatureId: string) => creatureId,
+  });
+}
+
+function importAurora() {
+  store.commit('pushDialogStack', {
+    component: 'aurora-import-dialog', elementId: 'aurora-import-button',
+    callback: (creatureId) => {
+      // The callback runs after the dialog's history.back popstate. Navigating
+      // before that event races Firefox and returns to the character list.
+      if (creatureId) setTimeout(() => router.push({ name: 'characterSheet', params: { id: creatureId } }), 0);
+      return creatureId;
+    },
   });
 }
 
@@ -161,7 +177,8 @@ async function insertFolder() {
               :folders="folders"
             />
           </v-card>
-          <div class="d-flex justify-end mt-2">
+          <div class="d-flex flex-wrap justify-end mt-2">
+            <v-btn v-if="auroraEnabled" variant="text" data-id="aurora-import-button" :disabled="characterSpaceLeft <= 0" @click="importAurora">Import Aurora character</v-btn>
             <v-btn
               v-if="showImportButton"
               variant="text"

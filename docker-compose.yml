@@ -35,6 +35,7 @@ services:
       PORT: "3000"
       BIND_IP: 0.0.0.0
       NODE_OPTIONS: --max-old-space-size=1536
+      AURORA_IMPORT_ENABLED: ${AURORA_IMPORT_ENABLED:-false}
       DICECLOUD_STORAGE_PATH: /var/lib/dicecloud
       METEOR_SETTINGS: '{"public":{"environment":"production","disablePatreon":true},"private":{"allowRegistration":${ALLOW_REGISTRATION:-false}}}'
     secrets: [mongo_app_password]
