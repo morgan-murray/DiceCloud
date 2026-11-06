@@ -34,7 +34,7 @@ export function mapSnapshot(snapshot, creatureId, owner, makeId) {
   for (const [index, resource] of snapshot.resources.entries()) attribute(resource.name, 'auroraSlots' + index, resource.total, 'spellSlot', { damage: 0, reset: resource.reset, spellSlotLevel: field(resource.level) });
   for (const caster of snapshot.spellcasting) {
     const parent = add('spellList', { name: caster.name, attackRollBonus: field(caster.attack), dc: field(caster.dc), description: { text: 'Fixed Aurora casting totals. Spell effects and preparation require manual review.' } });
-    for (const spell of caster.spells) add('spell', { name: spell.name, level: spell.level, prepared: spell.prepared === true || spell.alwaysPrepared === true, alwaysPrepared: spell.alwaysPrepared === true, description: { text: inertText(spell.description) + '\n\nKnown in source: ' + String(spell.known) }, summary: { text: 'Imported spell; resolve its effects manually.' } }, parent);
+    for (const spell of caster.spells) add('spell', { name: spell.name, level: spell.level, school: spell.school, prepared: spell.prepared === true || spell.alwaysPrepared === true, alwaysPrepared: spell.alwaysPrepared === true, description: { text: inertText(spell.description) + '\n\nKnown in source: ' + String(spell.known) }, summary: { text: 'Imported spell; resolve its effects manually.' } }, parent);
   }
   for (const item of snapshot.inventory) add('item', { name: item.name, quantity: item.quantity, equipped: item.equipped, attuned: item.attuned, description: { text: inertText(item.description + '\n' + item.notes) } });
   for (const [name, amount] of Object.entries(snapshot.currency)) if (amount) attribute(name + ' pieces', 'aurora' + name, amount, 'resource');

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { autorun, subscribe } from 'vue-meteor-tracker';
 import Creatures from '/imports/api/creature/creatures/Creatures';
@@ -24,6 +24,8 @@ const characterTransform = function (char: any) {
 subscribe('characterList');
 
 const loadingInsertFolder = ref(false);
+const auroraEnabled = ref(false);
+onMounted(async () => { try { auroraEnabled.value = (await Meteor.callAsync('aurora.status')).enabled; } catch { /* Native character controls remain available. */ } });
 
 const { result: folders } = autorun(() => {
   const userId = Meteor.userId();
@@ -166,7 +168,7 @@ async function insertFolder() {
             />
           </v-card>
           <div class="d-flex flex-wrap justify-end mt-2">
-            <v-btn variant="text" data-id="aurora-import-button" :disabled="characterSpaceLeft <= 0" @click="importAurora">Import Aurora character</v-btn>
+            <v-btn v-if="auroraEnabled" variant="text" data-id="aurora-import-button" :disabled="characterSpaceLeft <= 0" @click="importAurora">Import Aurora character</v-btn>
             <v-btn
               v-if="showImportButton"
               variant="text"

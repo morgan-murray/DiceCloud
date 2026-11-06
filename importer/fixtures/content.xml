@@ -60,6 +60,7 @@
   <element id="ID_TEST_SPELL" name="Synthetic Light" type="Spell">
     <setters>
       <set name="level">0</set>
+      <set name="school">evocation</set>
     </setters>
   </element>
 </elements>

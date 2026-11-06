@@ -74,8 +74,11 @@ def extract(source, files):
                 flags[attr]=None if raw is None else raw=='true'
             if any(v is None for v in flags.values()):warn('UNKNOWN_PREPARATION','spells','Some spell preparation/known flags are not saved; review them after import.')
             rawlevel=spell.get('level') or content.read_setter(element,'level')
+            school=(content.read_setter(element,'school') or '').lower()
+            if school not in ['abjuration','conjuration','divination','enchantment','evocation','illusion','necromancy','transmutation']:
+                fail('SPELL_SCHOOL','spells','Spell school is missing or unsupported; the importer will not invent one.')
             spells.append(dict(id=spell.get('id'),name=bounded(element.get('name','Spell'),'spell.name',128),level=number(rawlevel,'spell.level',0,9),
-                prepared=flags['prepared'],known=flags['known'],alwaysPrepared=flags['always-prepared'],description=bounded(content.describe(element),'spell.description')))
+                school=school,prepared=flags['prepared'],known=flags['known'],alwaysPrepared=flags['always-prepared'],description=bounded(content.describe(element),'spell.description')))
         slots=caster.find('slots')
         if slots is not None:
             pool=caster.get('pool')

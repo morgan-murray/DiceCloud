@@ -1,9 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 import { Meteor } from 'meteor/meteor';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 const emit = defineEmits(['pop']);
 const status = ref(), packs = ref([]), history = ref([]), selected = ref([]), character = ref(), content = ref([]), packName = ref('My Aurora content');
+const phase = ref('');
+onUnmounted(() => { cancelled.value = true; });
 const busy = ref(false), error = ref(''), diagnostics = ref([]), preview = ref(), acknowledged = ref(false), cancelled = ref(false);
 async function call(name, request) { return Meteor.callAsync('aurora.' + name, request); }
 async function reload() { const records = await call('list'); packs.value = records.packs; history.value = records.history; }
@@ -14,7 +18,8 @@ async function fileData(file, max) {
   let binary = ''; for (let offset = 0; offset < bytes.length; offset += 8192) binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
   return { name: file.name, data: btoa(binary) };
 }
-async function work(fn) {
+async function work(fn, operation = 'work') {
+  phase.value = operation;
   busy.value = true; error.value = ''; diagnostics.value = []; cancelled.value = false;
   try { await fn(); } catch(e) { error.value = e.reason || e.message; } finally { busy.value = false; }
 }
@@ -33,7 +38,7 @@ async function makePreview() {
     if (!result.ok) { diagnostics.value = result.diagnostics; return; }
     if (cancelled.value) { await call('remove', { kind: 'job', id: result.previewId }); return; }
     preview.value = result;
-  });
+  }, 'preview');
 }
 async function cancelPreview() {
   cancelled.value = true;
@@ -43,6 +48,7 @@ async function commit() {
   await work(async () => {
     const result = await call('commit', { previewId: preview.value.previewId, commitKey: preview.value.commitKey, acknowledgedCodes: preview.value.snapshot.diagnostics.map(d => d.code) });
     emit('pop', result.creatureId);
+    setTimeout(() => router.push({ name: 'characterSheet', params: { id: result.creatureId } }), 0);
   });
 }
 async function remove(kind, id) { await work(async () => { await call('remove', { kind, id }); selected.value = selected.value.filter(p => p !== id); await reload(); }); }
@@ -83,6 +89,7 @@ async function remove(kind, id) { await work(async () => { await call('remove', 
           <v-file-input v-model="character" accept=".dnd5e,.xml" label="Aurora character file (maximum 2 MiB)" :disabled="busy" />
           <v-btn :disabled="busy || !character" color="primary" data-id="aurora-preview" @click="makePreview">Preview character</v-btn>
         </template>
+        <v-btn v-if="busy && phase === 'preview'" variant="text" @click="cancelled = true">{{ cancelled ? 'Cancelling preview…' : 'Cancel preview' }}</v-btn>
         <v-progress-linear v-if="busy" indeterminate aria-label="Processing Aurora import" class="my-4" />
         <v-alert v-for="(diagnostic, index) in diagnostics" :key="index" type="error" class="my-2">{{ diagnostic.code }}: {{ diagnostic.message }}</v-alert>
         <template v-if="preview">

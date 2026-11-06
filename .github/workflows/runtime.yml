@@ -42,13 +42,13 @@ jobs:
       - name: Initialize isolated private stack
         run: |
           python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-config"
-          ALLOW_REGISTRATION=true docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
+          ALLOW_REGISTRATION=true AURORA_IMPORT_ENABLED=true docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
           curl --fail --retry 5 --retry-all-errors http://127.0.0.1:31080/api/status
       - name: Verify browser workflows and ownership boundaries
         working-directory: deployment/browser
         env:
           DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-browser-fixture.json
-        run: npm test -- --grep 'native workflow|URL contract'
+        run: npm test -- --grep 'native workflow|URL contract|Aurora workflow'
       - name: Verify restart persistence and closed registration
         run: |
           docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app

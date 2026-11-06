@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { DDPRateLimiter } from 'meteor/ddp-rate-limiter';
 import { Mongo } from 'meteor/mongo';
 import { Random } from 'meteor/random';
 import { createHash } from 'node:crypto';
@@ -11,7 +12,7 @@ import computeCreatureComputation from '/imports/api/engine/computation/computeC
 import writeAlteredProperties from '/imports/api/engine/computation/writeComputation/writeAlteredProperties';
 import writeScope from '/imports/api/engine/computation/writeComputation/writeScope';
 import VERSION from '/imports/constants/VERSION';
-import { mapSnapshot } from '/imports/api/aurora/adapter.mjs';
+import { mapSnapshot, ADAPTER_VERSION } from '/imports/api/aurora/adapter.mjs';
 import { runWorker } from './worker';
 
 // Server-only collections; never published, no client write methods.
@@ -66,9 +67,8 @@ export async function rollback(creatureId) {
   await CreatureProperties.removeAsync({ 'root.id': creatureId });
   await CreatureVariables.removeAsync({ _creatureId: creatureId });
 }
-export async function commitSnapshot(job, userId, fault = () => {}) {
-  await assertHasCharactersSlots(userId);
-  const { creature, props } = mapSnapshot(job.snapshot, job.creatureId, userId, () => Random.id());
+async function prepareSnapshot(snapshot, creatureId, userId) {
+  const { creature, props } = mapSnapshot(snapshot, creatureId, userId, () => Random.id());
   CreatureSchema.validate(CreatureSchema.clean(creature));
   const cleaned = props.map(prop => {
     const schema = CreatureProperties.simpleSchema(prop);
@@ -79,9 +79,14 @@ export async function commitSnapshot(job, userId, fault = () => {}) {
   if (computation.errors.length) error('computation', 'The imported snapshot could not be computed safely.');
   // Check numeric fidelity against actual engine output before persistence.
   const byVariable = Object.fromEntries(computation.props.filter(p => p.variableName).map(p => [p.variableName, p]));
-  for (const [ability, score] of Object.entries(job.snapshot.abilities)) if (byVariable[ability]?.total !== score) error('fidelity', 'Computed ability differs from the preview.');
-  if (byVariable.hitPoints?.total !== job.snapshot.hitPoints.maximum || byVariable.armor?.total !== job.snapshot.armorClass) error('fidelity', 'Computed hit points or AC differ from the preview.');
-  for (const [skill, values] of Object.entries(job.snapshot.skills)) if (byVariable[skill.replace(/ /g, '')]?.value !== values.bonus) error('fidelity', 'Computed skill differs from the preview.');
+  for (const [ability, score] of Object.entries(snapshot.abilities)) if (byVariable[ability]?.total !== score) error('fidelity', 'Computed ability differs from the preview.');
+  if (byVariable.hitPoints?.total !== snapshot.hitPoints.maximum || byVariable.armor?.total !== snapshot.armorClass) error('fidelity', 'Computed hit points or AC differ from the preview.');
+  for (const [skill, values] of Object.entries(snapshot.skills)) if (byVariable[skill.replace(/ /g, '')]?.value !== values.bonus) error('fidelity', 'Computed skill differs from the preview.');
+  return { creature, cleaned, computation };
+}
+export async function commitSnapshot(job, userId, fault = () => {}) {
+  await assertHasCharactersSlots(userId);
+  const { creature, cleaned, computation } = await prepareSnapshot(job.snapshot, job.creatureId, userId);
   try {
     for (const prop of cleaned) { await CreatureProperties.insertAsync(prop); await fault('property'); }
     await writeAlteredProperties(computation); await fault('computed-properties');
@@ -135,10 +140,12 @@ export const api = {
       for (const packId of request.packIds) files.push(...(await owned(Packs, packId, userId)).files);
       const response = await workerFor(userId, { schemaVersion: 1, operation: 'character', character: request.character, files });
       if (!response.ok) return response;
+      const creatureId = Random.id();
+      await prepareSnapshot(response.result, creatureId, userId);
       const commitKey = Random.secret(), expiresAt = new Date(Date.now() + HOUR);
       const previewId = await Jobs.insertAsync({ owner: userId, state: 'preview', source: request.character, size,
         snapshot: response.result, commitHash: createHash('sha256').update(commitKey).digest('hex'),
-        creatureId: Random.id(), createdAt: new Date(), expiresAt });
+        creatureId, adapterVersion: ADAPTER_VERSION, createdAt: new Date(), expiresAt });
       return { ok: true, previewId, commitKey, expiresAt, snapshot: response.result };
     });
   },
@@ -147,6 +154,7 @@ export const api = {
     const job = await owned(Jobs, request.previewId, userId);
     if (typeof request.commitKey !== 'string' || request.commitKey.length > 100 || createHash('sha256').update(request.commitKey).digest('hex') !== job.commitHash) error('request', 'Invalid preview commit key.');
     if (job.state === 'complete') return { creatureId: job.creatureId };
+    if (job.adapterVersion !== ADAPTER_VERSION) error('expired', 'Importer version changed. Preview the file again.');
     if (job.expiresAt < new Date() || job.state !== 'preview') error('expired', 'Preview expired or is no longer available. Preview the file again.');
     if (!Array.isArray(request.acknowledgedCodes) || job.snapshot.diagnostics.some(d => !request.acknowledgedCodes.includes(d.code))) error('acknowledgement', 'Acknowledge all import warnings before importing.');
     return userWork(userId, async () => {
@@ -178,6 +186,7 @@ export const api = {
   },
 };
 // Owner comes exclusively from the authenticated DDP invocation.
+DDPRateLimiter.addRule({ type: 'method', name: name => typeof name === 'string' && name.startsWith('aurora.'), userId: id => !!id }, 20, 10000);
 Meteor.methods(Object.fromEntries(Object.entries(api).map(([name, handler]) => ['aurora.' + name, async function (request) { return handler(this.userId, request); }])));
 
 export async function cleanup() {
