@@ -30,7 +30,7 @@ const userSchema = TypedSimpleSchema.from({
     type: String,
     optional: true,
     max: 30,
-    min: 4,
+    min: 3,
   },
   emails: {
     type: Array,
