@@ -99,7 +99,13 @@ export async function commitSnapshot(job, userId, fault = () => {}) {
     await fault('before-publish');
     // Last write makes a complete character visible to native publications.
     await Creatures.insertAsync(creature);
-  } catch (e) { await rollback(creature._id); throw e; }
+    await fault('published');
+  } catch (e) {
+    // An insert acknowledgement can fail after Mongo has committed the final
+    // creature write. Never remove the properties of a published snapshot.
+    if (await Creatures.findOneAsync({ _id: creature._id, owner: userId })) return creature._id;
+    await rollback(creature._id); throw e;
+  }
   return creature._id;
 }
 let builtinStatus;

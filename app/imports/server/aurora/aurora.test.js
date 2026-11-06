@@ -71,6 +71,17 @@ describe('Aurora import private preview and native fidelity', function () {
     assert.exists(await Creatures.findOneAsync(once.creatureId));
     await api.remove(userId,{kind:'pack',id:pack.packId});
   });
+  it('preserves a complete snapshot if final publication acknowledgement fails', async () => {
+    const result=await runWorker({schemaVersion:1,operation:'character',character:fixture('martial.dnd5e'),files:[fixture('content.xml')]});
+    const creatureId=Random.id(); creatures.push(creatureId);
+    let reached=false;
+    const saved=await commitSnapshot({snapshot:result.result,creatureId},userId,point=>{if(point==='published') {reached=true;throw new Error('Synthetic lost acknowledgement');}});
+    assert.isTrue(reached); assert.equal(saved,creatureId);
+    assert.exists(await Creatures.findOneAsync(creatureId));
+    assert.isAbove(await CreatureProperties.find({'root.id':creatureId}).countAsync(),0);
+    assert.exists(await CreatureVariables.findOneAsync({_creatureId:creatureId}));
+    await rollback(creatureId); await Creatures.removeAsync(creatureId);
+  });
   it('rolls back every persistence boundary before publishing', async () => {
     const result=await runWorker({schemaVersion:1,operation:'character',character:fixture('martial.dnd5e'),files:[fixture('content.xml')]});
     for(const boundary of ['property','computed-properties','variables','before-publish']) {
