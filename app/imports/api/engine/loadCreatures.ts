@@ -46,6 +46,16 @@ export function unloadAllCreatures() {
   }
 }
 
+// Deletion must quiesce calculations before removing their database documents.
+// Cancelling a timer alone cannot stop a build that is already awaiting I/O.
+export async function stopCreatureComputation(creatureId: string) {
+  const creature = loadedCreatures.get(creatureId);
+  if (!creature) return;
+  loadedCreatures.delete(creatureId);
+  creature.stop();
+  await Promise.all(creature.computations);
+}
+
 function unloadCreature(creatureId: string, subscription: Subscription) {
   if (!creatureId) throw new Meteor.Error('invalid-argument', 'creatureId is required');
   const creature = loadedCreatures.get(creatureId);
@@ -266,6 +276,7 @@ class LoadedCreature {
   creature?: Creature;
   variables: Variables;
   private cancelCompute: () => void = () => {};
+  computations = new Set<Promise<void>>();
 
   private constructor(sub: Subscription) {
     this.subs = new Set([sub]);
@@ -283,8 +294,10 @@ class LoadedCreature {
         // It's possible that the creature was unloaded before we get around to computing it
         if (loadedCreatures.get(creatureId) !== loaded || !loaded.creature) return;
         console.log('Computing: ', creatureId)
+        const computation = computeCreature(creatureId);
+        loaded.computations.add(computation);
         try {
-          await computeCreature(creatureId);
+          await computation;
         } catch (e) {
           // Archiving can remove the character while an already-started build
           // awaits its database read. That lifecycle race is not a compute error.
@@ -292,6 +305,8 @@ class LoadedCreature {
             && !await creatures().findOneAsync(creatureId)) return;
           console.error(e);
           throw e;
+        } finally {
+          loaded.computations.delete(computation);
         }
       }, COMPUTE_DEBOUNCE_TIME);
       loaded.cancelCompute = () => compute.cancel();

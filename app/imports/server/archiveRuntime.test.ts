@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
+import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables';
 import ArchiveCreatureFiles from '/imports/api/creature/archive/ArchiveCreatureFiles';
 import archiveCreatureToFile from '/imports/api/creature/archive/methods/archiveCreatureToFile';
 import restoreCreatureFromFile from '/imports/api/creature/archive/methods/restoreCreatureFromFile';
@@ -34,6 +35,8 @@ describe('Archive runtime migration', function () {
       assert.notExists(await Creatures.findOneAsync(creatureId));
       await new Promise(resolve => setTimeout(resolve, 250));
       assert.notExists(loadedCreatures.get(creatureId)?.creature);
+      assert.notExists(await CreatureVariables.findOneAsync({ _creatureId: creatureId }),
+        'A queued calculation cannot recreate variables after archive removal');
       const file = (await ArchiveCreatureFiles.findOneAsync(fileId))?.get();
       assert.exists(file);
       const archived = await ArchiveCreatureFiles.readJSONFile(file);
