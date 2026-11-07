@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, useAttrs } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { ref, computed } from 'vue';
 import flipToggle from '/imports/api/creature/creatureProperties/methods/flipToggle';
 import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
 
@@ -8,10 +9,9 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['click']);
-const attrs = useAttrs();
 const hover = ref(false);
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const toggleValue = computed(() => {
   if (props.model.enabled) return true;

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, useAttrs, inject } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { ref, computed, inject } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import PROPERTIES from '/imports/constants/PROPERTIES';
 import adjustQuantity from '/imports/api/creature/creatureProperties/methods/adjustQuantity';
@@ -21,14 +22,13 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['click']);
 const context = inject('context', {} as any);
-const attrs = useAttrs();
 const incrementLoading = ref(false);
 
 const { result: model } = autorun(() =>
   CreatureProperties.findOne(props.itemId)
 );
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const title = computed(() => {
   const m = model.value;

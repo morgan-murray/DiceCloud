@@ -6,6 +6,7 @@ import LabeledFab from '/imports/client/ui/components/LabeledFab.vue';
 import insertProperty from '/imports/api/creature/creatureProperties/methods/insertProperty';
 import PROPERTIES from '/imports/constants/PROPERTIES';
 import insertPropertyFromLibraryNode from '/imports/api/creature/creatureProperties/methods/insertPropertyFromLibraryNode';
+import { getDocByRefAsync } from '/imports/api/parenting/reference';
 import { key } from '/imports/client/ui/vuexStore';
 
 const props = defineProps<{ editPermission?: boolean }>();
@@ -23,6 +24,7 @@ const speedDialsByTab = {
   'actions': ['action'],
   'inventory': ['item', 'container'],
   'journal': ['note'],
+  'build': [null],
   'tree': [null],
 } as Record<string, (string | null)[]>;
 const speedDials = computed(() => speedDialsByTab[tabName.value]);
@@ -64,13 +66,13 @@ function revealFab(el: HTMLElement | null) {
   }, 400);
 }
 
-function addProperty(forcedType: string | null) {
+async function addProperty(forcedType: string | null) {
   const cId = creatureId.value;
   const el = hideFab();
   const parentRef = getParentFromSelectedTreeNode(cId);
   let parent: any;
   try {
-    parent = fetchDocByRef(parentRef);
+    parent = await getDocByRefAsync(parentRef);
   } catch (e) {
     console.warn(e);
   }

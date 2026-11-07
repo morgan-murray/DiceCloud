@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, useAttrs, inject } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { ref, computed, inject } from 'vue';
 import { useStore } from 'vuex';
 import ProficiencyIcon from '/imports/client/ui/properties/shared/ProficiencyIcon.vue';
 import numberToSignedString from '/imports/api/utility/numberToSignedString';
@@ -17,7 +18,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['click']);
 const store = useStore(key);
 const context = inject('context', {} as any);
-const attrs = useAttrs();
 
 const checkLoading = ref(false);
 
@@ -30,7 +30,7 @@ const displayedModifier = computed(() => {
   }
 });
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 const passiveScore = computed(() => 10 + props.model.value + props.model.passiveBonus);
 
 function click(e: Event) {

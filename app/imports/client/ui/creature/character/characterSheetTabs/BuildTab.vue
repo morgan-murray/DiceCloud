@@ -84,7 +84,7 @@ const { result: hiddenSlots } = autorun(() =>
       }, {
         $or: [
           { 'quantityExpected.value': { $in: [false, 0, '', undefined] } },
-          { 'quantityExpected.value': { exists: false } },
+          { 'quantityExpected.value': { $exists: false } },
           { spaceLeft: { $gt: 0 } },
         ],
       },
@@ -275,7 +275,7 @@ async function unhideProp(_id: string) {
 </script>
 
 <template lang="html">
-  <v-container fluid>
+  <v-container fluid class="build-tab">
     <v-row dense>
       <v-col cols="12">
         <character-errors
@@ -356,6 +356,7 @@ async function unhideProp(_id: string) {
               </v-menu>
             </v-scale-transition>
           </v-card-title>
+          <v-card-text v-if="!slotBuildTree?.length">No build choices added yet. Use the + button to add a property.</v-card-text>
           <build-tree-node-list
             :children="slotBuildTree"
             class="mx-2"
@@ -369,8 +370,9 @@ async function unhideProp(_id: string) {
             v-if="variables.level"
             class="text-h6"
           >
-            Level {{ variables.level.value }}
+            {{ variables.level.value == null ? 'Level and experience' : `Level ${variables.level.value}` }}
           </v-card-title>
+          <v-card-text v-if="!classes.length">No class progression added to this character.</v-card-text>
           <v-list lines="two">
             <v-list-item>
               <v-list-item-title

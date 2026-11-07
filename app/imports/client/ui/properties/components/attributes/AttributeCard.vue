@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, useAttrs } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { ref, computed } from 'vue';
 import CardHighlight from '/imports/client/ui/components/CardHighlight.vue';
 import AttributeCardContent from '/imports/client/ui/properties/components/attributes/AttributeCardContent.vue';
 import isDarkColor from '/imports/client/ui/utility/isDarkColor';
@@ -9,12 +10,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['click']);
-const attrs = useAttrs();
 
 const checkLoading = ref(false);
 const hovering = ref(false);
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const isDark = computed(() => {
   if (!props.model.color) return undefined;

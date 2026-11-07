@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, useAttrs, inject } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { computed, inject } from 'vue';
 import { useStore } from 'vuex';
 import PROPERTIES from '/imports/constants/PROPERTIES';
 import PropertyIcon from '/imports/client/ui/properties/shared/PropertyIcon.vue';
@@ -23,9 +24,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['click']);
 const context = inject('context', {} as any);
-const attrs = useAttrs();
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const title = computed(() => {
   const model = props.model;

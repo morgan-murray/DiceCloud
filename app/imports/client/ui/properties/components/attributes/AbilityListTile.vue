@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, useAttrs, inject } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { ref, computed, inject } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import { useStore } from 'vuex';
 import numberToSignedString from '/imports/api/utility/numberToSignedString';
@@ -19,11 +20,10 @@ const shortName = computed(() => {
 const emit = defineEmits(['click']);
 const store = useStore(key);
 const context = inject('context', {} as any);
-const attrs = useAttrs();
 
 const checkLoading = ref(false);
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const { result: swapScoresAndMods } = autorun(() => {
   const user = Meteor.user();

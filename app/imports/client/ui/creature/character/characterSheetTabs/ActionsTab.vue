@@ -86,6 +86,10 @@ function softRemove(_id: string) {
 
 <template lang="html">
   <div class="actions-tab ma-2">
+    <v-card v-if="!actions?.length && !startFolders?.length && !endFolders?.length" class="ma-2">
+      <v-card-title>No actions yet</v-card-title>
+      <v-card-text>Actions added to this character appear here. Use the + button to add an action.</v-card-text>
+    </v-card>
     <column-layout wide-columns>
       <folder-group-card
         v-for="folder in startFolders"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { computed } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import getEffectIcon from '/imports/client/ui/utility/getEffectIcon';
 import { isFinite } from 'lodash';
@@ -11,13 +12,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['click']);
-const attrs = useAttrs();
 
 const { result: model } = autorun(() =>
   CreatureProperties.findOne(props.effectId)
 );
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const operation = computed(() => {
   if (!model.value) return '';

@@ -97,7 +97,7 @@ function softRemove(_id: string) {
 </script>
 
 <template>
-  <div class="build-tab">
+  <div class="journal-tab">
     <column-layout wide-columns>
       <folder-group-card
         v-for="folder in startFolders"

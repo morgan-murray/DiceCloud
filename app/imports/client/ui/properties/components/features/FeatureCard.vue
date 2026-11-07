@@ -8,6 +8,8 @@ const props = defineProps<{
   model: Record<string, any>;
 }>();
 
+defineEmits(['click']);
+
 const summaryText = computed(() => {
   if (!props.model || !props.model.summary) return undefined;
   if (typeof props.model.summary.value === 'string') {
@@ -22,13 +24,13 @@ const summaryText = computed(() => {
   <toolbar-card
     :id="model._id"
     :color="model.color"
-    @toolbarclick="$emit('click')"
+    wrap-title
+    @click="$emit('click')"
   >
     <template #toolbar>
       <v-toolbar-title>
         {{ model.name }}
       </v-toolbar-title>
-      <v-spacer />
       <property-icon
         :model="model"
         :color="model.color"
