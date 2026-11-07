@@ -74,6 +74,11 @@ const { result: CreaturesWithNoParty } = autorun(() => {
 
 <template>
   <div class="sidebar">
+    <router-link to="/" class="chronicle-brand" aria-label="DiceCloud home">
+      <span class="chronicle-brand__name">DiceCloud</span>
+      <span class="chronicle-brand__rule" aria-hidden="true">✦</span>
+      <span class="chronicle-brand__caption">Chronicles of adventure</span>
+    </router-link>
     <div
       v-if="!signedIn"
       class="d-flex justify-center"

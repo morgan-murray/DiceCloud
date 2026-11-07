@@ -233,6 +233,27 @@ async function softRemove(_id: string) {
       </v-card>
     </div>
 
+    <div
+      v-if="properties.attribute.ability && properties.attribute.ability.length"
+      class="ability-scores lance-ability-strip"
+    >
+      <v-card>
+        <v-list>
+          <template
+            v-for="(ability, index) in properties.attribute.ability"
+            :key="ability._id"
+          >
+            <v-divider v-if="index !== 0" />
+            <ability-list-tile
+              :model="ability"
+              :data-id="ability._id"
+              @click="clickProperty({ _id: ability._id })"
+            />
+          </template>
+        </v-list>
+      </v-card>
+    </div>
+
     <column-layout>
       <folder-group-card
         v-for="folder in properties.folder.start"
@@ -300,27 +321,6 @@ async function softRemove(_id: string) {
               @click="clickProperty({ _id: buff._id })"
               @remove="softRemove(buff._id)"
             />
-          </v-list>
-        </v-card>
-      </div>
-
-      <div
-        v-if="properties.attribute.ability && properties.attribute.ability.length"
-        class="ability-scores"
-      >
-        <v-card>
-          <v-list>
-            <template
-              v-for="(ability, index) in properties.attribute.ability"
-              :key="ability._id"
-            >
-              <v-divider v-if="index !== 0" />
-              <ability-list-tile
-                :model="ability"
-                :data-id="ability._id"
-                @click="clickProperty({ _id: ability._id })"
-              />
-            </template>
           </v-list>
         </v-card>
       </div>
