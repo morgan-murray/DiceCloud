@@ -21,7 +21,7 @@ test('Lance Chronicle: artwork, mobile layout, stored preferences and print', as
   const art = banner.locator('img');
   await expect(art).toHaveAttribute('src', new URL('images/themes/lance-chronicle/banner.png', base).pathname);
   await expect.poll(() => art.evaluate(img => img.complete && img.naturalWidth > 1000)).toBe(true);
-  await expect(page.locator('.lance-ability-strip .ability-list-tile')).toBeVisible();
+  await expect(page.locator('.lance-ability-strip .ability-list-tile').first()).toBeVisible();
   await expect(page.locator('.lance-chronicle')).toHaveClass(/v-theme--light/);
   await page.screenshot({ path: info.outputPath('chronicle-desktop-light.png'), fullPage: true });
   await page.evaluate(() => window.Meteor.callAsync('users.setDarkMode', { darkMode: true }));

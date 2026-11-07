@@ -36,8 +36,8 @@
   .chronicle-brand__rule { display: flex; align-items: center; gap: 12px; width: 90%; margin: 8px 0; color: #d9bb7e; }
   .chronicle-brand__rule::before, .chronicle-brand__rule::after { content: ''; height: 1px; background: #b99b64; flex: 1; }
   .chronicle-brand__caption { font-size: .62rem; text-transform: uppercase; letter-spacing: .13em; }
-  .chronicle-banner { position: relative; isolation: isolate; overflow: hidden; min-height: 208px; display: flex; align-items: end; background: #24334e; color: #fff8e9; border-bottom: 2px solid #b99b64; }
-  .chronicle-banner__art { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 50%; }
+  .chronicle-banner { position: relative; isolation: isolate; overflow: hidden; min-height: clamp(208px, 18vw, 300px); display: flex; align-items: end; background: #24334e; color: #fff8e9; border-bottom: 2px solid #b99b64; }
+  .chronicle-banner__art { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
   .chronicle-banner__veil { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, #101b35a8, #101b3520 75%), linear-gradient(0deg, #101b35c9, transparent 95%); }
   .chronicle-banner__copy { padding: 28px 34px; max-width: 900px; text-shadow: 0 2px 4px #101b35; }
   .chronicle-banner__eyebrow { margin: 0 0 6px; font-size: .7rem; text-transform: uppercase; letter-spacing: .2em; color: #f1d49b; }
