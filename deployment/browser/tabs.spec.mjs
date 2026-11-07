@@ -44,10 +44,19 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     await open(page, page.locator('[data-id="insert-creature-property-type-null"]'), 'insert-property-dialog');
     await expect(page.locator('.dialog-stack')).toContainText('Property');
     await close(page);
+    await expect(add).toBeVisible();
+    await add.click();
+    const creator = await open(page, page.locator('[data-id="insert-creature-property-type-null"]'), 'insert-property-dialog');
+    await creator.locator('.v-card').filter({ has: page.locator('.v-card-title').filter({ hasText: /^\s*Note\s*$/ }) }).first().click();
+    await creator.getByLabel('Name', { exact: true }).fill('Note created through Build');
+    await creator.getByRole('button', { name: 'create', exact: true }).click();
+    await expect.poll(() => stack(page)).toEqual([]);
+    await page.waitForFunction(id => Boolean(window.Mongo.getCollection('creatureProperties').findOne({ 'root.id': id, name: 'Note created through Build' })), id);
+    await expect(add).toBeVisible();
     // Space inserts to respect the production method rate limit as well as CI.
     const insert = async (type, name, fields = {}, parentId) => {
       await page.waitForTimeout(1100);
-      return call(page, 'creatureProperties.insert', { creatureProperty: { type, name, ...fields, root: { collection: 'creatures', id } }, parentRef: { collection: parentId ? 'creatureProperties' : 'creatures', id: parentId || id } });
+      return call(page, 'creatureProperties.insert', { creatureProperty: { type, name, ...fields, parentId, root: { collection: 'creatures', id } } });
     };
     const action = await insert('action', 'Practice salute', { actionType: 'action', summary: { text: 'Raise a hand in greeting.' } });
     const list = await insert('spellList', 'Practice spells');

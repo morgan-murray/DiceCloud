@@ -68,6 +68,7 @@ function revealFab(el: HTMLElement | null) {
 
 async function addProperty(forcedType: string | null) {
   const cId = creatureId.value;
+  fab.value = false;
   const el = hideFab();
   const parentRef = getParentFromSelectedTreeNode(cId);
   let parent: any;
@@ -86,18 +87,19 @@ async function addProperty(forcedType: string | null) {
       noBackdropClose: true,
     },
     async callback(result: any) {
+      revealFab(el);
+      const root = { collection: 'creatures' as const, id: cId };
+      const parentId = parentRef.collection === 'creatureProperties' ? parentRef.id : undefined;
       if (!result) {
         return 'insert-creature-property-fab';
       }
       if (Array.isArray(result)) {
-        revealFab(el);
         const nodeIds = result;
-        const id = await insertPropertyFromLibraryNode.callAsync({ nodeIds, parentRef });
+        const id = await insertPropertyFromLibraryNode.callAsync({ nodeIds, root, parentId });
         return forcedType ? id : `tree-node-${id}`;
       } else {
-        revealFab(el);
-        const creatureProperty = result;
-        const id = await insertProperty.callAsync({ creatureProperty, parentRef });
+        const creatureProperty = { ...result, root, parentId };
+        const id = await insertProperty.callAsync({ creatureProperty });
         return forcedType ? id : `tree-node-${id}`;
       }
     },
