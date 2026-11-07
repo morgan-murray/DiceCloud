@@ -43,9 +43,16 @@ test('Aurora workflow: built-in reference, private pack, explicit preview and na
   await dialog.locator('input[type=file][multiple]').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/content.xml',import.meta.url)));
   await dialog.getByRole('button',{name:'Save private pack',exact:true}).click();
   await expect(dialog.getByRole('button',{name:'Delete pack '+packName,exact:true})).toBeVisible();
-  await dialog.locator('input[type=file]:not([multiple])').setInputFiles(fileURLToPath(new URL('../../importer/fixtures/martial.dnd5e',import.meta.url)));
+  // Exercise Aurora's native /build sections and an embedded portrait larger
+  // than the general XML text limit using entirely synthetic data.
+  let character=readFileSync(fileURLToPath(new URL('../../importer/fixtures/martial.dnd5e',import.meta.url)),'utf8');
+  const equipment=character.match(/<equipment>[\s\S]*?<\/equipment>/)[0];
+  character=character.replace(equipment,'').replace(/<magic\s*\/>/,'').replace('</build>',equipment+'<magic /></build>');
+  character=character.replace('</display-properties>','<portrait><base64>'+Buffer.alloc(210000).toString('base64')+'</base64></portrait></display-properties>');
+  await dialog.locator('input[type=file]:not([multiple])').setInputFiles({name:'synthetic-portrait.dnd5e',mimeType:'application/xml',buffer:Buffer.from(character)});
   await dialog.getByRole('button',{name:'Preview character',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:'martial',exact:true})).toBeVisible();
+  await expect(dialog.getByText(/embedded portrait is not included/)).toBeVisible();
   await expect(dialog.getByRole('button',{name:'Import this snapshot',exact:true})).toBeDisabled();
   await dialog.getByLabel('I have reviewed the warnings and agree to initialize HP and resources to full.').check();
   await dialog.getByRole('button',{name:'Import this snapshot',exact:true}).click();

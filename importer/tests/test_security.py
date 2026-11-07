@@ -31,6 +31,24 @@ class SecurityTests(unittest.TestCase):
     def test_xml_dtd_entities_pi_and_encoding(self):
         for body in [b'<!DOCTYPE elements SYSTEM "https://example.com/a.dtd"><elements/>',b'<?remote href="https://example.com"?><elements/>',b'<!DOCTYPE elements [<!ENTITY a "x">]><elements>&a;</elements>',b'<elements>\xff</elements>']:
             with self.assertRaises(ImportErrorDetail):xml(body)
+    def test_text_limits_keep_boundary_and_identify_the_field(self):
+        self.assertEqual(len(xml(b'<root>'+b'x'*20000+b'</root>').text),20000)
+        for body in [b'<root><note>'+b'x'*20001+b'</note></root>',b'<root><note><b/>'+b'x'*20001+b'</note></root>']:
+            with self.assertRaises(ImportErrorDetail) as error:xml(body,omit_portrait=True)
+            self.assertEqual(error.exception.diagnostic['code'],'XML_LIMIT')
+            self.assertIn('/root/note',str(error.exception))
+            self.assertIn('20,000',str(error.exception))
+    def test_only_the_exact_portrait_payload_is_omitted(self):
+        payload=b'<character><display-properties><portrait><base64>'+b'A'*280000+b'</base64></portrait></display-properties></character>'
+        with self.assertRaises(ImportErrorDetail):xml(payload)
+        omitted=set();root=xml(payload,omit_portrait=True,omitted=omitted)
+        self.assertIsNone(root.find('./display-properties/portrait/base64').text)
+        self.assertEqual(omitted,{'portrait'})
+        for body in [payload.replace(b'portrait',b'notes'),payload.replace(b'<base64>',b'<base64><nested>').replace(b'</base64>',b'</nested></base64>')]:
+            with self.assertRaises(ImportErrorDetail):xml(body,omit_portrait=True)
+    def test_portrait_omission_does_not_bypass_xml_safety(self):
+        for body in [b'<!DOCTYPE character [<!ENTITY a "x">]><character><display-properties><portrait><base64>&a;</base64></portrait></display-properties></character>',b'<character><display-properties><portrait><base64><?remote x?></base64></portrait></display-properties></character>',b'<character><display-properties><portrait><base64 a="'+b'x'*20001+b'"/></portrait></display-properties></character>']:
+            with self.assertRaises(ImportErrorDetail):xml(body,omit_portrait=True)
     def test_expression_rejects_code_and_unbounded_syntax(self):
         for expression in ['__import__("os").system("id")','x or True','True + False','(' * 300+'True'+')'*300]:
             with self.assertRaises(ImportErrorDetail):LogicSolver.solve_expression(expression)

@@ -11,6 +11,15 @@ from .secure import fail, number, text
 ABILITIES = ['strength','dexterity','constitution','intelligence','wisdom','charisma']
 SKILLS = {'athletics':'strength','acrobatics':'dexterity','sleight of hand':'dexterity','stealth':'dexterity','arcana':'intelligence','history':'intelligence','investigation':'intelligence','nature':'intelligence','religion':'intelligence','animal handling':'wisdom','insight':'wisdom','medicine':'wisdom','perception':'wisdom','survival':'wisdom','deception':'charisma','intimidation':'charisma','performance':'charisma','persuasion':'charisma'}
 
+def character_nodes(root, section, child):
+    paths={'equipment':'./build/equipment','magic':'./build/magic','attacks':'./build/input/attacks'}
+    native=root.find(paths[section])
+    legacy=root.find('./'+section)
+    if native is not None and legacy is not None:
+        fail('AMBIGUOUS_SECTION',section,'The character contains conflicting saved '+section+' sections.')
+    selected=native if native is not None else legacy
+    return selected.findall(child) if selected is not None else []
+
 class Query:
     def __init__(self, root, content):
         self.root, self.compendium = root, content
@@ -30,8 +39,8 @@ class Query:
             self.base[name+':proficiency'] = self.base[name+':misc'] = self.base[name+':passive'] = 0
         self._levels()
         selected = list(root.findall('./build/sum/element'))
-        self.equipment = list(root.findall('./equipment/item'))
-        for node in selected + self.equipment + list(root.findall('./magic//spell')):
+        self.equipment = character_nodes(root,'equipment','item')
+        for node in selected + self.equipment + character_nodes(root,'magic','.//spell'):
             key = node.get('id')
             if key and not ID.fullmatch(key): fail('INVALID_ELEMENT_ID','character','Character element ID is invalid.')
             if key: self.ids.add(key)
