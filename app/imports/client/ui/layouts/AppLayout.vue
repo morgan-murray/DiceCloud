@@ -6,6 +6,7 @@ import { useTheme, useDisplay } from 'vuetify';
 import { autorun } from 'vue-meteor-tracker';
 import '/imports/api/users/Users';
 import Sidebar from '/imports/client/ui/layouts/Sidebar.vue';
+import ChronicleBanner from '/imports/client/ui/layouts/ChronicleBanner.vue';
 import DialogStack from '/imports/client/ui/dialogStack/DialogStack.vue';
 import SnackbarQueue from '/imports/client/ui/components/snackbars/SnackbarQueue.vue';
 import ConnectionBanner from '/imports/client/ui/layouts/ConnectionBanner.vue';
@@ -15,6 +16,14 @@ const store = useStore(key);
 const route = useRoute();
 const theme = useTheme();
 const display = useDisplay();
+
+const chronicleHeading = computed(() => {
+  if (route.name === 'characterSheet') return { title: String(store.state.pageTitle), subtitle: 'A character chronicle' };
+  if (route.path === '/character-list') return { title: 'Your characters', subtitle: 'Every adventure begins with a character.' };
+  if (route.path === '/sign-in') return { title: 'Welcome, adventurer', subtitle: 'Continue your chronicle.' };
+  if (route.path === '/') return { title: 'DiceCloud', subtitle: 'Character sheets for the stories you tell.' };
+  return null;
+});
 
 const drawer = computed({
   get: () => store.state.drawer,
@@ -55,8 +64,8 @@ function toggleDrawer() {
 </script>
 
 <template>
-  <v-app>
-    <v-navigation-drawer v-model="drawer">
+  <v-app class="lance-chronicle">
+    <v-navigation-drawer v-model="drawer" theme="dark" class="chronicle-drawer">
       <Sidebar />
     </v-navigation-drawer>
     <router-view name="toolbar" />
@@ -102,6 +111,7 @@ function toggleDrawer() {
     </v-app-bar>
     <v-main>
       <connection-banner />
+      <chronicle-banner v-if="chronicleHeading" :title="chronicleHeading.title" :subtitle="chronicleHeading.subtitle" />
       <router-view v-slot="{ Component }">
         <v-fade-transition hide-on-leave>
           <component :is="Component" />
