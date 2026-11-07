@@ -6,6 +6,8 @@ const fixture = process.env.DICECLOUD_TEST_FIXTURE;
 async function assertHeaderLayout(page, desktop) {
   const toolbar = page.locator('.character-sheet-toolbar');
   await expect(toolbar.locator('[data-id="character-toolbar-name"]')).toHaveAttribute('title', 'Runtime verified character');
+  if (desktop) await expect(toolbar.locator('[data-id="character-navigation"]')).toBeVisible();
+  else await expect(toolbar.locator('[data-id="character-navigation"]')).toHaveCount(0);
   const boxes = await toolbar.evaluate(el => {
     const box = selector => {
       const target = el.querySelector(selector);
