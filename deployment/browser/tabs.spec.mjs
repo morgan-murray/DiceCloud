@@ -8,9 +8,12 @@ async function call(page, name, argument) {
   return page.evaluate(({ name, argument }) => window.Meteor.callAsync(name, argument), { name, argument });
 }
 async function close(page) {
-  await page.locator('.dialog-stack .dialog').last().locator('.base-dialog-toolbar button').first().click();
+  const dialog = page.locator('.dialog-stack .dialog').last();
+  const closeButton = dialog.getByRole('button', { name: 'Close', exact: true });
+  if (await closeButton.count()) await closeButton.click();
+  else await dialog.locator('.base-dialog-toolbar button').first().click();
   await expect.poll(() => stack(page)).toEqual([]);
-  await expect(page.locator('.dialog-stack')).not.toBeVisible();
+  await expect(page.locator('.dialog-stack .dialog')).toHaveCount(0);
 }
 async function open(page, target, component = 'creature-property-dialog') {
   await target.click();
@@ -68,7 +71,7 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     await insert('class', 'Practice class', { variableName: 'practiceClass' });
     const slot = await insert('propertySlot', 'Practice build choice', { slotType: 'feature', quantityExpected: { calculation: '1' }, description: { text: 'Choose a practice feature.' } });
     for (const [tab, target, text] of [
-      ['Actions', `.actions-tab [data-id="${action}"]`, 'Practice salute'],
+      ['Actions', `.actions-tab [data-id="${action}"] .action-title`, 'Practice salute'],
       ['Spells', '.character-sheet .v-window-item--active .spell', 'Practice light'],
       ['Inventory', `.item[data-id="${item}"]`, 'Practice lantern'],
       ['Features', `.features [data-id="${feature}"]`, 'complete feature description'],

@@ -98,7 +98,7 @@ function clickEffect(id: string) {
   <v-col
     v-if="value !== undefined ||
       calculation !== undefined ||
-      ($slots.default && $slots.default.length)"
+      $slots.default"
     v-bind="cols"
     class="mb-3"
   >
