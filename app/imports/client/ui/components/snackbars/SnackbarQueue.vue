@@ -57,7 +57,7 @@ function showNextSnackbar() {
       handle = null;
       showNextSnackbar();
     }, props.timeout + props.pause);
-  });
+  }, { flush: 'post' }); // Initialize stop before a queued notification can use it.
   unwait = stop;
 }
 

@@ -70,6 +70,26 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     const note = await insert('note', 'Practice journal', { description: { text: 'The journal entry opens correctly.' } });
     await insert('class', 'Practice class', { variableName: 'practiceClass' });
     const slot = await insert('propertySlot', 'Practice build choice', { slotType: 'feature', quantityExpected: { calculation: '1' }, description: { text: 'Choose a practice feature.' } });
+    // Two real log notifications exercise the queue advancing to an already waiting entry.
+    await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$store.commit('setRightDrawer', true));
+    const recovery = await insert('attribute', 'First recovery', { variableName: 'practiceRecovery', attributeType: 'healthBar', baseValue: { calculation: '10' }, damage: 1, reset: 'longRest' });
+    await page.waitForFunction(id => window.Mongo.getCollection('creatureProperties').findOne(id)?.value === 9, recovery);
+    const rest = async () => {
+      const actionId = await call(page, 'actions.insertAction', { action: { creatureId: id, task: { subtaskFn: 'reset', eventName: 'longRest', targetIds: [id] } } });
+      await call(page, 'actions.runAction', { actionId });
+    };
+    await rest();
+    const toast = page.locator('.v-snackbar');
+    await expect(toast).toContainText('First recovery');
+    await call(page, 'creatureProperties.update', { _id: recovery, path: ['name'], value: 'Second recovery' });
+    await call(page, 'creatureProperties.update', { _id: recovery, path: ['damage'], value: 1 });
+    await page.waitForFunction(id => window.Mongo.getCollection('creatureProperties').findOne(id)?.value === 9, recovery);
+    await rest();
+    await toast.locator('.v-snackbar__actions button').click();
+    await expect(toast).toContainText('Second recovery');
+    await expect(toast).toBeVisible();
+    await toast.locator('.v-snackbar__actions button').click();
+    await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$store.commit('setRightDrawer', false));
     for (const [tab, target, text] of [
       ['Actions', `.actions-tab [data-id="${action}"] .action-title`, 'Practice salute'],
       ['Spells', '.character-sheet .v-window-item--active .spell', 'Practice light'],
