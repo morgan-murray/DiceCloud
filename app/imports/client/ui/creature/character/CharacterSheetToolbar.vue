@@ -309,4 +309,14 @@ async function unshareWithMe() {
   flex: 0 0 auto;
   margin: 0 4px 0 8px;
 }
+
+.character-sheet-extension-fab .v-speed-dial__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
 </style>

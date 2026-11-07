@@ -73,6 +73,10 @@ test('Lance Chronicle: artwork, mobile layout, stored preferences and print', as
   const add = page.locator('.character-sheet-toolbar [data-id="insert-creature-property-fab"]');
   await add.click();
   await expect(page.locator('.character-sheet-toolbar [data-id="insert-creature-property-type-attribute"]')).toBeVisible();
+  await assertHeaderLayout(page, true);
+  const expanded = await page.locator('.character-sheet-toolbar [data-id="insert-creature-property-type-attribute"]').boundingBox();
+  const navigation = await page.locator('[data-id="character-navigation"]').boundingBox();
+  expect(expanded.y).toBeGreaterThanOrEqual(navigation.y + navigation.height);
   await add.click();
   await page.waitForFunction(() => !document.querySelector('[class*="fade-transition-enter"],[class*="fade-transition-leave"]'));
   await page.screenshot({ path: info.outputPath('chronicle-desktop-light.png'), fullPage: true, animations: 'disabled' });
