@@ -49,6 +49,9 @@ test('Aurora workflow: built-in reference, private pack, explicit preview and na
   const equipment=character.match(/<equipment>[\s\S]*?<\/equipment>/)[0];
   character=character.replace(equipment,'').replace(/<magic\s*\/>/,'').replace('</build>',equipment+'<magic /></build>');
   character=character.replace('</display-properties>','<portrait><base64>'+Buffer.alloc(210000).toString('base64')+'</base64></portrait></display-properties>');
+  const nativeGrants=['CHARACTER_BASE','SPELLCASTING_BASE','ARMOR_CLASS_BASE','ARMOR_CLASS_DEXTERITY_MODIFIER','HP_CONSTITUTION_MODIFIER'];
+  const markers=nativeGrants.map(name=>'<element type="Grants" id="ID_INTERNAL_GRANTS_'+name+'"/>').join('')+[1,2,3].map(n=>'<element type="Level" id="ID_LEVEL_'+n+'"/>').join('');
+  character=character.replace('<sum>','<sum>'+markers).replace(/10,6,6/g,'10,6,6'+',1'.repeat(17));
   await dialog.locator('input[type=file]:not([multiple])').setInputFiles({name:'synthetic-portrait.dnd5e',mimeType:'application/xml',buffer:Buffer.from(character)});
   await dialog.getByRole('button',{name:'Preview character',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:'martial',exact:true})).toBeVisible();

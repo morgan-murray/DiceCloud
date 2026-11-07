@@ -14,6 +14,38 @@ def fixture(name):return upload((ROOT/'fixtures'/(name+'.dnd5e')).read_bytes(),n
 def pack():return [upload((ROOT/'fixtures/content.xml').read_bytes(),'content.xml')]
 
 class CharacterTests(unittest.TestCase):
+    def test_future_hp_roll_queue_counts_only_current_levels(self):
+        f=fixture('martial');body=base64.b64decode(f['data'])
+        queued=body.replace(b'10,6,6',b'10,6,6'+b',1'*17)
+        result=extract(upload(queued,'future-rolls.dnd5e'),pack())
+        self.assertEqual(result['hitPoints']['maximum'],28)
+        for rolls in [b'10,6',b'10,6,6'+b',1'*18,b'10,6,6,11']:
+            with self.assertRaises(ImportErrorDetail) as error:extract(upload(body.replace(b'10,6,6',rolls),'invalid-rolls.dnd5e'),pack())
+            self.assertEqual(error.exception.diagnostic['code'],'HP_ROLLS')
+
+    def test_native_engine_markers_preserve_independent_totals_without_stub_data(self):
+        from xml.etree import ElementTree as ET
+        from aurora.query import NATIVE_GRANTS
+        for name in ['martial','caster','multiclass','equipment']:
+            f=fixture(name);root=ET.fromstring(base64.b64decode(f['data']));summed=root.find('./build/sum')
+            for key in NATIVE_GRANTS:ET.SubElement(summed,'element',id=key,type='Grants')
+            for level in range(1,int(root.findtext('./display-properties/level'))+1):ET.SubElement(summed,'element',id='ID_LEVEL_'+str(level),type='Level')
+            actual=extract(upload(ET.tostring(root),'markers.dnd5e'),pack());expected=extract(f,pack())
+            for key in ['abilities','skills','saves','hitPoints','armorClass','spellcasting','resources','movement']:
+                self.assertEqual(actual[key],expected[key],(name,key))
+            self.assertEqual(len(actual['provenance']['nativeMarkers']),len(NATIVE_GRANTS)+actual['identity']['level'])
+
+    def test_native_markers_reject_invalid_levels_types_and_replacements(self):
+        from xml.etree import ElementTree as ET
+        for key,kind in [('ID_LEVEL_0','Level'),('ID_LEVEL_4','Level'),('ID_LEVEL_1','Grants'),('ID_INTERNAL_GRANTS_CHARACTER_BASE','Feature')]:
+            f=fixture('martial');root=ET.fromstring(base64.b64decode(f['data']));ET.SubElement(root.find('./build/sum'),'element',id=key,type=kind)
+            with self.assertRaises(ImportErrorDetail) as error:extract(upload(ET.tostring(root),'invalid-marker.dnd5e'),pack())
+            self.assertEqual(error.exception.diagnostic['code'],'NATIVE_ENGINE_MARKER')
+        f=fixture('martial');root=ET.fromstring(base64.b64decode(f['data']));ET.SubElement(root.find('./build/sum'),'element',id='ID_INTERNAL_GRANTS_CHARACTER_BASE',type='Grants')
+        content=pack();body=base64.b64decode(content[0]['data']).replace(b'</elements>',b'<element id="ID_INTERNAL_GRANTS_CHARACTER_BASE" type="Grants"/></elements>');content[0]['data']=base64.b64encode(body).decode()
+        with self.assertRaises(ImportErrorDetail) as error:extract(upload(ET.tostring(root),'override-marker.dnd5e'),content)
+        self.assertEqual(error.exception.diagnostic['code'],'NATIVE_ENGINE_CONFLICT')
+
     def test_embedded_portrait_is_omitted_with_warning_and_original_hash(self):
         from aurora.secure import digest
         f=fixture('martial');body=base64.b64decode(f['data']).replace(b'</display-properties>',b'<portrait><local>portrait.png</local><base64>'+b'A'*280000+b'</base64></portrait></display-properties>')

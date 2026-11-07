@@ -113,5 +113,5 @@ def extract(source, files):
         abilities=abilities,saves=saves,skills=skills,armorClass=q.ac(),initiative=q.get_variable_value('initiative') if 'initiative' in q.terms else q.get_variable_value('dexterity:modifier')+q.get_variable_value('initiative:misc'),
         proficiency=q.get_variable_value('proficiency'),movement=movement,hitPoints=dict(maximum=hp,current=None,temporary=None),hitDice=dice,
         attacks=attacks,inventory=inventory,currency=currency,spellcasting=casters,resources=resources,features=features,notes=notes,
-        provenance=dict(parserVersion=VERSION,sourceHash=digest(body),contentHash=content.hash,builtin=content.builtin,privateFiles=content.manifest,contributions=q.contributions),diagnostics=warnings)
+        provenance=dict(parserVersion=VERSION,sourceHash=digest(body),contentHash=content.hash,builtin=content.builtin,privateFiles=content.manifest,contributions=q.contributions,nativeMarkers=q.native_markers),diagnostics=warnings)
     return result

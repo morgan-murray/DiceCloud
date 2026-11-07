@@ -20,11 +20,23 @@ def character_nodes(root, section, child):
     selected=native if native is not None else legacy
     return selected.findall(child) if selected is not None else []
 
+# These are Aurora engine markers, not missing compendium records. The snapshot
+# code implements their bases directly; adding placeholder rules would double
+# count HP/AC or conceal missing semantics.
+NATIVE_GRANTS={
+    'ID_INTERNAL_GRANTS_CHARACTER_BASE':'abilities, proficiency and initiative bases',
+    'ID_INTERNAL_GRANTS_SPELLCASTING_BASE':'saved final spell attack/DC and slot pools',
+    'ID_INTERNAL_GRANTS_ARMOR_CLASS_BASE':'native armor baseline and alternatives',
+    'ID_INTERNAL_GRANTS_ARMOR_CLASS_DEXTERITY_MODIFIER':'native armor Dexterity cap',
+    'ID_INTERNAL_GRANTS_HP_CONSTITUTION_MODIFIER':'Constitution per saved hit die',
+}
+
 class Query:
     def __init__(self, root, content):
         self.root, self.compendium = root, content
         self.terms, self.cache, self.active, self.contributions = defaultdict(list), {}, set(), {}
         self.ids = set()
+        self.native_markers=[]
         self.classes, self.class_context = {}, {}
         self.level = number(text(root.find('./display-properties/level')), 'level', 1, 20)
         self.base = {a:number(text(root.find('./build/abilities/'+a)), a, 1, 30) for a in ABILITIES}
@@ -108,6 +120,19 @@ class Query:
             if not key or (key in seen and source.get('type') != 'Ability Score Improvement'): continue
             seen.add(key)
             node = self.compendium.quick_query_id(key)
+            if key in NATIVE_GRANTS or key.startswith('ID_LEVEL_'):
+                if is_item or node is not None:
+                    fail('NATIVE_ENGINE_CONFLICT','content','Native engine markers cannot be supplied as equipment or replaced by pack definitions.')
+                if key in NATIVE_GRANTS:
+                    if source.get('type')!='Grants':fail('NATIVE_ENGINE_MARKER','character','Invalid native grant marker type.')
+                    role=NATIVE_GRANTS[key]
+                else:
+                    match=re.fullmatch(r'ID_LEVEL_([1-9]|1[0-9]|20)',key)
+                    if source.get('type')!='Level' or not match or int(match.group(1))>self.level:
+                        fail('NATIVE_ENGINE_MARKER','character','Saved level marker does not agree with the validated build levels.')
+                    role='validated saved build level'
+                self.native_markers.append(dict(id=key,role=role))
+                continue
             if node is None:
                 if source.get('type') in ['Alignment','Size','Language','Vision'] or key == 'ID_INTERNAL_OPTION_ALLOW_AVERAGE_HP': continue
                 fail('MISSING_CONTENT','content','Missing selected element: '+key)
@@ -219,8 +244,10 @@ class Query:
                 points=(size if key==self.main_class else size//2+1)+(count-1)*(size//2+1)
                 total+=max((size if key==self.main_class else size//2+1)+con,1)+(count-1)*max(size//2+1+con,1)
             else:
-                if len(rolls)!=count or any(roll>size for roll in rolls): fail('HP_ROLLS','hitPoints','Saved hit-point rolls are absent or inconsistent with class levels.')
-                total+=sum(max(1,r+con) for r in rolls)
+                # Aurora pre-generates rolls for future levels. Only the
+                # validated current class levels contribute to this snapshot.
+                if len(rolls)<count or len(rolls)>20 or any(roll>size for roll in rolls): fail('HP_ROLLS','hitPoints','Saved hit-point rolls are absent or inconsistent with class levels.')
+                total+=sum(max(1,r+con) for r in rolls[:count])
             dice.append(dict(name=node.get('name',key),count=count,size='d'+str(size),remaining=None))
         return total+self.get_variable_value('hp'),dice
 
