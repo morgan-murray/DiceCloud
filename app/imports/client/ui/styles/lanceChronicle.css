@@ -43,16 +43,20 @@
   .chronicle-banner__eyebrow { margin: 0 0 6px; font-size: .7rem; text-transform: uppercase; letter-spacing: .2em; color: #f1d49b; }
   .chronicle-banner h1 { margin: 0; font-size: clamp(2rem, 3.5vw, 3.5rem); line-height: 1.12; overflow-wrap: anywhere; }
   .chronicle-banner__subtitle { margin: 9px 0 0; font-size: 1rem; color: #fff8e9; }
-  .lance-ability-strip { margin: 14px 12px 0; }
+  .lance-ability-strip { margin: 14px 12px 0; container-type: inline-size; }
   .lance-ability-strip .v-list { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; padding: 14px; }
   .lance-ability-strip .v-divider { display: none; }
-  .lance-ability-strip .ability-list-tile { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 10px 4px 8px !important; margin: 0; border: 1px solid var(--chronicle-line); border-radius: 3px 3px 23px 23px; text-align: center; }
+  .lance-ability-strip .ability-list-tile { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 10px 4px 8px !important; margin: 0; border: 1px solid var(--chronicle-line); border-radius: 3px 3px 23px 23px !important; text-align: center; }
   .lance-ability-strip .v-list-item__content { grid-area: 1 / 1; }
   .lance-ability-strip .v-list-item__prepend { grid-area: 2 / 1; justify-self: center; }
   .lance-ability-strip .v-list-item__prepend .v-btn { margin: 0 !important; }
   .lance-ability-strip .v-list-item-title { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; white-space: normal; }
   .lance-ability-strip .ability-list-tile .value { color: var(--chronicle-muted); }
   .lance-ability-strip .ability-list-tile .mod { color: var(--chronicle-heading); font-variant-numeric: lining-nums tabular-nums; }
+  @container (max-width: 800px) {
+    .lance-ability-strip .ability-name-full { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .lance-ability-strip .ability-name-short { display: inline; }
+  }
   .v-overlay-container { font-family: Georgia, 'Palatino Linotype', Palatino, serif; }
   .v-overlay-container .v-list { border: 1px solid #b99b64; border-radius: 4px; }
   @media (max-width: 960px) {

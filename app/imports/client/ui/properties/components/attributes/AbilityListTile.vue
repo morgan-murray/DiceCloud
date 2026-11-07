@@ -11,6 +11,11 @@ const props = defineProps<{
   model: Record<string, any>;
 }>();
 
+const shortName = computed(() => {
+  const names: Record<string, string> = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT', wisdom: 'WIS', charisma: 'CHA' };
+  return names[props.model.variableName] || props.model.name;
+});
+
 const emit = defineEmits(['click']);
 const store = useStore(key);
 const context = inject('context', {} as any);
@@ -94,8 +99,9 @@ async function check() {
       </v-btn>
     </template>
 
-    <v-list-item-title>
-      {{ model.name }}
+    <v-list-item-title :title="model.name">
+      <span class="ability-name-full">{{ model.name }}</span>
+      <span class="ability-name-short" aria-hidden="true">{{ shortName }}</span>
       <v-icon
         v-if="model.advantage > 0"
         end
@@ -113,6 +119,7 @@ async function check() {
 </template>
 
 <style lang="css" scoped>
+.ability-name-short { display: none; }
 .ability-list-tile {
   background: inherit;
 }
