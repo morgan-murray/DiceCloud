@@ -6,9 +6,13 @@ The feature is disabled by default. Set `AURORA_IMPORT_ENABLED=true` in the Comp
 
 ## Supported fidelity
 
+Aurora's native `build/equipment`, `build/magic` and `build/input/attacks` sections are read explicitly. Legacy top-level equivalents remain supported; conflicting copies are rejected. Embedded `display-properties/portrait/base64` data is omitted without decoding or fetching it, with a preview warning. Add a portrait separately after import. The original uploaded file and its hash are retained under the existing private-source policy. The 2 MiB character upload cap and normal XML text/security limits still apply.
+
+Native level markers and the five known Aurora base-calculation grants are validated and recorded in provenance, rather than treated as missing pack definitions or replaced with empty stubs. Their ability/proficiency, saved spellcasting, armor/Dexterity and Constitution-per-hit-die bases are already calculated explicitly by the snapshot engine. Pack replacements, invalid marker types and levels outside the saved build fail visibly. Pre-generated HP roll queues may contain up to 20 entries; only rolls for the character's current class levels contribute to HP.
+
 2014 saved sheets only. Six abilities, saves and skills use final fixed native values without a default live ruleset. Saved HP rolls or explicit average-HP selections, basic armor/shields, initiative, explicit movement, saved final casting attack/DC, explicit spell preparation flags, spell descriptions, inventory/currency and notes are supported within the contract. Ordinary and Pact Magic slot pools must be distinguished explicitly when multiple casting sources exist. Remaining HP/slots/hit dice are initialized to full after acknowledgement. Attacks and other active features are descriptive/manual. This is not a level-up engine or a comprehensive Aurora replacement.
 
-Missing required content, unsupported numeric expressions/requirements, unknown rules versions, ambiguous slot pools, append/remove patches and conflicting built-in IDs fail visibly. A complete commercial compendium is not bundled. Importing a common actual Aurora sheet may require further parser coverage; the synthetic corpus is not proof of universal compatibility. No private user characters have been used for validation.
+Missing required content, unsupported numeric expressions/requirements, unknown rules versions, ambiguous slot pools, append/remove patches and conflicting built-in IDs fail visibly. A complete commercial compendium is not bundled. Importing a common actual Aurora sheet may require further parser coverage; the synthetic corpus is not proof of universal compatibility. A private saved character was inspected to reproduce ingestion/format differences and check local snapshot arithmetic using supplementary definitions. Public regression fixtures remain synthetic; no private character, portrait or rules pack is included in source or CI.
 
 ## Verification
 

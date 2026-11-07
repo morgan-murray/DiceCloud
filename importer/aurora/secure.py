@@ -13,6 +13,7 @@ from xml.parsers import expat
 CHAR_LIMIT = 2 * 1024**2
 PACK_LIMIT = 4 * 1024**2
 EXPANDED_LIMIT = 8 * 1024**2
+TEXT_LIMIT = 20000
 
 class ImportErrorDetail(Exception):
     def __init__(self, code, field, message):
@@ -41,7 +42,7 @@ def decode(file, limit):
         fail('SIZE_LIMIT', 'file', 'Empty or oversized file.')
     return data
 
-def xml(data, field='xml'):
+def xml(data, field='xml', *, omit_portrait=False, omitted=None):
     if len(data) > EXPANDED_LIMIT:
         fail('SIZE_LIMIT', field, 'XML exceeds its expanded size limit.')
     try:
@@ -60,7 +61,7 @@ def xml(data, field='xml'):
     def start(tag, attrs):
         nonlocal root, count
         count += 1
-        if count > 30000 or len(stack) >= 64 or len(attrs) > 64 or len(tag) > 200 or any(len(k) > 200 or len(v) > 20000 for k, v in attrs.items()):
+        if count > 30000 or len(stack) >= 64 or len(attrs) > 64 or len(tag) > 200 or any(len(k) > 200 or len(v) > TEXT_LIMIT for k, v in attrs.items()):
             fail('XML_LIMIT', field, 'XML node, depth, attribute or string limit exceeded.')
         if '}' in tag or ':' in tag:
             fail('UNSAFE_XML', field, 'Namespaced XML and external inclusions are not supported.')
@@ -71,13 +72,22 @@ def xml(data, field='xml'):
     def chars(value):
         if not stack: return
         node = stack[-1]
+        # Aurora embeds the portrait as base64 in this exact leaf. Portraits are
+        # not part of the snapshot: do not retain, decode, fetch or render them.
+        # All upload, node/depth, attribute and unsafe-XML checks still apply.
+        if omit_portrait and tuple(n.tag for n in stack) == ('character','display-properties','portrait','base64') and not len(node):
+            if omitted is not None and value.strip(): omitted.add('portrait')
+            return
+        def text_limit():
+            path = '/' + '/'.join(n.tag for n in stack)
+            fail('XML_LIMIT', field, f'XML text at {path} exceeds {TEXT_LIMIT:,} characters.')
         # Text is retained as inert text; it is never parsed as HTML.
         if len(node):
             child = node[-1]; child.tail = (child.tail or '') + value
-            if len(child.tail) > 20000: fail('XML_LIMIT', field, 'XML text is too long.')
+            if len(child.tail) > TEXT_LIMIT: text_limit()
         else:
             node.text = (node.text or '') + value
-            if len(node.text) > 20000: fail('XML_LIMIT', field, 'XML text is too long.')
+            if len(node.text) > TEXT_LIMIT: text_limit()
     parser.StartElementHandler, parser.EndElementHandler, parser.CharacterDataHandler = start, lambda tag: stack.pop(), chars
     try:
         parser.Parse(text, True)

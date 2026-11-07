@@ -2,7 +2,7 @@
 import re
 from . import VERSION, SCHEMA_VERSION
 from .content import CompendiumQuery
-from .query import Query, ABILITIES, SKILLS
+from .query import Query, ABILITIES, SKILLS, character_nodes
 from .secure import CHAR_LIMIT, decode, digest, fail, number, text, xml
 
 def bounded(value, field, limit=10000):
@@ -11,7 +11,8 @@ def bounded(value, field, limit=10000):
 
 def extract(source, files):
     body=decode(source, CHAR_LIMIT)
-    root=xml(body,'character')
+    omitted=set()
+    root=xml(body,'character',omit_portrait=True,omitted=omitted)
     if root.tag!='character':fail('CHARACTER_ROOT','character','Choose an Aurora character XML file.')
     content=CompendiumQuery(files)
     q=Query(root,content)
@@ -19,6 +20,8 @@ def extract(source, files):
     def warn(code,field,message):
         warning=dict(severity='warning',code=code,field=field,message=message)
         if warning not in warnings:warnings.append(warning)
+    if 'portrait' in omitted:
+        warn('PORTRAIT_NOT_IMPORTED','portrait','The embedded portrait is not included in this snapshot. Add a character portrait separately after import.')
     name=bounded(text(root.find('./display-properties/name')),'name',128)
     if not name:fail('MISSING_NAME','name','The character has no saved name.')
     # No 2024 library is silently treated as 2014.
@@ -50,13 +53,14 @@ def extract(source, files):
         raw=text(root.find('./build/input/currency/'+key))
         currency[key]=number(raw or '0','currency.'+key,0,1000000)
     attacks=[]
-    for attack in root.findall('./attacks/attack'):
+    for attack in character_nodes(root,'attacks','attack'):
         attacks.append(dict(name=bounded(attack.get('name','Attack'),'attacks.name',128),
             attack=bounded(attack.get('attack',''),'attacks.attack',512),damage=bounded(attack.get('damage',''),'attacks.damage',512),
             range=bounded(attack.get('range',''),'attacks.range',512),description=bounded(text(attack.find('description')),'attacks.description')))
     if attacks:warn('MANUAL_ATTACKS','attacks','Attack and damage text is preserved for manual use; no arbitrary source formula is executed.')
     casters=[];resources=[]
-    for index,caster in enumerate(root.findall('./magic/spellcasting')):
+    saved_casters=character_nodes(root,'magic','spellcasting')
+    for index,caster in enumerate(saved_casters):
         title=bounded(caster.get('name','Spellcasting'),'spellcasting.name',128)
         ability=caster.get('ability','').lower()
         if ability not in ABILITIES:fail('SPELLCASTING_ABILITY','spellcasting','Spellcasting ability is absent or unsupported.')
@@ -84,7 +88,7 @@ def extract(source, files):
             pool=caster.get('pool')
             if pool not in ['spellcasting','pact']:
                 # Separate multiple casters may duplicate shared totals. Never guess.
-                if len(root.findall('./magic/spellcasting'))>1:fail('AMBIGUOUS_SLOTS','spellcasting','Multiple casting sources require explicit spellcasting/pact pool labels.')
+                if len(saved_casters)>1:fail('AMBIGUOUS_SLOTS','spellcasting','Multiple casting sources require explicit spellcasting/pact pool labels.')
                 pool='spellcasting'
             for level in range(1,10):
                 raw=slots.get('s'+str(level))
@@ -109,5 +113,5 @@ def extract(source, files):
         abilities=abilities,saves=saves,skills=skills,armorClass=q.ac(),initiative=q.get_variable_value('initiative') if 'initiative' in q.terms else q.get_variable_value('dexterity:modifier')+q.get_variable_value('initiative:misc'),
         proficiency=q.get_variable_value('proficiency'),movement=movement,hitPoints=dict(maximum=hp,current=None,temporary=None),hitDice=dice,
         attacks=attacks,inventory=inventory,currency=currency,spellcasting=casters,resources=resources,features=features,notes=notes,
-        provenance=dict(parserVersion=VERSION,sourceHash=digest(body),contentHash=content.hash,builtin=content.builtin,privateFiles=content.manifest,contributions=q.contributions),diagnostics=warnings)
+        provenance=dict(parserVersion=VERSION,sourceHash=digest(body),contentHash=content.hash,builtin=content.builtin,privateFiles=content.manifest,contributions=q.contributions,nativeMarkers=q.native_markers),diagnostics=warnings)
     return result
