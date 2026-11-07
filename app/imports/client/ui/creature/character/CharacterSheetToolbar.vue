@@ -127,15 +127,20 @@ async function unshareWithMe() {
     class="character-sheet-toolbar"
     :color="toolbarColor"
     :theme="isDark ? 'dark' : 'light'"
-    density="compact"
+    height="56"
+    :extension-height="$vuetify.display.smAndUp ? 52 : 0"
+    density="default"
   >
     <v-app-bar-nav-icon @click="toggleDrawer" />
     <v-fade-transition mode="out-in">
-      <v-toolbar-title :key="$store.state.pageTitle">
+      <v-toolbar-title
+        :key="$store.state.pageTitle"
+        :title="$store.state.pageTitle"
+        data-id="character-toolbar-name"
+      >
         {{ $store.state.pageTitle }}
       </v-toolbar-title>
     </v-fade-transition>
-    <v-spacer />
     <v-fade-transition mode="out-in">
       <div
         :key="$route.meta.title"
@@ -230,65 +235,63 @@ async function unshareWithMe() {
       </div>
     </v-fade-transition>
     <template #extension>
-      <v-fade-transition
+      <div
         v-if="$vuetify.display.smAndUp"
-        mode="out-in"
+        class="chronicle-sheet-navigation"
+        data-id="character-navigation"
       >
-        <div
-          :key="$route.meta.title"
-          class="layout"
+        <v-tabs
+          v-if="creature && creature.settings"
+          :key="'' +
+            creature.settings.hideSpellsTab +
+            creature.settings.showTreeTab
+          "
+          class="character-sheet-tabs flex-grow-1"
+          aria-label="Character sections"
+          style="min-width: 0"
+          height="44"
+          show-arrows
+          align-tabs="center"
+          grow
+          :color="$vuetify.theme.themes?.dark?.colors?.primary"
+          :model-value="$store.getters.tabById($route.params.id)"
+          bg-color="transparent"
+          @update:model-value="e => $store.commit(
+            'setTabForCharacterSheet',
+            { id: $route.params.id, tab: e }
+          )"
         >
-          <v-tabs
-            v-if="creature && creature.settings"
-            :key="'' +
-              creature.settings.hideSpellsTab +
-              creature.settings.showTreeTab
-            "
-            class="flex"
-            style="min-width: 0"
-            align-tabs="center"
-            grow
-            :color="$vuetify.theme.themes?.dark?.colors?.primary"
-            :model-value="$store.getters.tabById($route.params.id)"
-            :bg-color="toolbarColor"
-            @update:model-value="e => $store.commit(
-              'setTabForCharacterSheet',
-              { id: $route.params.id, tab: e }
-            )"
-          >
-            <v-tab>
-              Stats
-            </v-tab>
-            <v-tab>
-              Actions
-            </v-tab>
-            <v-tab v-if="!creature.settings.hideSpellsTab">
-              Spells
-            </v-tab>
-            <v-tab>
-              Inventory
-            </v-tab>
-            <v-tab>
-              Features
-            </v-tab>
-            <v-tab>
-              Journal
-            </v-tab>
-            <v-tab>
-              Build
-            </v-tab>
-            <v-tab v-if="creature.settings.showTreeTab">
-              Tree
-            </v-tab>
-          </v-tabs>
-          <v-spacer />
-          <character-sheet-fab
-            direction="bottom"
-            class="character-sheet-extension-fab"
-            :edit-permission="editPermission"
-          />
-        </div>
-      </v-fade-transition>
+          <v-tab>
+            Stats
+          </v-tab>
+          <v-tab>
+            Actions
+          </v-tab>
+          <v-tab v-if="!creature.settings.hideSpellsTab">
+            Spells
+          </v-tab>
+          <v-tab>
+            Inventory
+          </v-tab>
+          <v-tab>
+            Features
+          </v-tab>
+          <v-tab>
+            Journal
+          </v-tab>
+          <v-tab>
+            Build
+          </v-tab>
+          <v-tab v-if="creature.settings.showTreeTab">
+            Tree
+          </v-tab>
+        </v-tabs>
+        <character-sheet-fab
+          direction="bottom"
+          class="character-sheet-extension-fab"
+          :edit-permission="editPermission"
+        />
+      </div>
     </template>
   </v-app-bar>
 </template>
@@ -303,8 +306,17 @@ async function unshareWithMe() {
 }
 
 .character-sheet-extension-fab {
-  bottom: -24px;
-  right: 8px;
-  margin-left: 16px;
+  flex: 0 0 auto;
+  margin: 0 4px 0 8px;
+}
+
+.character-sheet-extension-fab .v-speed-dial__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 </style>
