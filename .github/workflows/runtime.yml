@@ -51,6 +51,7 @@ jobs:
         run: |
           npm test -- --grep 'native workflow|URL contract'
           npm test -- --grep 'Aurora workflow'
+          npm test -- --grep 'Lance Chronicle'
       - name: Verify restart persistence and closed registration
         run: |
           docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app
@@ -73,7 +74,7 @@ jobs:
         env:
           DICECLOUD_TEST_URL: https://localhost:31082/dnd/
           DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-prefix-fixture.json
-        run: npx playwright test --config playwright.firefox.config.mjs --grep 'archive dialog close controls'
+        run: npx playwright test --config playwright.firefox.config.mjs --grep 'archive dialog close controls|Lance Chronicle'
       - name: Export built image for private VPS verification
         if: always()
         run: |
@@ -93,6 +94,12 @@ jobs:
           name: browser-diagnostics
           path: deployment/browser/test-results/
           retention-days: 1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: theme-screenshots
+          path: deployment/browser/test-results/**/*.png
+          retention-days: 3
       - name: Show bounded diagnostics on failure
         if: failure()
         run: |

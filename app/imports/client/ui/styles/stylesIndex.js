@@ -10,3 +10,4 @@ import './lineClamp.css';
 import './markdown.css';
 import './speedDial.css';
 import './toolbarFlex.css';
+import './lanceChronicle.css';
