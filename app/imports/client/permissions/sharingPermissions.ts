@@ -20,6 +20,7 @@ function root(doc: Shared | TreeDoc | undefined): Shared {
 export function assertEditPermission(doc: Shared | undefined, userId: string | null | undefined) {
   exists(doc);
   loggedIn(userId);
+  if ((doc as Shared & { managedReference?: string }).managedReference) throw new Meteor.Error('reference-read-only');
   if (doc.owner === userId || doc.writers?.includes(userId) || Roles.userIsInRole(userId, 'admin')) return;
   throw new Meteor.Error('permission-denied');
 }

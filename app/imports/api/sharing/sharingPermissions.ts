@@ -23,6 +23,7 @@ export function assertDocExists(doc: Record<string, unknown> | undefined): asser
 export function assertOwnership(doc: Shared | undefined, userId: string | undefined | null): asserts doc {
   assertIdValid(userId);
   assertDocExists(doc);
+  if ((doc as Shared & { managedReference?: string }).managedReference) throw new Meteor.Error('reference-read-only', 'Managed source pages are read-only. Keep personal notes in your own library.');
 
   if (doc.owner === userId) {
     return;
@@ -41,6 +42,7 @@ export function assertOwnership(doc: Shared | undefined, userId: string | undefi
 export async function assertEditPermission(doc: Shared | undefined, userId: string | undefined | null): Promise<void> {
   assertIdValid(userId);
   assertDocExists(doc);
+  if ((doc as Shared & { managedReference?: string }).managedReference) throw new Meteor.Error('reference-read-only', 'Managed source pages are read-only. Keep personal notes in your own library.');
   const user = await Meteor.users.findOneAsync(userId);
   if (!user) {
     throw new Meteor.Error('Edit permission denied',

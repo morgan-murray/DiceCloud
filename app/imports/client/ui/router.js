@@ -7,6 +7,7 @@ const Home = () => import('/imports/client/ui/pages/Home.vue');
 const About = () => import('/imports/client/ui/pages/About.vue');
 const CharacterList = () => import('/imports/client/ui/pages/CharacterList.vue');
 const CharacterListToolbarItems = () => import('/imports/client/ui/creature/creatureList/CharacterListToolbarItems.vue');
+const RulesReference = () => import('/imports/client/ui/pages/RulesReference.vue');
 const Library = () => import('/imports/client/ui/pages/Library.vue');
 const LibraryCollection = () => import('/imports/client/ui/pages/LibraryCollection.vue');
 const LibraryCollectionToolbar = () => import('/imports/client/ui/library/LibraryCollectionToolbar.vue');
@@ -171,6 +172,12 @@ const router = createRouter({
     meta: {
       title: 'Library',
     },
+    beforeEnter: ensureLoggedIn,
+  }, {
+    name: 'rulesReference',
+    path: '/rules',
+    component: RulesReference,
+    meta: { title: 'Rules Reference' },
     beforeEnter: ensureLoggedIn,
   }, {
     name: 'singleLibrary',

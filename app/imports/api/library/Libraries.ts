@@ -15,6 +15,7 @@ const BaseLibrarySchema = TypedSimpleSchema.from({
     type: String,
     max: 32,
   },
+  managedReference: { type: String, optional: true, max: 48 },
   name: {
     type: String,
     max: STORAGE_LIMITS.name,

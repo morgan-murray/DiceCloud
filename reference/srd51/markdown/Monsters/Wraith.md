@@ -1,0 +1,32 @@
+# Wraith
+
+_Medium undead, neutral evil_
+
+- **Armor Class** 13
+- **Hit Points** 67 (9d8 + 27)
+- **Speed** 0 ft., fly 60 ft. (hover)
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      6 |     16 |     16 |     12 |     14 |     15 |
+| **Modifier**     |     -2 |     +3 |     +3 |     +1 |     +2 |     +2 |
+| **Saving Throw** |     -2 |     +3 |     +3 |     +1 |     +2 |     +2 |
+
+- **Damage Resistances** acid, cold, fire, lightning, thunder; bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered
+- **Damage Immunities** necrotic, poison
+- **Condition Immunities** charmed, exhaustion, grappled, paralyzed, petrified, poisoned, prone, restrained
+- **Senses** darkvision 60 ft., passive Perception 12
+- **Languages** the languages it knew in life
+- **Challenge** 5 (1,800 XP)
+
+## Traits
+
+_**Incorporeal Movement.**_ The wraith can move through other creatures and objects as if they were difficult terrain. It takes 5 (1d10) force damage if it ends its turn inside an object.
+
+_**Sunlight Sensitivity.**_ While in sunlight, the wraith has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight.
+
+## Actions
+
+_**Life Drain.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one creature. _Hit:_ 21 (4d8 + 3) necrotic damage. The target must succeed on a DC 14 Constitution saving throw or its hit point maximum is reduced by an amount equal to the damage taken. This reduction lasts until the target finishes a long rest. The target dies if this effect reduces its hit point maximum to 0.
+
+_**Create Specter.**_ The wraith targets a humanoid within 10 feet of it that has been dead for no longer than 1 minute and died violently. The target's spirit rises as a specter in the space of its corpse or in the nearest unoccupied space. The specter is under the wraith's control. The wraith can have no more than seven specters under its control at one time.
