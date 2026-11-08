@@ -24,6 +24,7 @@ test('Rules reference workflow: full corpus, body search, tables, links and priv
  await search.fill('Grappled');await page.locator('.reference-result').filter({has:page.locator('strong').filter({hasText:/^Grappled$/})}).click();
  await expect(title(page)).toHaveText('Grappled');await page.locator('.reference-related').getByRole('button',{name:'Incapacitated',exact:true}).click();await expect(title(page)).toHaveText('Incapacitated');
  await search.fill('Cleric');await page.locator('.reference-result').filter({has:page.locator('strong').filter({hasText:/^Cleric$/})}).click();await expect(title(page)).toHaveText('Cleric');await expect(page.locator('.reference-body table').first()).toBeVisible();
+ await expect.poll(()=>page.locator('.reference-body table tbody tr').first().locator('td').first().evaluate(cell=>{const range=document.createRange();range.selectNodeContents(cell);return range.getClientRects().length;})).toBe(1);
  await page.screenshot({path:info.outputPath('reference-desktop-light.png'),fullPage:true});
  await page.evaluate(()=>window.Meteor.callAsync('users.setDarkMode',{darkMode:true}));await expect(page.locator('.lance-chronicle')).toHaveClass(/v-theme--dark/);await page.screenshot({path:info.outputPath('reference-desktop-dark.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('reference-mobile.png'),fullPage:true});await page.setViewportSize({width:1280,height:900});

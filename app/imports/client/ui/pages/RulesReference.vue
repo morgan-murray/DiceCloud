@@ -141,7 +141,7 @@ onBeforeUnmount(() => { clearTimeout(timer); request++; });
 .reference-article h2 { font-size: 2rem; }
 .reference-body { font-size: 1.05rem; line-height: 1.75; overflow-wrap: anywhere; }
 .reference-body :deep(table) { display: block; overflow-x: auto; border-collapse: collapse; max-width: 100%; margin: 20px 0; font-size: .9rem; }
-.reference-body :deep(th), .reference-body :deep(td) { padding: 8px 12px; border: 1px solid var(--chronicle-line, #999); }
+.reference-body :deep(th), .reference-body :deep(td) { padding: 8px 12px; overflow-wrap: normal; word-break: normal; border: 1px solid var(--chronicle-line, #999); }
 .reference-body :deep(th) { background: #b99b6426; }
 .reference-body :deep(h1:first-child) { display: none; }
 .reference-body :deep(h2), .reference-body :deep(h3) { margin: 24px 0 10px; }
