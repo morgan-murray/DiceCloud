@@ -123,6 +123,11 @@ function insertLibraryCollectionAction() {
     style="height: 100%"
   >
     <v-container>
+      <v-card class="pa-4 mb-4">
+        <v-card-title>Rules Reference</v-card-title>
+        <v-card-text>Browse the 2014 SRD and search inside rules, spells, items and creature descriptions.</v-card-text>
+        <v-card-actions><v-btn to="/rules" variant="outlined">Open Rules Reference</v-btn></v-card-actions>
+      </v-card>
       <v-row justify="center">
         <v-col
           cols="12"

@@ -1,0 +1,35 @@
+# Bone Devil
+
+_Large fiend (devil), lawful evil_
+
+- **Armor Class** 19 (natural armor)
+- **Hit Points** 142 (15d10 + 60)
+- **Speed** 40 ft., fly 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     16 |     18 |     13 |     14 |     16 |
+| **Modifier**     |     +4 |     +3 |     +4 |     +1 |     +2 |     +3 |
+| **Saving Throw** |     +4 |     +3 |     +4 |     +5 |     +6 |     +7 |
+
+- **Skills** Deception +7, Insight +6
+- **Damage Resistances** cold; bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered
+- **Damage Immunities** fire, poison
+- **Condition Immunities** poisoned
+- **Senses** darkvision 120 ft., passive Perception 12
+- **Languages** Infernal, telepathy 120 ft.
+- **Challenge** 9 (5,000 XP)
+
+## Traits
+
+_**Devil's Sight.**_ Magical darkness doesn't impede the devil's darkvision.
+
+_**Magic Resistance.**_ The devil has advantage on saving throws against spells and other magical effects.
+
+## Actions
+
+_**Multiattack.**_ The devil makes three attacks: two with its claws and one with its sting.
+
+_**Claw.**_ _Melee Weapon Attack:_ +8 to hit, reach 10 ft., one target. _Hit:_ 8 (1d8 + 4) slashing damage.
+
+_**Sting.**_ _Melee Weapon Attack:_ +8 to hit, reach 10 ft., one target. _Hit:_ 13 (2d8 + 4) piercing damage plus 17 (5d6) poison damage, and the target must succeed on a DC 14 Constitution saving throw or become poisoned for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.

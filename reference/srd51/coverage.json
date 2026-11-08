@@ -1,0 +1,2345 @@
+{
+  "sourceEntries": 999,
+  "upstreamSplitEntries": 994,
+  "supplementedIntroductions": 5,
+  "packEntries": 1000,
+  "categories": {
+    "Core Rules": 46,
+    "Character Options": 39,
+    "Monsters and DM Reference": 345,
+    "Equipment": 8,
+    "Magic Items": 243,
+    "Spells": 319
+  },
+  "canonicalPages": 403,
+  "sourcePdfHash": "2504d2a0abb0a4d491a939be4f17910a2dde0312570ab8d208080225ccf0a1f0",
+  "intermediaryCommit": "f1f5060fd975aa2ffc3e4b336560ded479934d80",
+  "headingOnlyMatches": [],
+  "unresolvedEntries": [],
+  "formattingCorrections": [
+    {
+      "path": "Conditions/Grappled.md",
+      "changes": [
+        "Join PDF line-wrap hyphen in thunderwave"
+      ]
+    },
+    {
+      "path": "Magic Items/Legendary/Deck of Many Things.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Magic Items/Varies/Figurine of Wondrous Power.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Aboleth.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Acolyte.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Black Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Blue Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Brass Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Bronze Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Copper Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Gold Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Green Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Red Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult Silver Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Adult White Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Air Elemental.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Black Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Blue Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Brass Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Bronze Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Copper Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Gold Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Green Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Red Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient Silver Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ancient White Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Androsphinx.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Animated Armor.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ankheg.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ape.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Archmage.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Assassin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Awakened Shrub.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Awakened Tree.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Axe Beak.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Azer.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Baboon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Badger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Balor.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bandit Captain.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bandit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Barbed Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Basilisk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bearded Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Behir.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Berserker.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Black Bear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Black Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Black Pudding.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Blink Dog.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Blood Hawk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Blue Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Boar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bone Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Brass Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bronze Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Brown Bear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bugbear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Bulette.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Camel.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Centaur.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Chain Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Chimera.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Chuul.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Clay Golem.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cloaker.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cloud Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cockatrice.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Commoner.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Constrictor Snake.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Copper Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Couatl.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Crab.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Crocodile.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cult Fanatic.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Cultist.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Darkmantle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Death Dog.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Deer.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Deva.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Dire Wolf.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Djinni.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Doppelganger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Draft Horse.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Dragon Turtle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Dretch.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Drider.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Druid.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Dryad.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Duergar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Dust Mephit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Eagle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Earth Elemental.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Efreeti.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Elephant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Elf, Drow.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Elk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Erinyes.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ettercap.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ettin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Fire Elemental.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Fire Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Flesh Golem.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Flying Snake.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Flying Sword.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Frog.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Frost Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gargoyle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gelatinous Cube.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ghast.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ghost.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ghoul.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Ape.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Badger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Bat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Boar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Centipede.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Constrictor Snake.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Crab.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Crocodile.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Eagle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Elk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Fire Beetle.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Frog.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Goat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Hyena.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Lizard.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Octopus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Owl.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Poisonous Snake.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Rat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Scorpion.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Sea Horse.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Shark.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Spider.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Toad.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Vulture.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Wasp.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Weasel.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Giant Wolf Spider.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gibbering Mouther.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Glabrezu.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gladiator.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gnoll.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gnome, Deep (Svirfneblin).md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Goat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Goblin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gold Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gorgon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gray Ooze.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Green Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Green Hag.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Grick.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Griffon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Grimlock.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Guard.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Guardian Naga.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Gynosphinx.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Half-Dragon Template.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Harpy.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hawk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hell Hound.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hezrou.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hill Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hippogriff.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hobgoblin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Homunculus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Horned Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hunter Shark.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hydra.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Hyena.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ice Devil.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ice Mephit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Imp.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Invisible Stalker.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Iron Golem.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Jackal.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Killer Whale.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Knight.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Kobold.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Kraken.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lamia.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lemure.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lich.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lion.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lizard.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Lizardfolk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mage.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Magma Mephit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Magmin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mammoth.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Manticore.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Marilith.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mastiff.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Medusa.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Merfolk.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Merrow.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mimic.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Minotaur Skeleton.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Minotaur.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mule.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mummy Lord.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Mummy.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Nalfeshnee.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Night Hag.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Nightmare.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Noble.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ochre Jelly.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Octopus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ogre Zombie.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Ogre.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Oni.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Orc.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Otyugh.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Owl.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Owlbear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Panther.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Pegasus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Phase Spider.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Pit Fiend.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Planetar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Plesiosaurus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Poisonous Snake.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Polar Bear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Pony.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Priest.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Pseudodragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Purple Worm.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Quasit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Quipper.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Rakshasa.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Rat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Raven.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Red Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Reef Shark.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Remorhaz.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Rhinoceros.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Riding Horse.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Roc.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Roper.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Rug of Smothering.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Rust Monster.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Saber-Toothed Tiger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Sahuagin.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Salamander.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Satyr.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Scorpion.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Scout.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Sea Hag.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Sea Horse.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Shadow.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Shambling Mound.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Shield Guardian.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Shrieker.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Silver Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Skeleton.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Solar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Specter.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Spider.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Spirit Naga.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Sprite.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Spy.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Steam Mephit.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Stirge.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Stone Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Stone Golem.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Storm Giant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Succubus Incubus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Bats.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Insects.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Poisonous Snakes.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Quippers.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Rats.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Swarm of Ravens.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Tarrasque.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Thug.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Tiger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Treant.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Tribal Warrior.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Triceratops.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Troll.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Tyrannosaurus Rex.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Unicorn.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Vampire Spawn.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Vampire.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Veteran.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Violet Fungus.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Vrock.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Vulture.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Warhorse Skeleton.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Warhorse.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Water Elemental.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Weasel.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Werebear.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wereboar.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wererat.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Weretiger.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Werewolf.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/White Dragon Wyrmling.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wight.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Will-o'-Wisp.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Winter Wolf.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wolf.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Worg.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wraith.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Wyvern.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Xorn.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Black Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Blue Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Brass Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Bronze Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Copper Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Gold Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Green Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Red Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young Silver Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Young White Dragon.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    },
+    {
+      "path": "Monsters/Zombie.md",
+      "changes": [
+        "Restore explicit saving throws; remove inferred non-proficient save row"
+      ]
+    }
+  ],
+  "mappedPages": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311,
+    312,
+    313,
+    314,
+    315,
+    316,
+    317,
+    318,
+    319,
+    320,
+    321,
+    322,
+    323,
+    324,
+    325,
+    326,
+    327,
+    328,
+    329,
+    330,
+    331,
+    332,
+    333,
+    334,
+    335,
+    336,
+    337,
+    338,
+    339,
+    340,
+    341,
+    342,
+    343,
+    344,
+    345,
+    346,
+    347,
+    348,
+    349,
+    350,
+    351,
+    352,
+    353,
+    354,
+    355,
+    356,
+    357,
+    358,
+    359,
+    360,
+    361,
+    362,
+    363,
+    364,
+    365,
+    366,
+    367,
+    368,
+    369,
+    370,
+    371,
+    372,
+    373,
+    374,
+    375,
+    376,
+    377,
+    378,
+    379,
+    380,
+    381,
+    382,
+    383,
+    384,
+    385,
+    386,
+    387,
+    388,
+    389,
+    390,
+    391,
+    392,
+    393,
+    394,
+    395,
+    396,
+    397,
+    398,
+    399,
+    400,
+    401,
+    402,
+    403
+  ]
+}

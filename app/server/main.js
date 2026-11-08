@@ -29,3 +29,5 @@ import '/imports/api/library/methods/index';
 console.log('\nMain loaded\n')
 
 import '/imports/server/aurora/service';
+
+import '/imports/server/rulesReference/service';
