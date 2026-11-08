@@ -87,6 +87,9 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     await expect(toast).toContainText('Short Rest');
     await expect(toast).toBeVisible();
     await toast.locator('.v-snackbar__actions button').click();
+    await expect(toast).not.toBeVisible();
+    await page.waitForTimeout(700);
+    await expect(toast).not.toBeVisible();
     await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$store.commit('setRightDrawer', false));
     for (const [tab, target, text] of [
       ['Actions', `.actions-tab [data-id="${action}"] .action-title`, 'Practice salute'],
