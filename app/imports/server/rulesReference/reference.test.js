@@ -44,7 +44,7 @@ describe('Rules reference ownership, publishing, search and recovery', function 
   await shareReference(owner, { packId: book.id, username: 'rr-test-' + other, remove: true }); await denied(() => getReferenceEntry(other, { packId: book.id, key }));
  });
  it('updates and rolls back while preserving personal notes', async () => {
-  const before = (await listReferences(owner))[0], next = changed(tiny, '1.0.1'); await installReference(owner, { pack: next });
+  const before = (await listReferences(owner))[0], next = changed(tiny, '1.0.1'); const update = await installReference(owner, { pack: next }); assert.deepEqual(update.changes, { added: 0, changed: 1, removed: 0 });
   let book = (await listReferences(owner))[0]; assert.equal(book.version, '1.0.1'); assert.isTrue(book.previous);
   await rollbackReference(owner, before.id); book = (await listReferences(owner))[0]; assert.equal(book.version, tiny.version); assert.exists(await Libraries.findOneAsync(personal));
  });

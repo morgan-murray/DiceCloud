@@ -86,11 +86,14 @@ export async function installReference(userId, options = {}) {
     let install = await Installs.findOneAsync(installId);
     if (!install) { await Installs.insertAsync({ _id: installId, owner: userId, readers: [], createdAt: new Date() }); install = await Installs.findOneAsync(installId); }
     const active = install.activeRevisionId && await Revisions.findOneAsync(install.activeRevisionId);
-    if (active?.packageHash === pack.entriesHash) { await archiveInactive(install); return { ...(await summary(install, userId)), unchanged: true }; }
+    if (active?.packageHash === pack.entriesHash) { await archiveInactive(install); return { ...(await summary(install, userId)), unchanged: true, changes: { added: 0, changed: 0, removed: 0 } }; }
     // Recover stages left by an interrupted application. Only this user's unpublished revisions are eligible.
     for (const r of await Revisions.find({ installId }).fetchAsync()) await cleanupRevision(r._id);
+    const prior = active ? await Entries.find({ revisionId: active._id }, { fields: { key: 1, contentHash: 1 } }).fetchAsync() : [];
+    const priorHashes = new Map(prior.map(e => [e.key, e.contentHash])), nextKeys = new Set(pack.entries.map(e => e.key));
+    const changes = { added: pack.entries.filter(e => !priorHashes.has(e.key)).length, changed: pack.entries.filter(e => priorHashes.has(e.key) && priorHashes.get(e.key) !== e.contentHash).length, removed: prior.filter(e => !nextKeys.has(e.key)).length };
     revisionId = Random.id(); const libraryId = Random.id(); stagedLibraryId = libraryId;
-    await Revisions.insertAsync({ _id: revisionId, installId, owner: userId, libraryId, state: 'staging', version: pack.version, packageHash: pack.entriesHash, entryCount: pack.entries.length, createdAt: new Date() });
+    await Revisions.insertAsync({ _id: revisionId, installId, owner: userId, libraryId, state: 'staging', changes, version: pack.version, packageHash: pack.entriesHash, entryCount: pack.entries.length, createdAt: new Date() });
     await Libraries.insertAsync({ _id: libraryId, name: pack.name, description: 'Managed 2014 SRD source pages. Read and search in Rules Reference; keep personal notes in your own libraries.', owner: 'rr-stage-' + revisionId, readers: [], writers: [], public: false, managedReference: revisionId });
     if (options.fault === 'library') throw new Error('Injected reference library failure');
     const folders = {};
@@ -116,10 +119,10 @@ export async function installReference(userId, options = {}) {
     await Installs.updateAsync(installId, { $set: { activeRevisionId: revisionId, previousRevisionId: install.activeRevisionId || null, collectionId, updatedAt: new Date() } });
     if (options.fault === 'acknowledgement') throw new Error('Injected acknowledgement loss');
     install = await Installs.findOneAsync(installId); await archiveInactive(install);
-    return summary(install, userId);
+    return { ...(await summary(install, userId)), changes };
   } catch (error) {
     const current = await Installs.findOneAsync(installId);
-    if (revisionId && current?.activeRevisionId === revisionId) return summary(current, userId);
+    if (revisionId && current?.activeRevisionId === revisionId) return { ...(await summary(current, userId)), changes: (await Revisions.findOneAsync(revisionId)).changes };
     if (revisionId) {
       const r = await Revisions.findOneAsync(revisionId);
       if (r && current?.collectionId && current.activeRevisionId) {

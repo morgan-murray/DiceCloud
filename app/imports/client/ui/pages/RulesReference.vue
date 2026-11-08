@@ -7,7 +7,7 @@ import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
 type Book = { id: string; name: string; version: string; edition: string; counts: Record<string, number>; categories: string[]; canManage: boolean; previous: boolean; entryCount: number; sourceUrl: string; libraryId: string };
 type Page = { key: string; title: string; category: string; section: string; markdown: string; pages: number[]; links: { key: string; title: string }[] };
 const route = useRoute(), router = useRouter();
-const books = ref<Book[]>([]), catalog = ref<any>(null), busy = ref(false), loading = ref(false), error = ref(''), entry = ref<Page | null>(null), results = ref<any[]>([]), total = ref(0), readers = ref<any[]>([]), shareOpen = ref(false), readerName = ref('');
+const books = ref<Book[]>([]), catalog = ref<any>(null), busy = ref(false), loading = ref(false), error = ref(''), notice = ref(''), entry = ref<Page | null>(null), results = ref<any[]>([]), total = ref(0), readers = ref<any[]>([]), shareOpen = ref(false), readerName = ref('');
 const query = ref(String(route.query.q || '')), category = ref(String(route.query.category || ''));
 const selected = computed(() => books.value.find(b => b.id === route.query.pack) || books.value[0]);
 const page = computed(() => Math.max(0, Number(route.query.page) || 0));
@@ -34,8 +34,10 @@ async function load() {
   finally { if (n === request) loading.value = false; }
 }
 async function mutate(name: string, arg?: unknown) {
-  busy.value = true; error.value = '';
-  try { await call(name, arg); await refresh(); await load(); }
+  busy.value = true; error.value = ''; notice.value = '';
+  try { const result = await call(name, arg); await refresh(); await load();
+    if (name === 'install') notice.value = result.unchanged ? 'Your reference library is up to date.' : `${result.changes.added} pages added, ${result.changes.changed} updated, ${result.changes.removed} removed.`;
+  }
   catch (e: any) { error.value = e.reason || e.message; }
   finally { busy.value = false; }
 }
@@ -70,6 +72,7 @@ onBeforeUnmount(() => { clearTimeout(timer); request++; });
       </div>
     </div>
     <v-alert v-if="error" type="error" class="mb-4" role="alert">{{ error }}</v-alert>
+    <v-alert v-if="notice" type="success" class="mb-4" role="status">{{ notice }}</v-alert>
     <v-alert v-if="busy" type="info" class="mb-4">Preparing your private reference library. This can take a moment; your characters are unchanged.</v-alert>
     <v-card v-if="!selected" class="pa-6">
       <h2>D&amp;D 2014 — Rules Reference</h2>
@@ -101,7 +104,7 @@ onBeforeUnmount(() => { clearTimeout(timer); request++; });
           <v-card v-if="entry" class="pa-5 reference-article">
             <p class="reference-breadcrumb">2014 SRD / {{ entry.category }} / {{ entry.section }}</p>
             <h2>{{ entry.title }}</h2>
-            <p class="my-3">Reference text · Source version {{ selected.version }}<span v-if="entry.pages.length"> · PDF pages {{ entry.pages.join(', ') }}</span></p>
+            <p class="my-3">Reference text · Library version {{ selected.version }}<span v-if="entry.pages.length"> · PDF pages {{ entry.pages.join(', ') }}</span></p>
             <v-btn variant="outlined" size="small" :href="selected.sourceUrl + '#page=' + (entry.pages[0] || 1)" target="_blank" rel="noopener noreferrer">View official source</v-btn>
             <markdown-text class="reference-body mt-5" :markdown="entry.markdown" />
             <div v-if="entry.links.length" class="reference-related mt-5"><h3>Related references</h3><v-btn v-for="link in entry.links" :key="link.key" variant="text" @click="navigate({ entry: link.key })">{{ link.title }}</v-btn></div>
