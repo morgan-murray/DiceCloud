@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
-import LabeledFab from '/imports/client/ui/components/LabeledFab.vue';
 import insertProperty from '/imports/api/creature/creatureProperties/methods/insertProperty';
 import PROPERTIES from '/imports/constants/PROPERTIES';
 import insertPropertyFromLibraryNode from '/imports/api/creature/creatureProperties/methods/insertPropertyFromLibraryNode';
@@ -136,18 +135,22 @@ async function addProperty(forcedType: string | null) {
     </v-btn>
     <div
       v-show="fab"
-      class="v-speed-dial__list"
+      class="v-speed-dial__list character-add-menu"
+      role="group"
+      aria-label="Add to character"
     >
-      <labeled-fab
+      <v-btn
         v-for="type in speedDials"
         :key="type"
-        color="primary"
+        variant="text"
+        class="character-add-menu-item"
         :data-id="`insert-creature-property-type-${type}`"
-        :label="getPropertyLabel(type)"
-        :icon="type ? properties[type].icon : 'mdi-plus'"
+        :prepend-icon="type ? properties[type].icon : 'mdi-plus'"
         :disabled="!editPermission"
         @click="addProperty(type)"
-      />
+      >
+        {{ getPropertyLabel(type) }}
+      </v-btn>
     </div>
   </div>
 </template>
@@ -168,5 +171,26 @@ async function addProperty(forcedType: string | null) {
 .insert-creature-property-fab:focus-visible {
   outline: 3px solid currentColor;
   outline-offset: -5px;
+}
+.character-add-menu {
+  min-width: 240px;
+  padding: 12px;
+  background: #25324a;
+  color: #fff8e9;
+  border: 1px solid #b99b64;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px #00000055;
+}
+.character-add-menu-item {
+  width: 100%;
+  min-height: 40px;
+  justify-content: flex-start;
+  color: inherit;
+  font-weight: 600;
+  text-transform: none;
+}
+.character-add-menu-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
 }
 </style>
