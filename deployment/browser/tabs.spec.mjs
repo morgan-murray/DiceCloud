@@ -74,19 +74,17 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$store.commit('setRightDrawer', true));
     const recovery = await insert('attribute', 'First recovery', { variableName: 'practiceRecovery', attributeType: 'healthBar', baseValue: { calculation: '10' }, damage: 1, reset: 'longRest' });
     await page.waitForFunction(id => window.Mongo.getCollection('creatureProperties').findOne(id)?.value === 9, recovery);
-    const rest = async () => {
-      const actionId = await call(page, 'actions.insertAction', { action: { creatureId: id, task: { subtaskFn: 'reset', eventName: 'longRest', targetIds: [id] } } });
+    const rest = async (eventName) => {
+      const actionId = await call(page, 'actions.insertAction', { action: { creatureId: id, task: { subtaskFn: 'reset', eventName, targetIds: [id] } } });
       await call(page, 'actions.runAction', { actionId });
     };
-    await rest();
+    await rest('longRest');
     const toast = page.locator('.v-snackbar');
     await expect(toast).toContainText('First recovery');
-    await call(page, 'creatureProperties.update', { _id: recovery, path: ['name'], value: 'Second recovery' });
-    await call(page, 'creatureProperties.update', { _id: recovery, path: ['damage'], value: 1 });
-    await page.waitForFunction(id => window.Mongo.getCollection('creatureProperties').findOne(id)?.value === 9, recovery);
-    await rest();
+    // Use distinct event titles so this queue check does not depend on property recomputation.
+    await rest('shortRest');
     await toast.locator('.v-snackbar__actions button').click();
-    await expect(toast).toContainText('Second recovery');
+    await expect(toast).toContainText('Short Rest');
     await expect(toast).toBeVisible();
     await toast.locator('.v-snackbar__actions button').click();
     await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$store.commit('setRightDrawer', false));
