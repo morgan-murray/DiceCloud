@@ -115,19 +115,24 @@ async function addProperty(forcedType: string | null) {
     style="position: relative;"
   >
     <v-btn
-      color="primary"
-      icon
-      size="small"
+      color="#7d2e3d"
+      variant="elevated"
+      rounded="pill"
+      height="40"
+      :aria-label="fab ? 'Close add menu' : 'Add to character'"
+      :aria-expanded="fab"
       data-id="insert-creature-property-fab"
       class="insert-creature-property-fab"
       @click="fab = !fab"
     >
       <v-icon
+        start
         style="transition: transform 0.2s ease-in-out"
         :style="fab && 'transform: rotate(45deg)'"
       >
         mdi-plus
       </v-icon>
+      Add
     </v-btn>
     <div
       v-show="fab"
@@ -149,6 +154,19 @@ async function addProperty(forcedType: string | null) {
 
 <style lang="css" scoped>
 .insert-creature-property-fab {
-  transition: transform 0.07s cubic-bezier(0.5, 0.2, 0.8, 0.4) 0s;
+  min-width: 88px;
+  padding: 0 16px;
+  color: #fff8e9 !important;
+  font-weight: 700;
+  border: 1px solid #fff8e955;
+  box-shadow: 0 2px 5px #17172240;
+  transition: box-shadow 0.15s ease, transform 0.07s cubic-bezier(0.5, 0.2, 0.8, 0.4) 0s;
+}
+.insert-creature-property-fab:hover {
+  box-shadow: 0 3px 8px #17172266;
+}
+.insert-creature-property-fab:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: -5px;
 }
 </style>
