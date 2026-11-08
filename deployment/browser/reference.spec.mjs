@@ -5,7 +5,7 @@ const base=(process.env.DICECLOUD_TEST_URL||'http://127.0.0.1:31080').replace(/\
 const fixture=process.env.DICECLOUD_TEST_FIXTURE;
 const url=p=>new URL(p,base).href;
 const call=(page,name,arg)=>page.evaluate(({name,arg})=>window.Meteor.callAsync('rulesReference.'+name,...(arg===undefined?[]:[arg])),{name,arg});
-async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.waitForFunction(()=>!!window.Meteor?.userId());}
+async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.waitForFunction(()=>!!window.Meteor?.userId());await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
 const title=page=>page.locator('.reference-article > h2');
 
 test('Rules reference workflow: full corpus, body search, tables, links and private sharing',async({page,browser},info)=>{
