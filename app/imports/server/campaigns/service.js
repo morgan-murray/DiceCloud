@@ -60,6 +60,10 @@ async function contextFrom(a, includeTrash = false) {
  const visible = e => Boolean(e && restricted(e, map, includeTrash) !== 'missing' && (manager(a.role) || restricted(e, map, includeTrash) === 'shared'));
  return { ...a, rows, map, visible };
 }
+async function consistent(c) {
+ const current = await access(c.user, c.game._id);
+ if (current.game.version !== c.game.version) fail('refresh', 'The campaign changed during this read. Please retry.');
+}
 async function context(user, gameId, includeTrash = false) { return contextFrom(await access(user, gameId), includeTrash); }
 function descendants(key, rows) { const out = new Set([key]); let changed = true; while (changed) { changed = false; for (const e of rows) if (e.parentId && out.has(e.parentId) && !out.has(e._id)) { out.add(e._id); changed = true; } } return out; }
 function canEdit(e, c) { return !c.game.archived && (manager(c.role) || (c.visible(e) && (e.type !== 'pc' || e.playerId === c.user))); }
@@ -143,20 +147,21 @@ export async function state(user, arg) {
  const assets = (await assetRows(c)).filter(a => assetVisible(a, c));
  const users = await Meteor.users.find({ _id: { $in: c.game.members.map(m => m.userId) } }, { fields: { username: 1 } }).fetchAsync();
  const tabletops = []; for (const key of c.game.tabletopIds) { const t = await Tabletops.findOneAsync(key); try { tabletopView(t, user); tabletops.push({ _id: key, name: t.name }); } catch { /* Native rights stay independent. */ } }
- return { campaign: { _id: c.game._id, name: c.game.name, description: c.game.description, version: c.game.version, archived: c.game.archived, role: c.role, manager: manager(c.role), owner: c.game.owner, coverAssetId: assets.some(a => a._id === c.game.coverAssetId) ? c.game.coverAssetId : null, storageUsed: assets.reduce((sum, a) => sum + a.bytes, 0), storageLimit: MEDIA_LIMIT, members: c.game.members.map(m => ({ ...m, username: users.find(u => u._id === m.userId)?.username || 'Former member' })), tabletops }, entries: rows.map(e => pageMeta(e, c, assets)), results: matches.map(r => ({ ...pageMeta(r.page, c, assets), snippet: r.page.body.replace(/[#*_`|]/g, '').slice(0, 180) })), total: await Revisions.find(filter).countAsync(), assets: assets.map(({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone }) => ({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone })), recent: rows.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 10).map(e => ({ _id: e._id, title: e.title, updatedAt: e.updatedAt })) };
+ const result = { campaign: { _id: c.game._id, name: c.game.name, description: c.game.description, version: c.game.version, archived: c.game.archived, role: c.role, manager: manager(c.role), owner: c.game.owner, coverAssetId: assets.some(a => a._id === c.game.coverAssetId) ? c.game.coverAssetId : null, storageUsed: assets.reduce((sum, a) => sum + a.bytes, 0), storageLimit: MEDIA_LIMIT, members: c.game.members.map(m => ({ ...m, username: users.find(u => u._id === m.userId)?.username || 'Former member' })), tabletops }, entries: rows.map(e => pageMeta(e, c, assets)), results: matches.map(r => ({ ...pageMeta(r.page, c, assets), snippet: r.page.body.replace(/[#*_`|]/g, '').slice(0, 180) })), total: await Revisions.find(filter).countAsync(), assets: assets.map(({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone }) => ({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone })), recent: rows.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 10).map(e => ({ _id: e._id, title: e.title, updatedAt: e.updatedAt })) };
+ await consistent(c); return result;
 }
 export async function getEntry(user, arg) {
  fields(arg, ['campaignId', 'entryId']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e)) fail('access', 'Page not found or your access has ended.');
  const page = { ...pageMeta(e, c, await assetRows(c)), body: e.body };
  if (e.nativeCharacterId) { try { await assertViewPermission(await Creatures.findOneAsync(e.nativeCharacterId), user); page.nativeCharacterId = e.nativeCharacterId; } catch { page.privateSheet = true; } }
- return page;
+ await consistent(c); return page;
 }
 async function validatePage(tx, arg, old) {
  fields(arg, ['campaignId', 'entryId', 'revision', 'type', 'title', 'body', 'tags', 'kind', 'parentId', 'relatedIds', 'assetIds', 'playerId', 'nativeCharacterId', 'visibility', 'date', 'confirmPublish']);
  const p = { _id: old?._id || Random.id(), type: old?.type || arg.type, title: text(arg.title, 160, true), body: text(arg.body || '', 48000), kind: text(arg.kind || '', 60), tags: strings(arg.tags || [], 20, 40), relatedIds: ids(arg.relatedIds || []), assetIds: ids(arg.assetIds || [], 20), parentId: arg.parentId ? id(arg.parentId) : null, visibility: arg.visibility || 'shared', playerId: arg.playerId || null, date: text(arg.date || '', 40), nativeCharacterId: Object.prototype.hasOwnProperty.call(arg, 'nativeCharacterId') ? arg.nativeCharacterId || null : old?.nativeCharacterId || null, revision: old?.revision || 0, epoch: old?.epoch || Random.id(), deleted: false };
  if (!TYPES.includes(p.type) || !['shared', 'gm'].includes(p.visibility)) fail('request', 'Invalid page type or audience.');
  if (!manager(tx.role) && (p.visibility !== 'shared' || (old && old.parentId !== p.parentId))) fail('permission', 'Only GMs can change page audiences or move existing places.');
- if (p.type === 'pc') { if (!tx.game.members.some(m => m.userId === p.playerId) || (!manager(tx.role) && p.playerId !== tx.user)) fail('permission', 'Choose your own member profile, or ask a GM to assign it.'); } else p.playerId = null;
+ if (p.type === 'pc') { if ((!tx.game.members.some(m => m.userId === p.playerId) && !(old && manager(tx.role) && old.playerId === p.playerId)) || (!manager(tx.role) && p.playerId !== tx.user)) fail('permission', 'Choose your own member profile, or ask a GM to assign it.'); } else p.playerId = null;
  if (p.nativeCharacterId && p.nativeCharacterId !== old?.nativeCharacterId) { if (!['pc', 'npc'].includes(p.type)) fail('request', 'Only characters can link a native sheet.'); await assertViewPermission(await Creatures.findOneAsync(id(p.nativeCharacterId)), tx.user); }
  if (p.parentId && !['location', 'place'].includes(p.type)) fail('hierarchy', 'Only locations and places can have a parent.');
  const map = new Map(tx.map); map.set(p._id, p);
@@ -183,7 +188,8 @@ export async function saveEntry(user, arg, options = {}) {
 }
 export async function history(user, arg) {
  fields(arg, ['campaignId', 'entryId']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e)) fail('access', 'Page not found.');
- return (await Revisions.find({ _id: { $in: c.game.history[e._id] || [] }, ...(manager(c.role) ? {} : { epoch: e.epoch, 'page.visibility': 'shared' }) }, { sort: { revision: -1 } }).fetchAsync()).map(r => ({ _id: r._id, revision: r.revision, savedAt: r.createdAt, savedBy: r.page.updatedBy, title: r.page.title, body: r.page.body }));
+ const result = (await Revisions.find({ _id: { $in: c.game.history[e._id] || [] }, ...(manager(c.role) ? {} : { epoch: e.epoch, 'page.visibility': 'shared' }) }, { sort: { revision: -1 } }).fetchAsync()).map(r => ({ _id: r._id, revision: r.revision, savedAt: r.createdAt, savedBy: r.page.updatedBy, title: r.page.title, body: r.page.body }));
+ await consistent(c); return result;
 }
 export async function restoreRevision(user, arg) {
  fields(arg, ['campaignId', 'entryId', 'revision', 'historyId', 'confirmPublish']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e) || !canEdit(e, c)) fail('permission', 'You cannot restore this page.');
@@ -299,7 +305,12 @@ export async function removeAsset(user, arg) {
  });
 }
 export async function destroy(user, arg) {
- fields(arg, ['campaignId', 'confirm']); return locked(id(arg.campaignId), async () => { const c = await access(user, arg.campaignId, true); if (c.role !== 'owner' || !c.game.archived || arg.confirm !== c.game.name) fail('permission', 'Only the owner permanently deletes an archived campaign after confirming its name.'); if (!await Games.removeAsync({ _id: c.game._id, version: c.game.version })) fail('conflict', 'The campaign changed. Retry deletion.'); });
+ fields(arg, ['campaignId', 'confirm']); return locked(id(arg.campaignId), async () => { const c = await access(user, arg.campaignId, true); if (c.role !== 'owner' || !c.game.archived || arg.confirm !== c.game.name) fail('permission', 'Only the owner permanently deletes an archived campaign after confirming its name.'); if (!await Games.removeAsync({ _id: c.game._id, version: c.game.version })) fail('conflict', 'The campaign changed. Retry deletion.');
+  // Root withdrawal revokes every request before physical reclamation. In-flight
+  // image responses recheck membership after reading their file.
+  await Revisions.removeAsync({campaignId:c.game._id}); await Invites.removeAsync({campaignId:c.game._id});
+  await cleanupStaged((await Assets.find({campaignId:c.game._id}).fetchAsync()).map(a=>['asset',a._id]));
+ });
 }
 export async function assertAccountDeletion(user) { if (await Games.find({ owner: user }).countAsync()) fail('ownership', 'Transfer or permanently delete your campaigns before deleting your account, so the group keeps its notebook.'); }
 Meteor.users.assertCampaignAccountDeletion = assertAccountDeletion;
@@ -319,7 +330,7 @@ DDPRateLimiter.addRule({ name: name => typeof name === 'string' && name.startsWi
 DDPRateLimiter.addRule({ name: 'campaigns.upload', userId: user => Boolean(user) }, 6, 60000);
 Meteor.publish('campaigns.signals', async function () {
  if (!this.userId) return this.ready(); const sub = this;
- const observer = await Games.find({ 'members.userId': this.userId }, { fields: { version: 1, archived: 1 } }).observeChangesAsync({ added(key, values) { sub.added('campaignSignals', key, values); }, changed(key, values) { sub.changed('campaignSignals', key, values); }, removed(key) { sub.removed('campaignSignals', key); } });
+ const observer = await Games.find({ 'members.userId': this.userId }, { fields: { version: 1, archived: 1, members: 1 } }).observeChangesAsync({ added(key, values) { const {members,...safe}=values; sub.added('campaignSignals', key, {...safe,role:members.find(m=>m.userId===sub.userId)?.role}); }, changed(key, values) { const {members,...safe}=values; sub.changed('campaignSignals', key, {...safe,...(members?{role:members.find(m=>m.userId===sub.userId)?.role}:{})}); }, removed(key) { sub.removed('campaignSignals', key); } });
  // Recipient gets only an invitation-change signal, never a nonmember's campaign data.
  const invitations = await Invites.find({ userId: this.userId }, { fields: { expiresAt: 1 } }).observeChangesAsync({ added(key) { sub.added('campaignInviteSignals', key, {}); }, changed(key) { sub.changed('campaignInviteSignals', key, { changed: Random.id() }); }, removed(key) { sub.removed('campaignInviteSignals', key); } });
  sub.onStop(() => { observer.stop(); invitations.stop(); }); sub.ready();

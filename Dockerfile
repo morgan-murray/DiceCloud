@@ -40,6 +40,7 @@ COPY --chown=node:node importer/ ./importer/
 COPY --from=build --chown=node:node /home/node/bundle/bundle/ ./
 COPY --chown=node:node deployment/runtime-entrypoint.mjs deployment/healthcheck.mjs ./deployment/
 COPY --chown=node:node app/imports/api/utility/urlPaths.mjs ./deployment/
+RUN node -e 'const sharp = require("./programs/server/npm/node_modules/sharp"); if (!sharp.versions.vips) throw new Error("Native image decoder missing")'
 RUN mkdir -p /var/lib/dicecloud && chown node:node /var/lib/dicecloud
 USER node
 EXPOSE 3000

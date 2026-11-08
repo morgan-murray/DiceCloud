@@ -15,6 +15,8 @@ export default defineConfig(Meteor => ({
   plugins: [
     circularPlugin,
   ],
+  // Native image bindings must resolve from Meteor's real npm tree.
+  ...Meteor.isServer && { externals: { sharp: 'var Npm.require("sharp")' } },
   ...Meteor.isClient && {
     plugins: [new VueLoaderPlugin(), circularPlugin],
     module: {

@@ -12,7 +12,7 @@ Artwork: non-animated JPEG/PNG/WebP up to 4 MiB, 24 megapixels and 12,000 pixels
 
 Reusing an image within the game does not duplicate its file or quota charge. Immutable metadata versions share an original blob. Removing an attachment keeps the campaign asset. Unused assets can be removed separately. An entry upload inherits its effective audience; publishing a page does not publish its GM artwork. Explicitly publishing artwork makes it a standalone shared gallery item.
 
-Withdrawn snapshots, assets and orphan files have a one-hour cleanup grace period; current game roots define visibility immediately. Cleanup keeps currently referenced data. Files from permanently deleted games become inaccessible immediately and are reclaimed after this grace period. Backup retention is separate. A departed player's notes and artwork stay with the group, with author attribution.
+Withdrawn snapshots, assets and orphan files have a one-hour cleanup grace period; current game roots define visibility immediately. Cleanup keeps currently referenced data. Permanent game deletion withdraws access first, then reclaims its revisions and artwork; maintenance retries orphan cleanup after storage failures. Backup retention is separate. A departed player's notes and artwork stay with the group, with author attribution.
 
 Deployment currently uses one application process. An in-process mutex bounds duplicate mutation/media work; Mongo root CAS is the correctness boundary for campaign commits. Global filesystem quota allocation assumes this single uploader process. Do not scale upload workers without a distributed quota allocator.
 
