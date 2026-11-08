@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { computed } from 'vue';
 import { autorun } from 'vue-meteor-tracker';
 import getEffectIcon from '/imports/client/ui/utility/getEffectIcon';
 import Breadcrumbs from '/imports/client/ui/creature/creatureProperties/Breadcrumbs.vue';
@@ -13,9 +14,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['click']);
-const attrs = useAttrs();
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 
 const operation = computed(() => {
   if (props.model.type === 'pointBuy' || props.model.type === 'attribute') {

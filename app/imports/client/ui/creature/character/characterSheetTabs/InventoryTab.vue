@@ -60,7 +60,7 @@ const { result: folderIds } = autorun(() =>
 const { result: containers } = autorun(() =>
   CreatureProperties.find({
     ...getFilter.descendantsOfRoot(props.creatureId),
-    'parend': { $nin: folderIds.value || [] },
+    'parentId': { $nin: folderIds.value || [] },
     type: 'container',
     removed: { $ne: true },
     inactive: { $ne: true },

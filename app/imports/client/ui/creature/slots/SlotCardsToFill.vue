@@ -29,7 +29,7 @@ const { result: slots } = autorun(() => {
     ignored: { $ne: true },
     $and: [
       { $or: [{ 'slotCondition.value': { $nin: [false, 0, ''] } }, { 'slotCondition.value': { $exists: false } }] },
-      { $or: [{ 'quantityExpected.value': { $in: [false, 0, '', undefined] } }, { 'quantityExpected.value': { exists: false } }, { spaceLeft: { $gt: 0 } }] },
+      { $or: [{ 'quantityExpected.value': { $in: [false, 0, '', undefined] } }, { 'quantityExpected.value': { $exists: false } }, { spaceLeft: { $gt: 0 } }] },
     ],
     removed: { $ne: true },
     inactive: { $ne: true },
@@ -65,10 +65,9 @@ function editPointBuy(_id: string) {
 </script>
 
 <template>
-  <v-fade-transition
-    group
-    leave-absolute
-    hide-on-leave
+  <transition-group
+    name="fade-transition"
+    tag="div"
     class="column-layout wide-columns"
   >
     <div
@@ -91,11 +90,9 @@ function editPointBuy(_id: string) {
       <slot-card
         :model="slot"
         hover
-        @ignore="ignoreProp(slot._id)"
-        @click="fillSlot(slot._id)"
       />
     </div>
-  </v-fade-transition>
+  </transition-group>
 </template>
 
 <style></style>

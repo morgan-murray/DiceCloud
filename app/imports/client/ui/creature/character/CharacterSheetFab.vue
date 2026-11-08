@@ -6,6 +6,7 @@ import LabeledFab from '/imports/client/ui/components/LabeledFab.vue';
 import insertProperty from '/imports/api/creature/creatureProperties/methods/insertProperty';
 import PROPERTIES from '/imports/constants/PROPERTIES';
 import insertPropertyFromLibraryNode from '/imports/api/creature/creatureProperties/methods/insertPropertyFromLibraryNode';
+import { getDocByRefAsync } from '/imports/api/parenting/reference';
 import { key } from '/imports/client/ui/vuexStore';
 
 const props = defineProps<{ editPermission?: boolean }>();
@@ -23,6 +24,7 @@ const speedDialsByTab = {
   'actions': ['action'],
   'inventory': ['item', 'container'],
   'journal': ['note'],
+  'build': [null],
   'tree': [null],
 } as Record<string, (string | null)[]>;
 const speedDials = computed(() => speedDialsByTab[tabName.value]);
@@ -64,13 +66,14 @@ function revealFab(el: HTMLElement | null) {
   }, 400);
 }
 
-function addProperty(forcedType: string | null) {
+async function addProperty(forcedType: string | null) {
   const cId = creatureId.value;
+  fab.value = false;
   const el = hideFab();
   const parentRef = getParentFromSelectedTreeNode(cId);
   let parent: any;
   try {
-    parent = fetchDocByRef(parentRef);
+    parent = await getDocByRefAsync(parentRef);
   } catch (e) {
     console.warn(e);
   }
@@ -84,18 +87,19 @@ function addProperty(forcedType: string | null) {
       noBackdropClose: true,
     },
     async callback(result: any) {
+      revealFab(el);
+      const root = { collection: 'creatures' as const, id: cId };
+      const parentId = parentRef.collection === 'creatureProperties' ? parentRef.id : undefined;
       if (!result) {
         return 'insert-creature-property-fab';
       }
       if (Array.isArray(result)) {
-        revealFab(el);
         const nodeIds = result;
-        const id = await insertPropertyFromLibraryNode.callAsync({ nodeIds, parentRef });
+        const id = await insertPropertyFromLibraryNode.callAsync({ nodeIds, root, parentId });
         return forcedType ? id : `tree-node-${id}`;
       } else {
-        revealFab(el);
-        const creatureProperty = result;
-        const id = await insertProperty.callAsync({ creatureProperty, parentRef });
+        const creatureProperty = { ...result, root, parentId };
+        const id = await insertProperty.callAsync({ creatureProperty });
         return forcedType ? id : `tree-node-${id}`;
       }
     },

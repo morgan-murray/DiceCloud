@@ -179,7 +179,7 @@ function softRemove(_id: string) {
           :has-spells="hasSpells"
         />
       </div>
-      <div v-if="spellsWithoutList.length">
+      <div v-if="spellsWithoutList?.length">
         <v-card>
           <spell-list
             :spells="spellsWithoutList"
@@ -193,7 +193,6 @@ function softRemove(_id: string) {
       >
         <spellList-card
           :model="spellList"
-          :organize="organize"
         />
       </div>
       <folder-group-card

@@ -57,6 +57,9 @@ watch(() => creature.value?.name, (value) => {
 
 let nameObserver: any;
 let logObserver: any;
+// A simulated action log is replaced by its server record with a new document ID.
+// Both records represent the same notification.
+const notifiedLogs = new Set<string>();
 
 onMounted(() => {
   store.commit('setPageTitle', creature.value?.name || 'Character Sheet');
@@ -72,9 +75,12 @@ onMounted(() => {
     logObserver = CreatureLogs.find({
       creatureId: props.creatureId,
     }).observe({
-      added({ content }: any) {
+      added({ _id, actionId, content }: any) {
         if (!store.state.rightDrawer) return;
         if (store.state.dialogStack.dialogs.length) return;
+        const notificationId = actionId || _id;
+        if (notifiedLogs.has(notificationId)) return;
+        notifiedLogs.add(notificationId);
         snackbar({ content });
       },
     });

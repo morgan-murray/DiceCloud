@@ -106,7 +106,7 @@ function clickRootCreature() {
       </v-icon>
     </a>
     <template
-      v-for="(prop, index) in props"
+      v-for="(prop, index) in breadcrumbProps"
       :key="index"
     >
       <v-icon>

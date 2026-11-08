@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, useAttrs } from 'vue';
+import useHasEventListener from '/imports/client/ui/utility/useHasEventListener';
+import { computed, inject } from 'vue';
 import { useStore } from 'vuex';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
 import doAction from '/imports/client/ui/creature/actions/doAction';
@@ -20,9 +21,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['click']);
 const store = useStore(key);
 const context = inject('context', {} as any);
-const attrs = useAttrs();
 
-const hasClickListener = computed(() => !!attrs.onClick);
+const hasClickListener = useHasEventListener('click');
 const canEdit = computed(() => (context).editPermission && !props.viewOnly);
 
 function click(e: Event) {

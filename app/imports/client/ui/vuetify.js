@@ -13,6 +13,8 @@ const customAliases = {};
 for (const key in SVG_ICONS) {
   const icon = SVG_ICONS[key];
   customAliases[icon.name] = `custom:${key}`;
+  // Existing properties and saved icons still use the Vuetify 2 alias prefix.
+  customAliases[`vuetify.icons.${icon.name}`] = `custom:${key}`;
 }
 
 // Custom icon set that renders SvgIconByName with the SVG_ICONS key

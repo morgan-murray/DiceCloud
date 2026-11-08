@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import MarkdownText from '/imports/client/ui/components/MarkdownText.vue';
 
 const props = withDefaults(defineProps<{
   model?: Record<string, any>;
