@@ -98,6 +98,14 @@ describe('Campaign collaboration, atomic publishing, secrets and artwork', funct
   await denied(() => image(second, { campaignId: game, assetId: mapAsset }), 'access'); await denied(() => state(second, { campaignId: game }), 'access');
   assert.equal((await image(player, { campaignId: game, assetId: mapAsset, original: true })).data, png);
  });
+ it('withdraws GM text and history immediately after demotion', async () => {
+  const secret = (await state(gm, { campaignId: game })).entries.find(e => e.title === 'Secret patron');
+  await membership(owner, { campaignId: game, userId: player, action: 'role', role: 'gm' });
+  assert.equal((await getEntry(player, { campaignId: game, entryId: secret._id })).title, 'Secret patron');
+  await membership(owner, { campaignId: game, userId: player, action: 'role', role: 'player' });
+  await denied(() => getEntry(player, { campaignId: game, entryId: secret._id }), 'access');
+  await denied(() => history(player, { campaignId: game, entryId: secret._id }), 'access');
+ });
  it('blocks native account deletion before touching sheets, supports transfer and archived read-only games', async () => {
   await denied(() => Meteor.users.deleteMyAccount._execute({ userId: owner }, null), 'ownership'); assert.exists(await Meteor.users.findOneAsync(owner)); assert.exists(await Creatures.findOneAsync(nativeId)); assert.exists(await Creatures.findOneAsync(protectedNativeId));
   await membership(owner, { campaignId: game, userId: gm, action: 'transfer' });

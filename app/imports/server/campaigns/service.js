@@ -25,6 +25,7 @@ function auth(user) { if (!user) fail('auth', 'Sign in to use Campaigns.'); retu
 function id(value) { if (typeof value !== 'string' || !/^[a-zA-Z0-9_-]{1,48}$/.test(value)) fail('request', 'Invalid identifier.'); return value; }
 function fields(arg, allowed) { if (!arg || typeof arg !== 'object' || Array.isArray(arg) || Object.keys(arg).some(k => !allowed.includes(k))) fail('request', 'Invalid campaign request.'); }
 function text(value, max, required = false) { if (typeof value !== 'string' || value.length > max || (required && !value.trim())) fail('request', 'Text is missing or too long.'); return value.trim(); }
+function markdown(value,max){text(value,max);return value;}
 function bool(value) { if (typeof value !== 'boolean') fail('request', 'Invalid option.'); return value; }
 function strings(value, max, length) { if (!Array.isArray(value) || value.length > max) fail('request', 'Too many values.'); return [...new Set(value.map(v => text(v, length, true)))]; }
 function ids(value, max = 30) { if (!Array.isArray(value) || value.length > max) fail('request', 'Too many links.'); return [...new Set(value.map(id))]; }
@@ -129,7 +130,7 @@ async function mutate(user, gameId, manage, action, options = {}) {
 export async function createGame(user, arg) {
  auth(user); fields(arg, ['name', 'description']); return locked('create-' + user, async () => {
   if (await Games.find({ owner: user }).countAsync() >= 5) fail('quota', 'You can own up to five campaigns.');
-  return Games.insertAsync({ name: text(arg.name, 100, true), description: text(arg.description || '', 12000), owner: user, members: [{ userId: user, role: 'owner' }], archived: false, version: 1, heads: {}, history: {}, assetIds: [], inviteIds: [], tabletopIds: [], coverAssetId: null, createdAt: new Date(), updatedAt: new Date() });
+  return Games.insertAsync({ name: text(arg.name, 100, true), description: markdown(arg.description || '', 12000), owner: user, members: [{ userId: user, role: 'owner' }], archived: false, version: 1, heads: {}, history: {}, assetIds: [], inviteIds: [], tabletopIds: [], coverAssetId: null, createdAt: new Date(), updatedAt: new Date() });
  });
 }
 export async function listGames(user) {
@@ -153,12 +154,12 @@ export async function state(user, arg) {
 export async function getEntry(user, arg) {
  fields(arg, ['campaignId', 'entryId']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e)) fail('access', 'Page not found or your access has ended.');
  const page = { ...pageMeta(e, c, await assetRows(c)), body: e.body };
- if (e.nativeCharacterId) { try { await assertViewPermission(await Creatures.findOneAsync(e.nativeCharacterId), user); page.nativeCharacterId = e.nativeCharacterId; } catch { page.privateSheet = true; } }
+ if (e.nativeCharacterId) { try { const sheet=await Creatures.findOneAsync(e.nativeCharacterId);await assertViewPermission(sheet, user); page.nativeCharacterId = e.nativeCharacterId;page.nativeCharacterName=sheet.name; } catch { page.privateSheet = true; } }
  await consistent(c); return page;
 }
 async function validatePage(tx, arg, old) {
  fields(arg, ['campaignId', 'entryId', 'revision', 'type', 'title', 'body', 'tags', 'kind', 'parentId', 'relatedIds', 'assetIds', 'playerId', 'nativeCharacterId', 'visibility', 'date', 'confirmPublish']);
- const p = { _id: old?._id || Random.id(), type: old?.type || arg.type, title: text(arg.title, 160, true), body: text(arg.body || '', 48000), kind: text(arg.kind || '', 60), tags: strings(arg.tags || [], 20, 40), relatedIds: ids(arg.relatedIds || []), assetIds: ids(arg.assetIds || [], 20), parentId: arg.parentId ? id(arg.parentId) : null, visibility: arg.visibility || 'shared', playerId: arg.playerId || null, date: text(arg.date || '', 40), nativeCharacterId: Object.prototype.hasOwnProperty.call(arg, 'nativeCharacterId') ? arg.nativeCharacterId || null : old?.nativeCharacterId || null, revision: old?.revision || 0, epoch: old?.epoch || Random.id(), deleted: false };
+ const p = { _id: old?._id || Random.id(), type: old?.type || arg.type, title: text(arg.title, 160, true), body: markdown(arg.body || '', 48000), kind: text(arg.kind || '', 60), tags: strings(arg.tags || [], 20, 40), relatedIds: ids(arg.relatedIds || []), assetIds: ids(arg.assetIds || [], 20), parentId: arg.parentId ? id(arg.parentId) : null, visibility: arg.visibility || 'shared', playerId: arg.playerId || null, date: text(arg.date || '', 40), nativeCharacterId: Object.prototype.hasOwnProperty.call(arg, 'nativeCharacterId') ? arg.nativeCharacterId || null : old?.nativeCharacterId || null, revision: old?.revision || 0, epoch: old?.epoch || Random.id(), deleted: false };
  if (!TYPES.includes(p.type) || !['shared', 'gm'].includes(p.visibility)) fail('request', 'Invalid page type or audience.');
  if (!manager(tx.role) && (p.visibility !== 'shared' || (old && old.parentId !== p.parentId))) fail('permission', 'Only GMs can change page audiences or move existing places.');
  if (p.type === 'pc') { if ((!tx.game.members.some(m => m.userId === p.playerId) && !(old && manager(tx.role) && old.playerId === p.playerId)) || (!manager(tx.role) && p.playerId !== tx.user)) fail('permission', 'Choose your own member profile, or ask a GM to assign it.'); } else p.playerId = null;
@@ -180,7 +181,12 @@ export async function saveEntry(user, arg, options = {}) {
   if (old) revision(old, arg.revision); else if (tx.map.size >= 1000) fail('quota', 'This campaign has reached its 1,000-page limit, including trash.');
   const p = await validatePage(tx, arg, old), proposed = new Map(tx.map); proposed.set(p._id, p);
   const expanding = old ? [...descendants(old._id, [...tx.map.values()])].filter(key => restricted(tx.map.get(key), tx.map) === 'gm' && restricted(proposed.get(key), proposed) === 'shared') : [];
-  if (expanding.length && arg.confirmPublish !== true) fail('publish', 'Review the pages that will become shared, then explicitly publish.', { entries: expanding.map(key => tx.map.get(key).title), artworkKeepsItsAudience: true });
+  if (expanding.length && arg.confirmPublish !== true) {
+   const before = { ...tx, role: 'player', rows: [...tx.map.values()], visible: e => e && restricted(e, tx.map) === 'shared' };
+   const after = { ...tx, role: 'player', rows: [...proposed.values()], visible: e => e && restricted(e, proposed) === 'shared' };
+   const revealedArtwork = (await assetRows(tx)).filter(a => !assetVisible(a, before) && assetVisible(a, after)).map(a => a.name);
+   fail('publish', 'Review the pages and artwork that will become shared, then explicitly publish.', { entries: expanding.map(key => tx.map.get(key).title), artwork: revealedArtwork, artworkKeepsItsAudience: true });
+  }
   // New epochs prevent old private history leaking after publishing a branch.
   for (const key of expanding) { if (key === p._id) p.epoch = Random.id(); else await stagePage(tx, { ...tx.map.get(key), epoch: Random.id() }); }
   const saved = await stagePage(tx, p); return { _id: saved._id, revision: saved.revision };
@@ -254,7 +260,7 @@ export async function membership(user, arg) {
 export async function configure(user, arg) {
  fields(arg, ['campaignId', 'version', 'name', 'description', 'archived', 'coverAssetId', 'tabletopIds']); return mutate(user, arg.campaignId, true, async tx => {
   if (arg.version !== tx.game.version) fail('conflict', 'The campaign changed. Reload settings before saving.');
-  tx.game.name = text(arg.name, 100, true); tx.game.description = text(arg.description || '', 12000); tx.game.archived = bool(arg.archived);
+  tx.game.name = text(arg.name, 100, true); tx.game.description = markdown(arg.description || '', 12000); tx.game.archived = bool(arg.archived);
   if (arg.tabletopIds !== undefined) { tx.game.tabletopIds = ids(arg.tabletopIds, 10); for (const key of tx.game.tabletopIds) tabletopView(await Tabletops.findOneAsync(key), user); }
   const cover = arg.coverAssetId ? await Assets.findOneAsync({ _id: id(arg.coverAssetId), visibility: 'shared' }) : null; if (arg.coverAssetId && (!cover || !tx.game.assetIds.includes(cover._id) || !cover.standalone)) fail('request', 'Choose shared gallery artwork as the cover.'); tx.game.coverAssetId = cover?._id || null;
  }, { allowArchive: true });

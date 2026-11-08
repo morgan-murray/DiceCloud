@@ -7,6 +7,6 @@ import { Tracker } from 'meteor/tracker';
 let lastUser;
 if (Meteor.isClient) Tracker.autorun(() => {
  const current = Meteor.userId();
- if (lastUser && current !== lastUser) for (const key of Object.keys(sessionStorage)) if (key.startsWith('campaign-draft:')) sessionStorage.removeItem(key);
+ if (lastUser && current !== lastUser) { try { for (const key of Object.keys(sessionStorage)) if (key.startsWith('campaign-draft:')) sessionStorage.removeItem(key); } catch { /* Storage can be disabled; server permissions remain authoritative. */ } }
  lastUser = current;
 });
