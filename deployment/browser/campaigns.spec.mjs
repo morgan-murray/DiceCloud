@@ -1,0 +1,50 @@
+import { test, expect } from '@playwright/test';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
+const base=(process.env.DICECLOUD_TEST_URL||'http://127.0.0.1:31080').replace(/\/?$/,'/');
+const fixture=process.env.DICECLOUD_TEST_FIXTURE,url=p=>new URL(p,base).href;
+const call=(p,name,arg)=>p.evaluate(({name,arg})=>window.Meteor.callAsync('campaigns.'+name,...(arg===undefined?[]:[arg])),{name,arg});
+async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
+const dialog=p=>p.locator('.v-overlay--active .v-card').last();
+async function save(p,campaignId,type,title,extra={}){return call(p,'save',{campaignId,type,title,body:'A shared page for the northern journey.',...extra});}
+async function edit(p,campaignId,entryId,extra={}){const e=await call(p,'entry',{campaignId,entryId});return call(p,'save',{campaignId,entryId,revision:e.revision,type:e.type,title:e.title,body:e.body,tags:e.tags,parentId:e.parentId,relatedIds:e.relatedIds,assetIds:e.assetIds,visibility:e.visibility,playerId:e.playerId,kind:e.kind,date:e.date,...extra});}
+test('Campaign workflow: shared players, GM secrets, revisions, artwork and live revocation',async({page,browser},info)=>{
+ test.skip(!fixture,'Requires workflow fixture');test.setTimeout(240000);
+ const data=JSON.parse(readFileSync(fixture,'utf8')),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await login(page,data.owner);
+ const context=await browser.newContext({ignoreHTTPSErrors:!process.env.PUBLIC_VERIFICATION}),reader=await context.newPage();
+ try{
+  let account=data.campaignReader;
+  if(!account){if(process.env.PUBLIC_VERIFICATION)throw Error('Live sharing check requires a privately provisioned second account');account={username:'camp-reader-'+Date.now(),password:randomBytes(20).toString('hex')};await reader.goto(url('sign-in'));await reader.evaluate(owner=>new Promise((resolve,reject)=>window.Accounts.createUser(owner,e=>e?reject(new Error(e.reason)):resolve())),account);await reader.waitForFunction(()=>!!window.Meteor.userId());account.userId=await reader.evaluate(()=>window.Meteor.userId());data.campaignReader=account;writeFileSync(fixture,JSON.stringify(data),{mode:0o600});}
+  else{await login(reader,account);account.userId=await reader.evaluate(()=>window.Meteor.userId());}
+  await page.goto(url('campaigns'));await page.getByRole('button',{name:'Create campaign',exact:true}).click();await dialog(page).getByLabel('Campaign name',{exact:true}).fill('The Northern Journey');await dialog(page).getByLabel('Game description (Markdown)',{exact:true}).fill('A game shared by the owner and players.');await dialog(page).getByRole('button',{name:'Create campaign',exact:true}).click();await expect(page.getByRole('heading',{name:'The Northern Journey',exact:true})).toBeVisible();
+  const id=await page.evaluate(()=>document.querySelector('#app').__vue_app__.config.globalProperties.$route.params.campaignId);
+  await page.getByRole('button',{name:'Members & invitations',exact:true}).click();await dialog(page).getByLabel('Player account username',{exact:true}).fill(account.username);await dialog(page).getByRole('button',{name:'Send invitation',exact:true}).click();await expect(dialog(page).getByText(account.username,{exact:true})).toBeVisible();await dialog(page).getByRole('button',{name:'Close',exact:true}).click();
+  await reader.goto(url('campaigns'));await expect(reader.getByRole('button',{name:'Accept invitation',exact:true})).toBeVisible();await reader.getByRole('button',{name:'Accept invitation',exact:true}).click();await expect(reader.getByRole('heading',{name:'The Northern Journey',exact:true})).toBeVisible();
+  const region=(await save(page,id,'location','Greyford Plains',{kind:'region'}))._id,city=(await save(page,id,'location','Greyford',{kind:'city',parentId:region}))._id,tavern=(await save(page,id,'place','Red Stag Tavern',{kind:'tavern',parentId:city}))._id;
+  const npc=(await save(page,id,'npc','Mira the Tavern Keeper',{body:'Mira welcomes the travellers.',relatedIds:[tavern]}))._id;
+  const pc=(await save(page,id,'pc','The Ranger',{playerId:account.userId,nativeCharacterId:data.creatureId,body:'A biography deliberately shared with the game.'}))._id;
+  const viewed=await call(reader,'entry',{campaignId:id,entryId:pc});expect(viewed.privateSheet).toBe(true);expect(viewed.nativeCharacterId).toBeUndefined();
+  const secret=(await save(page,id,'npc','The Hidden Patron',{visibility:'gm',body:'SECRET_MARKER: silver-moon conspiracy.'}))._id;
+  const png=readFileSync(new URL('./fixtures/runtime.png',import.meta.url)).toString('base64');
+  const secretEntry=await call(page,'entry',{campaignId:id,entryId:secret});const secretAsset=(await call(page,'upload',{campaignId:id,entryId:secret,revision:secretEntry.revision,name:'SECRET_MAP.png',category:'map',data:png}))._id;
+  expect(JSON.stringify(await call(reader,'state',{campaignId:id}))).not.toContain('SECRET_');expect((await call(reader,'state',{campaignId:id,query:'silver-moon'})).total).toBe(0);expect(await call(reader,'image',{campaignId:id,assetId:secretAsset,original:true}).then(()=>false,()=>true)).toBe(true);
+  await page.goto(url('campaigns/'+id+'?entry='+npc));await page.getByRole('button',{name:'Add artwork',exact:true}).click();await dialog(page).locator('input[type=file]').setInputFiles(fileURLToPath(new URL('./fixtures/runtime.png',import.meta.url)));await dialog(page).getByLabel('Caption',{exact:true}).fill('Portrait of Mira');await dialog(page).getByRole('button',{name:'Upload artwork',exact:true}).click();await expect(page.locator('.campaign-article').getByText('Portrait of Mira',{exact:true})).toBeVisible();
+  const art=(await call(page,'entry',{campaignId:id,entryId:npc})).assetIds[0];expect((await call(reader,'image',{campaignId:id,assetId:art,original:true})).data).toBe(png);
+  await page.getByRole('button',{name:'Add page',exact:true}).click();await page.getByLabel('Page title',{exact:true}).fill('Session One');await page.getByLabel('Notes (Markdown)',{exact:true}).fill('The party arrived in Greyford.');await page.getByRole('button',{name:'Save page',exact:true}).click();await expect(page.locator('.campaign-article h2')).toHaveText('Session One');
+  const journal=await page.evaluate(()=>document.querySelector('#app').__vue_app__.config.globalProperties.$route.query.entry);
+  await page.getByRole('button',{name:'Edit page',exact:true}).click();await page.getByLabel('Notes (Markdown)',{exact:true}).fill('Owner draft survives the conflict.');
+  await edit(reader,id,journal,{body:'Player contribution from another account.'});await page.getByRole('button',{name:'Save page',exact:true}).click();await expect(page.getByText('A newer version is available',{exact:true})).toBeVisible();await expect(page.getByLabel('Notes (Markdown)',{exact:true})).toHaveValue('Owner draft survives the conflict.');
+  await page.getByLabel('Notes (Markdown)',{exact:true}).fill('Player contribution and owner draft, merged together.');await page.getByRole('button',{name:'I’ve merged changes; use latest revision',exact:true}).click();await page.getByRole('button',{name:'Save page',exact:true}).click();await expect(page.locator('.campaign-article')).toContainText('merged together');
+  await reader.goto(url('campaigns/'+id+'?entry='+journal));await expect(reader.locator('.campaign-article')).toContainText('merged together');
+  await page.screenshot({path:info.outputPath('campaign-desktop-light.png'),fullPage:true});await page.evaluate(()=>window.Meteor.callAsync('users.setDarkMode',{darkMode:true}));await page.screenshot({path:info.outputPath('campaign-desktop-dark.png'),animations:'disabled',fullPage:true});await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('campaign-mobile.png'),animations:'disabled',fullPage:true});await page.setViewportSize({width:1280,height:900});
+  await call(page,'membership',{campaignId:id,userId:account.userId,action:'remove'});await expect(reader.locator('.campaign-article')).toHaveCount(0);expect(await call(reader,'state',{campaignId:id}).then(()=>false,()=>true)).toBe(true);expect(await call(reader,'image',{campaignId:id,assetId:art,original:true}).then(()=>false,()=>true)).toBe(true);
+  const inviteId=await call(page,'invite',{campaignId:id,username:account.username,role:'player'});await call(reader,'accept',{inviteId});
+  data.campaign={id,journal,npc,secret,art,secretAsset,png};writeFileSync(fixture,JSON.stringify(data),{mode:0o600});expect(errors).toEqual([]);
+ }finally{await context.close();}
+});
+test('Campaign retained after restart and backup restore',async({page})=>{
+ test.skip(!fixture||!process.env.DICECLOUD_VERIFY_RESTORE,'Requires retained campaign');const data=JSON.parse(readFileSync(fixture,'utf8'));expect(data.campaign).toBeTruthy();await login(page,data.owner);const c=data.campaign;
+ expect((await call(page,'entry',{campaignId:c.id,entryId:c.journal})).body).toContain('merged together');expect((await call(page,'image',{campaignId:c.id,assetId:c.art,original:true})).data).toBe(c.png);expect((await call(page,'state',{campaignId:c.id,query:'Greyford'})).total).toBeGreaterThan(0);
+});
