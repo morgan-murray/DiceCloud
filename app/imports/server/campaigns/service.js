@@ -72,10 +72,10 @@ function revision(e, n) { if (!Number.isInteger(n) || n !== e.revision) fail('co
 function assetVisible(a, c) { return manager(c.role) || (a.visibility === 'shared' && (a.standalone || c.rows.some(e => !e.deleted && e.assetIds.includes(a._id) && c.visible(e)))); }
 async function assetRows(c) { return Assets.find({ _id: { $in: c.game.assetIds } }).fetchAsync(); }
 function pageMeta(e, c, assets) {
- return { _id: e._id, title: e.title, type: e.type, kind: e.kind, tags: e.tags, date: e.date, parentId: e.parentId, visibility: e.visibility, restricted: restricted(e, c.map, true) === 'gm', revision: e.revision, updatedAt: e.updatedAt, updatedBy: e.updatedBy, playerId: e.playerId, deleted: e.deleted, canEdit: canEdit(e, c), assetIds: e.assetIds.filter(key => assets.some(a => a._id === key && assetVisible(a, c))), relatedIds: e.relatedIds.filter(key => c.visible(c.map.get(key))) };
+ return { _id: e._id, title: e.title, type: e.type, kind: e.kind, tags: e.tags, date: e.date, parentId: e.parentId, visibility: e.visibility, restricted: restricted(e, c.map, true) === 'gm', revision: e.revision, updatedAt: e.updatedAt, updatedBy: e.updatedBy, updatedByName:e.updatedByName, playerId: e.playerId, deleted: e.deleted, canEdit: canEdit(e, c), assetIds: e.assetIds.filter(key => assets.some(a => a._id === key && assetVisible(a, c))), relatedIds: e.relatedIds.filter(key => c.visible(c.map.get(key))) };
 }
 async function stagePage(tx, page) {
- const copy = { ...page, revision: page.revision + 1, updatedAt: new Date(), updatedBy: tx.user };
+ const copy = { ...page, revision: page.revision + 1, updatedAt: new Date(), updatedBy: tx.user, updatedByName: tx.userName };
  const record = { _id: Random.id(), campaignId: tx.game._id, entryId: copy._id, revision: copy.revision, epoch: copy.epoch, createdAt: new Date(), bytes: Buffer.byteLength(JSON.stringify(copy)), page: copy };
  await Revisions.insertAsync(record); tx.staged.push(['revision', record._id]);
  tx.game.heads[copy._id] = record._id;
@@ -108,8 +108,10 @@ async function cleanupStaged(staged) {
 }
 async function mutate(user, gameId, manage, action, options = {}) {
  return locked(id(gameId), async () => {
-  const a = await access(user, gameId, manage, !options.allowArchive), c = await contextFrom(a, true);
-  const version = a.game.version, tx = { ...c, game: structuredClone(a.game), staged: [] };
+  const a = await access(user, gameId, manage, !options.allowArchive);
+  if(options.expectedVersion!==undefined&&a.game.version!==options.expectedVersion)fail('conflict','The campaign changed while preparing this restore. Please retry.');
+  const c = await contextFrom(a, true);
+  const version = a.game.version, author = await Meteor.users.findOneAsync(user,{fields:{username:1}}), tx = { ...c, userName: author?.username || 'Former member', game: structuredClone(a.game), staged: [] };
   let result, committed = false;
   try {
    result = await action(tx);
@@ -148,7 +150,7 @@ export async function state(user, arg) {
  const assets = (await assetRows(c)).filter(a => assetVisible(a, c));
  const users = await Meteor.users.find({ _id: { $in: c.game.members.map(m => m.userId) } }, { fields: { username: 1 } }).fetchAsync();
  const tabletops = []; for (const key of c.game.tabletopIds) { const t = await Tabletops.findOneAsync(key); try { tabletopView(t, user); tabletops.push({ _id: key, name: t.name }); } catch { /* Native rights stay independent. */ } }
- const result = { campaign: { _id: c.game._id, name: c.game.name, description: c.game.description, version: c.game.version, archived: c.game.archived, role: c.role, manager: manager(c.role), owner: c.game.owner, coverAssetId: assets.some(a => a._id === c.game.coverAssetId) ? c.game.coverAssetId : null, storageUsed: assets.reduce((sum, a) => sum + a.bytes, 0), storageLimit: MEDIA_LIMIT, members: c.game.members.map(m => ({ ...m, username: users.find(u => u._id === m.userId)?.username || 'Former member' })), tabletops }, entries: rows.map(e => pageMeta(e, c, assets)), results: matches.map(r => ({ ...pageMeta(r.page, c, assets), snippet: r.page.body.replace(/[#*_`|]/g, '').slice(0, 180) })), total: await Revisions.find(filter).countAsync(), assets: assets.map(({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone }) => ({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, bytes, standalone })), recent: rows.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 10).map(e => ({ _id: e._id, title: e.title, updatedAt: e.updatedAt })) };
+ const result = { campaign: { _id: c.game._id, name: c.game.name, description: c.game.description, version: c.game.version, archived: c.game.archived, role: c.role, manager: manager(c.role), owner: c.game.owner, coverAssetId: assets.some(a => a._id === c.game.coverAssetId) ? c.game.coverAssetId : null, storageUsed: assets.reduce((sum, a) => sum + a.bytes, 0), storageLimit: MEDIA_LIMIT, members: c.game.members.map(m => ({ ...m, username: users.find(u => u._id === m.userId)?.username || 'Former member' })), tabletops }, entries: rows.map(e => pageMeta(e, c, assets)), results: matches.map(r => ({ ...pageMeta(r.page, c, assets), snippet: r.page.body.replace(/[#*_`|]/g, '').slice(0, 180) })), total: await Revisions.find(filter).countAsync(), assets: assets.map(({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, uploaderName, bytes, standalone }) => ({ _id, name, category, caption, alt, credits, visibility, width, height, uploader, uploaderName, bytes, standalone })), recent: rows.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 10).map(e => ({ _id: e._id, title: e.title, updatedAt: e.updatedAt })) };
  await consistent(c); return result;
 }
 export async function getEntry(user, arg) {
@@ -194,7 +196,7 @@ export async function saveEntry(user, arg, options = {}) {
 }
 export async function history(user, arg) {
  fields(arg, ['campaignId', 'entryId']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e)) fail('access', 'Page not found.');
- const result = (await Revisions.find({ _id: { $in: c.game.history[e._id] || [] }, ...(manager(c.role) ? {} : { epoch: e.epoch, 'page.visibility': 'shared' }) }, { sort: { revision: -1 } }).fetchAsync()).map(r => ({ _id: r._id, revision: r.revision, savedAt: r.createdAt, savedBy: r.page.updatedBy, title: r.page.title, body: r.page.body }));
+ const result = (await Revisions.find({ _id: { $in: c.game.history[e._id] || [] }, ...(manager(c.role) ? {} : { epoch: e.epoch, 'page.visibility': 'shared' }) }, { sort: { revision: -1 } }).fetchAsync()).map(r => ({ _id: r._id, revision: r.revision, savedAt: r.createdAt, savedBy: r.page.updatedBy, savedByName:r.page.updatedByName, title: r.page.title, body: r.page.body }));
  await consistent(c); return result;
 }
 export async function restoreRevision(user, arg) {
@@ -202,7 +204,7 @@ export async function restoreRevision(user, arg) {
  const key = id(arg.historyId); if (!(c.game.history[e._id] || []).includes(key)) fail('access', 'Revision not found.'); const h = await Revisions.findOneAsync(key);
  if (!manager(c.role) && (h.epoch !== e.epoch || h.page.visibility !== 'shared')) fail('access', 'Revision not found.');
  if ((h.epoch !== e.epoch || h.page.visibility === 'gm') && restricted(e, c.map) === 'shared' && arg.confirmPublish !== true) fail('publish', 'This historical text had a different audience. Explicitly publish it before restoring to a shared page.');
- return saveEntry(user, { campaignId: c.game._id, entryId: e._id, revision: arg.revision, type: e.type, title: h.page.title, body: h.page.body, tags: h.page.tags, kind: e.kind, parentId: e.parentId, relatedIds: e.relatedIds.filter(k => c.visible(c.map.get(k))), assetIds: pageMeta(e, c, await assetRows(c)).assetIds, playerId: e.playerId, visibility: e.visibility, date: h.page.date });
+ return saveEntry(user, { campaignId: c.game._id, entryId: e._id, revision: arg.revision, type: e.type, title: h.page.title, body: h.page.body, tags: h.page.tags, kind: e.kind, parentId: e.parentId, relatedIds: e.relatedIds.filter(k => c.visible(c.map.get(k))), assetIds: pageMeta(e, c, await assetRows(c)).assetIds, playerId: e.playerId, visibility: e.visibility, date: h.page.date }, {expectedVersion:c.game.version});
 }
 export async function trash(user, arg) {
  fields(arg, ['campaignId', 'entryId', 'revision', 'restore']); bool(arg.restore);
@@ -281,7 +283,7 @@ export async function upload(user, arg, options = {}) {
   await fs.mkdir(mediaRoot(), { recursive: true, mode: 0o700 }); const disk = await fs.statfs(mediaRoot()); if (!options.ignoreDiskReserve && disk.bavail * disk.bsize - bytes < 3 * 1024 ** 3) fail('storage', 'Uploads are paused to preserve room for backups and releases.');
   const key = Random.id(); tx.staged.push(['asset', key]);
   await fs.writeFile(path.join(mediaRoot(), key + '.original'), input, { flag: 'wx', mode: 0o600 }); await fs.writeFile(path.join(mediaRoot(), key + '.jpg'), preview, { flag: 'wx', mode: 0o600 });
-  await Assets.insertAsync({ _id: key, blobId: key, campaignId: tx.game._id, name: text(arg.name, 160, true), category: arg.category, caption: text(arg.caption || '', 1000), alt: text(arg.alt || '', 1000), credits: text(arg.credits || '', 1000), visibility, standalone: !e, width: metadata.width, height: metadata.height, format: metadata.format, uploader: user, bytes, createdAt: new Date() });
+  await Assets.insertAsync({ _id: key, blobId: key, campaignId: tx.game._id, name: text(arg.name, 160, true), category: arg.category, caption: text(arg.caption || '', 1000), alt: text(arg.alt || '', 1000), credits: text(arg.credits || '', 1000), visibility, standalone: !e, width: metadata.width, height: metadata.height, format: metadata.format, uploader: user, uploaderName:tx.userName, bytes, createdAt: new Date() });
   tx.game.assetIds.push(key); if (e) await stagePage(tx, { ...e, assetIds: [...e.assetIds, key] }); return { _id: key };
  }, options));
 }
