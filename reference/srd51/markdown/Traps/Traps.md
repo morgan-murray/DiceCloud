@@ -60,3 +60,7 @@ Complex traps work like standard traps, except once activated they execute a ser
 When a complex trap activates, it rolls initiative. The trap's description includes an initiative bonus. On its turn, the trap activates again, often taking an action. It might make successive attacks against intruders, create an effect that changes over time, or otherwise produce a dynamic challenge. Otherwise, the complex trap can be detected and disabled or bypassed in the usual ways.
 
 For example, a trap that causes a room to slowly flood works best as a complex trap. On the trap's turn, the water level rises. After several rounds, the room is completely flooded.
+
+## Sample Traps
+
+The magical and mechanical traps presented here vary in deadliness and are presented in alphabetical order.

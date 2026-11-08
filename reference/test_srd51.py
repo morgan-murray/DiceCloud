@@ -13,7 +13,7 @@ class CorpusTests(unittest.TestCase):
   corpus=norm(' '.join(p.read_text()for p in (S/'markdown').rglob('*.md')))
   for para in (S/'converted.md').read_text().split('\n\n'):
    text=norm(para)
-   if len(text)>=100:self.assertIn(text,corpus,para[:100])
+   if len(text)>=10 and not re.fullmatch(r'#{1,6}\s+[^\n]+',para.strip()):self.assertIn(text,corpus,para[:100])
  def test_manifest_hashes_unique_identifiers_and_description_limits(self):
   self.assertEqual(len(self.e),1000);self.assertEqual(len({e['key']for e in self.e}),len(self.e))
   self.assertEqual(hashlib.sha256(json.dumps(self.e,ensure_ascii=False,separators=(',',':')).encode()).hexdigest(),self.p['entriesHash'])
