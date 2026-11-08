@@ -27,6 +27,7 @@ const { result: links } = autorun(() => {
     { title: 'Home', icon: 'mdi-home', to: '/' },
     { title: 'Characters', icon: 'mdi-account-group', to: '/character-list', requireLogin: true },
     { title: 'Library', icon: 'mdi-library-shelves', to: '/library', requireLogin: true },
+    { title: 'Campaigns', icon: 'mdi-book-open-page-variant', to: '/campaigns', requireLogin: true },
     { title: 'Rules Reference', icon: 'mdi-book-open-variant', to: '/rules', requireLogin: true },
     { title: 'Tabletops', icon: 'mdi-table-furniture', to: '/tabletops', requireLogin: true },
     { title: 'Files', icon: 'mdi-file-multiple', to: '/my-files', requireLogin: true },

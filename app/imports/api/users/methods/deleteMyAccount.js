@@ -13,9 +13,13 @@ Meteor.users.deleteMyAccount = new ValidatedMethod({
     timeInterval: 5000,
   },
   async run() {
-    const userId = Meteor.userId();
+    const userId = this.userId;
     if (!userId) throw new Meteor.Error('No user',
       'You must be logged in to delete your account');
+
+    if (Meteor.isServer && Meteor.users.assertCampaignAccountDeletion) {
+      await Meteor.users.assertCampaignAccountDeletion(userId);
+    }
 
     // Delete all creatures
     const creatures = await Creatures.find({ owner: userId }, { fields: { _id: 1 } }).fetchAsync();

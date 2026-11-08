@@ -7,6 +7,7 @@ const Home = () => import('/imports/client/ui/pages/Home.vue');
 const About = () => import('/imports/client/ui/pages/About.vue');
 const CharacterList = () => import('/imports/client/ui/pages/CharacterList.vue');
 const CharacterListToolbarItems = () => import('/imports/client/ui/creature/creatureList/CharacterListToolbarItems.vue');
+const Campaigns = () => import('/imports/client/ui/pages/Campaigns.vue');
 const RulesReference = () => import('/imports/client/ui/pages/RulesReference.vue');
 const Library = () => import('/imports/client/ui/pages/Library.vue');
 const LibraryCollection = () => import('/imports/client/ui/pages/LibraryCollection.vue');
@@ -172,6 +173,18 @@ const router = createRouter({
     meta: {
       title: 'Library',
     },
+    beforeEnter: ensureLoggedIn,
+  }, {
+    name: 'campaigns',
+    path: '/campaigns',
+    component: Campaigns,
+    meta: { title: 'Campaigns' },
+    beforeEnter: ensureLoggedIn,
+  }, {
+    name: 'campaign',
+    path: '/campaigns/:campaignId',
+    component: Campaigns,
+    meta: { title: 'Campaign' },
     beforeEnter: ensureLoggedIn,
   }, {
     name: 'rulesReference',
