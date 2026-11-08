@@ -16,7 +16,7 @@ test('Rules reference workflow: full corpus, body search, tables, links and priv
  await expect.poll(async()=> (await call(page,'list')).length,{timeout:90000}).toBeGreaterThan(0);
  const book=(await call(page,'list')).find(b=>b.canManage);expect(book.entryCount).toBe(1000);
  expect((await call(page,'install',{})).unchanged).toBe(true);
- const search=page.getByLabel('Search rules and descriptions');await search.fill('Bless');
+ const search=page.getByRole('textbox',{name:'Search rules and descriptions',exact:true});await search.fill('Bless');
  await page.locator('.reference-result').filter({has:page.locator('strong').filter({hasText:/^Bless$/})}).click();
  await expect(title(page)).toHaveText('Bless');await expect(page.locator('.reference-body')).toContainText('Concentration, up to 1 minute');
  const bless=(await call(page,'search',{packId:book.id,query:'Bless'})).results[0];expect(bless.title).toBe('Bless');
