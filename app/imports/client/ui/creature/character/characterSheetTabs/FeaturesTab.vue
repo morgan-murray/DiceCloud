@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { Meteor } from 'meteor/meteor';
 import { useStore } from 'vuex';
 import { autorun } from 'vue-meteor-tracker';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
 import ColumnLayout from '/imports/client/ui/components/ColumnLayout.vue';
+import FeatureCategory from '/imports/client/ui/properties/components/features/FeatureCategory.vue';
+import { partitionFeatures } from '/imports/client/ui/properties/components/features/featureCategories.mjs';
 import FeatureCard from '/imports/client/ui/properties/components/features/FeatureCard.vue';
 import FolderGroupCard from '/imports/client/ui/properties/components/folders/FolderGroupCard.vue';
 import softRemoveProperty from '/imports/api/creature/creatureProperties/methods/softRemoveProperty';
@@ -57,6 +61,10 @@ const { result: features } = autorun(() => {
   }).fetch();
 });
 
+const { result: userId } = autorun(() => Meteor.userId());
+const expansionKey = computed(() => `${userId.value || 'anonymous'}:${props.creatureId}`);
+const categorized = computed(() => partitionFeatures(features.value || []));
+
 function clickProperty({ _id }: { _id: string }) {
   store.commit('pushDialogStack', {
     component: 'creature-property-dialog',
@@ -102,8 +110,16 @@ function featureClicked({ _id }: { _id: string }) {
         @sub-click="_id => clickTreeProperty({ _id })"
         @remove="softRemove"
       />
+      <feature-category
+        v-for="group in categorized.groups"
+        :key="`${creatureId}:${group.key}`"
+        :group="group"
+        :expanded="store.getters.featureCategoryIsOpen(expansionKey, group.key)"
+        @update:expanded="open => store.commit('setFeatureCategoryOpen', { id: expansionKey, category: group.key, open })"
+        @select="featureClicked"
+      />
       <div
-        v-for="feature in features"
+        v-for="feature in categorized.remaining"
         :key="feature._id"
       >
         <feature-card
