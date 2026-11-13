@@ -11,6 +11,7 @@ type RootState = {
   rightDrawer: boolean | undefined;
   pageTitle: string | undefined;
   characterSheetTabs: Record<string, number>;
+  featureCategoryExpansion: Record<string, Record<string, boolean>>;
   showDetailsDialog: boolean;
   formExpansions: Partial<Record<CreatureProperty['type'], boolean>>;
 }
@@ -31,10 +32,13 @@ const store = createStore<RootState>({
     rightDrawer: undefined,
     pageTitle: undefined,
     characterSheetTabs: {},
+    featureCategoryExpansion: {},
     showDetailsDialog: false,
     formExpansions: {},
   }),
   getters: {
+    featureCategoryIsOpen: (state) => (id: string, category: string) =>
+      state.featureCategoryExpansion[id]?.[category] === true,
     tabById: (state) => (id: string) => {
       return state.characterSheetTabs[id] ?? 0;
     },
@@ -52,6 +56,10 @@ const store = createStore<RootState>({
     },
   },
   mutations: {
+    setFeatureCategoryOpen(state, { id, category, open }: { id: string; category: string; open: boolean }) {
+      if ((state.featureCategoryExpansion[id]?.[category] === true) === open) return;
+      state.featureCategoryExpansion[id] = { ...state.featureCategoryExpansion[id], [category]: open };
+    },
     toggleDrawer(state) {
       state.drawer = !state.drawer;
     },

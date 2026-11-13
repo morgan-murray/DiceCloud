@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { featureLabel } from './featureCategories.mjs';
-defineProps<{ group: { key: string; title: string; icon: string; features: Record<string, any>[] } }>();
-defineEmits<{ select: [feature: Record<string, any>] }>();
+defineProps<{ expanded: boolean; group: { key: string; title: string; icon: string; features: Record<string, any>[] } }>();
+const emit = defineEmits<{ select: [feature: Record<string, any>]; 'update:expanded': [open: boolean] }>();
+function toggle(event: Event) { emit('update:expanded', (event.currentTarget as HTMLDetailsElement).open); }
 </script>
 
 <template>
   <v-card class="feature-category">
-    <details :data-id="`feature-group-${group.key}`">
+    <details :data-id="`feature-group-${group.key}`" :open="expanded" @toggle="toggle">
       <summary>
         <v-icon :icon="group.icon" size="22" aria-hidden="true" />
         <span class="feature-category__title">{{ group.title }}</span>

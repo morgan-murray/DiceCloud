@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Meteor } from 'meteor/meteor';
 import { useStore } from 'vuex';
 import { autorun } from 'vue-meteor-tracker';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
@@ -60,6 +61,8 @@ const { result: features } = autorun(() => {
   }).fetch();
 });
 
+const { result: userId } = autorun(() => Meteor.userId());
+const expansionKey = computed(() => `${userId.value || 'anonymous'}:${props.creatureId}`);
 const categorized = computed(() => partitionFeatures(features.value || []));
 
 function clickProperty({ _id }: { _id: string }) {
@@ -111,6 +114,8 @@ function featureClicked({ _id }: { _id: string }) {
         v-for="group in categorized.groups"
         :key="`${creatureId}:${group.key}`"
         :group="group"
+        :expanded="store.getters.featureCategoryIsOpen(expansionKey, group.key)"
+        @update:expanded="open => store.commit('setFeatureCategoryOpen', { id: expansionKey, category: group.key, open })"
         @select="featureClicked"
       />
       <div
