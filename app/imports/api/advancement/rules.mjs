@@ -62,13 +62,18 @@ export function scores(state) {
 }
 export function castingDelta(state, spellListId) {
   const caster = state.casting.find((x) => x.id === spellListId);
-  const a = caster?.ability;
-  return a
-    ? proficiency(state.level) -
-        proficiency(caster.baseLevel ?? state.baseLevel) +
-        mod(scores(state)[a]) -
-        mod(caster.baseScore ?? state.baseAbilities[a])
-    : 0;
+  if (!caster) return 0;
+  const ability = caster.ability,
+    baseLevel = caster.baseLevel ?? state.baseLevel;
+  let priorScore = state.baseAbilities[ability],
+    abilityGain = 0;
+  for (const step of state.history) {
+    const before = step.abilityBefore?.[ability] ?? priorScore;
+    const after = before + (step.increases?.[ability] || 0);
+    if (step.level > baseLevel) abilityGain += mod(after) - mod(before);
+    priorScore = after;
+  }
+  return proficiency(state.level) - proficiency(baseLevel) + abilityGain;
 }
 export function initialState(input, baseline) {
   const className = label(input.className).toLowerCase();
@@ -123,7 +128,7 @@ export function planLevel(state, input, baseline, makeId) {
   const c = catalog.classes[state.className],
     from = table(state.className, state.level),
     to = table(state.className, state.level + 1),
-    before = scores(state),
+    before = { ...baseline.abilities },
     increases = {};
   const asi = isAsi(state.className, to.level);
   let feat = null;
@@ -536,6 +541,7 @@ export function planLevel(state, input, baseline, makeId) {
   }
   const step = {
     bundleId,
+    abilityBefore: before,
     priorRetiredSpells: state.retiredSpells || [],
     priorSkills: state.skills,
     priorCasting: state.casting,

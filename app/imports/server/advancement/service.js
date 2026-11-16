@@ -250,7 +250,7 @@ function baseline(doc) {
 function cleanProps(props) {
   return props.map((p) => {
     const schema = CreatureProperties.simpleSchema(p),
-      clean = schema.clean(p);
+      clean = schema.clean({ ...p, inactive: true });
     schema.validate(clean);
     return clean;
   });

@@ -170,6 +170,7 @@ test("invalid choices cannot silently alter a character", () => {
 test("minimum 1 HP applies after negative Constitution and custom feats stay available", () => {
   const { base, state } = fixture("rogue", 3);
   state.baseAbilities = { ...stats, constitution: 3 };
+  base.abilities = { ...stats, constitution: 3 };
   const plan = planLevel(
     state,
     {
@@ -259,4 +260,34 @@ test("new expertise continues to scale at a later proficiency increase", () => {
     id,
   );
   assert.equal(second.changes.find((x) => x.variable === "athletics").delta, 2);
+});
+
+test("an intervening ability edit is respected by the next ASI and casting delta", () => {
+  const { base, state } = fixture("paladin", 11);
+  base.abilities = { ...base.abilities, charisma: 19 };
+  const p = planLevel(
+    state,
+    {
+      ...choice,
+      asiMode: "feat",
+      increases: { charisma: 1 },
+      feat: {
+        name: "A chosen half feat",
+        description: "One Charisma point, approved.",
+      },
+    },
+    base,
+    id,
+  );
+  assert.equal(p.summary.abilities.charisma, 20);
+  assert.equal(castingDelta(p.state, "casting"), 1);
+  base.abilities.charisma = 20;
+  assert.throws(() =>
+    planLevel(
+      state,
+      { ...choice, asiMode: "abilities", increases: { charisma: 2 } },
+      base,
+      id,
+    ),
+  );
 });

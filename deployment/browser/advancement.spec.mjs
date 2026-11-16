@@ -123,11 +123,9 @@ test("Native advancement workflow: paladin 10→11, preview, usage, reload and u
   await stat(page, id, "hitPoints", 100);
   await page.locator('[data-id="creature-menu"]').click();
   await page.getByText("Level up", { exact: true }).click();
-  const dialog = page
-    .getByRole("dialog")
-    .filter({
-      has: page.getByText("Level up your character", { exact: true }),
-    });
+  const dialog = page.getByRole("dialog").filter({
+    has: page.getByText("Level up your character", { exact: true }),
+  });
   await expect(
     dialog.getByRole("heading", { name: "Level 10 → 11" }),
   ).toBeVisible();
@@ -216,6 +214,19 @@ test("Native advancement workflow: paladin 10→11, preview, usage, reload and u
     confirmed: true,
   });
   await stat(page, id, "level", 11);
+  const archiveId = await call(
+    page,
+    "Creatures.methods.archiveCreatureToFile",
+    { creatureId: id },
+  );
+  await page.goto(url("my-files"));
+  const archived = page.locator(`[data-id="${archiveId}-archive-card"]`);
+  await archived.getByRole("button", { name: "Restore", exact: true }).click();
+  await expect(archived).toHaveCount(0);
+  await page.goto(url("character/" + id));
+  await stat(page, id, "level", 11);
+  await stat(page, id, "hitPoints", 109);
+  await stat(page, id, "slot2", 3);
   fixture.advancement = { creatureId: id };
   writeFileSync(fixturePath, JSON.stringify(fixture), { mode: 0o600 });
   expect(errors).toEqual([]);
