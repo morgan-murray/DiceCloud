@@ -41,6 +41,7 @@ const PreComputeCreaturePropertySchema = TypedSimpleSchema.from({
     optional: true,
     max: STORAGE_LIMITS.icon,
   },
+  advancementBundle: { type: String, optional: true, max: 32 },
   // Reference to the library node that this property was copied from
   libraryNodeId: {
     type: String,

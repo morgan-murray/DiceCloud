@@ -22,9 +22,11 @@ jobs:
           node --check deployment/browser/runtime.spec.mjs
           node --check deployment/browser/reference.spec.mjs
           node --check deployment/browser/campaigns.spec.mjs
+          node --check deployment/browser/advancement.spec.mjs
           python3 -m unittest discover -s reference -v
           node --test deployment/test_url_paths.mjs
           node --test deployment/test_aurora_adapter.mjs
+          node --test deployment/test_advancement.mjs
           PYTHONPATH=importer python3 -m unittest discover -s importer/tests -v
       - name: Build checked-out source
         run: |
@@ -45,7 +47,7 @@ jobs:
       - name: Initialize isolated private stack
         run: |
           python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-config"
-          ALLOW_REGISTRATION=true AURORA_IMPORT_ENABLED=true docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
+          ALLOW_REGISTRATION=true AURORA_IMPORT_ENABLED=true NATIVE_ADVANCEMENT_ENABLED=true docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --wait --wait-timeout 180
           curl --fail --retry 5 --retry-all-errors http://127.0.0.1:31080/api/status
       - name: Verify browser workflows and ownership boundaries
         working-directory: deployment/browser
@@ -54,12 +56,12 @@ jobs:
         run: |
           npm test -- --grep 'native workflow|URL contract'
           npm test -- --grep 'Aurora workflow'
-          npm test -- --grep 'Lance Chronicle|Character tabs|Rules reference workflow|Campaign workflow'
+          npm test -- --grep 'Lance Chronicle|Character tabs|Rules reference workflow|Campaign workflow|Native advancement workflow'
       - name: Verify restart persistence and closed registration
         run: |
           docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app
           cd deployment/browser
-          DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained'
+          DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained|Native advancement retained'
       - name: Consistent backup and guarded restore
         run: |
           python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-config/runtime.env" --project dicecloud-ci backup --destination "$RUNNER_TEMP/dicecloud-backup"
@@ -69,7 +71,7 @@ jobs:
           python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --project dicecloud-restore-ci restore --backup "$RUNNER_TEMP/dicecloud-backup"
           curl --fail http://127.0.0.1:31081/api/status
           cd deployment/browser
-          DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained'
+          DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained|Native advancement retained'
       - name: Verify HTTPS prefix, restart and recovery
         run: bash deployment/verify-prefix.sh
       - name: Verify archive dialog controls in Firefox

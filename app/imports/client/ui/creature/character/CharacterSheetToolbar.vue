@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { autorun } from 'vue-meteor-tracker';
@@ -14,6 +14,8 @@ import SharedIcon from '/imports/client/ui/components/SharedIcon.vue';
 import getCreatureUrlName from '/imports/api/creature/creatures/getCreatureUrlName';
 import { key } from '/imports/client/ui/vuexStore';
 
+const advancementOpen = ref(false);
+import AdvancementDialog from '/imports/client/ui/advancement/AdvancementDialog.vue';
 const store = useStore(key);
 const route = useRoute();
 const router = useRouter();
@@ -123,6 +125,7 @@ async function unshareWithMe() {
 </script>
 
 <template lang="html">
+  <advancement-dialog v-model="advancementOpen" :creature-id="creatureId" />
   <v-app-bar
     class="character-sheet-toolbar"
     :color="toolbarColor"
@@ -188,6 +191,7 @@ async function unshareWithMe() {
                   Unshare with me
                 </v-list-item-title>
               </v-list-item>
+              <v-list-item v-if="editPermission" title="Level up" prepend-icon="mdi-arrow-up-bold" @click="advancementOpen=true" />
               <v-list-item :to="printUrl">
                 <template #prepend>
                   <v-icon>mdi-printer</v-icon>
