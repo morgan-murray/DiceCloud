@@ -92,6 +92,7 @@ async function load() {
       replaceSpells: [],
       spells: [],
       adjustments: [],
+      proficiencies: [],
       resourceSpent: 0,
       subclass: s?.subclass || "",
     };
@@ -128,6 +129,12 @@ watch(
       caster.ability = catalog.classes[name].castingAbility || caster.ability;
   },
 );
+function changeProficiency(id: string, multiplier: number) {
+  choices.value.proficiencies = choices.value.proficiencies.filter(
+    (s: any) => s.id !== id,
+  );
+  choices.value.proficiencies.push({ id, multiplier });
+}
 async function makePreview() {
   busy.value = true;
   error.value = "";
@@ -418,6 +425,29 @@ async function undo() {
                 rows="4"
               />
               <v-expansion-panels class="my-4"
+                ><v-expansion-panel title="New proficiencies or expertise"
+                  ><v-expansion-panel-text
+                    ><p class="mb-4">
+                      Select only benefits granted by this level, subclass or
+                      feat. These will scale with future proficiency increases.
+                    </p>
+                    <v-select
+                      v-for="skill in profile.skills"
+                      :key="skill.id"
+                      :label="skill.name"
+                      :model-value="
+                        choices.proficiencies.find(
+                          (s: any) => s.id === skill.id,
+                        )?.multiplier ?? skill.multiplier
+                      "
+                      :items="
+                        profOptions.filter(
+                          (option: any) => option.value >= skill.multiplier,
+                        )
+                      "
+                      @update:model-value="
+                        changeProficiency(skill.id, $event)
+                      " /></v-expansion-panel-text></v-expansion-panel
                 ><v-expansion-panel title="Additional approved numeric benefits"
                   ><v-expansion-panel-text
                     ><p>

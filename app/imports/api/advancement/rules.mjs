@@ -225,26 +225,47 @@ export function planLevel(state, input, baseline, makeId) {
       dex(before) +
       (state.armorMode === "monk" ? mod(after.wisdom) - mod(before.wisdom) : 0),
   );
-  for (const s of state.skills) {
-    let n =
-      mod(after[s.ability]) -
-      mod(before[s.ability]) +
-      Math.floor(to.proficiency * s.multiplier) -
-      Math.floor(from.proficiency * s.multiplier);
-    if (s.save && state.className === "paladin")
-      n +=
-        (to.level >= 6 ? Math.max(1, mod(after.charisma)) : 0) -
-        (from.level >= 6 ? Math.max(1, mod(before.charisma)) : 0);
-    // New save proficiencies granted by base-class progression.
+  const proficiencyChoices = input.proficiencies || [];
+  if (
+    !Array.isArray(proficiencyChoices) ||
+    proficiencyChoices.length > state.skills.length ||
+    new Set(proficiencyChoices.map((s) => s.id)).size !==
+      proficiencyChoices.length
+  )
+    fail("Invalid proficiency choices.");
+  for (const choice of proficiencyChoices) {
+    const existing = state.skills.find((s) => s.id === choice.id);
+    if (
+      !existing ||
+      ![0, 0.5, 1, 2].includes(choice.multiplier) ||
+      choice.multiplier < existing.multiplier
+    )
+      fail("Choose a valid new proficiency or expertise.");
+  }
+  const nextMultiplier = (s) => {
+    let value =
+      proficiencyChoices.find((choice) => choice.id === s.id)?.multiplier ??
+      s.multiplier;
     if (
       s.save &&
       ((state.className === "monk" && to.level === 14) ||
         (state.className === "rogue" &&
           to.level === 15 &&
-          s.ability === "wisdom")) &&
-      s.multiplier === 0
+          s.ability === "wisdom"))
     )
-      n += to.proficiency;
+      value = Math.max(1, value);
+    return value;
+  };
+  for (const s of state.skills) {
+    let n =
+      mod(after[s.ability]) -
+      mod(before[s.ability]) +
+      Math.floor(to.proficiency * nextMultiplier(s)) -
+      Math.floor(from.proficiency * s.multiplier);
+    if (s.save && state.className === "paladin")
+      n +=
+        (to.level >= 6 ? Math.max(1, mod(after.charisma)) : 0) -
+        (from.level >= 6 ? Math.max(1, mod(before.charisma)) : 0);
     effect(s.name, s.variable, n);
   }
   const hd = baseline.hitDice;
@@ -503,7 +524,13 @@ export function planLevel(state, input, baseline, makeId) {
     fail("Too many custom adjustments.");
   for (const a of extra) {
     const target = baseline.targets.find((t) => t.variable === a.variable);
-    if (!target) fail("Choose an existing statistic for a custom adjustment.");
+    if (
+      !target ||
+      [...abilities, "level", "proficiencyBonus"].includes(a.variable)
+    )
+      fail(
+        "Use the ability choices above for ability increases; select another statistic for this benefit.",
+      );
     integer(a.delta, -100, 100, "custom adjustment");
     effect(label(a.name), a.variable, a.delta);
   }
@@ -526,19 +553,13 @@ export function planLevel(state, input, baseline, makeId) {
     choices,
     feat,
     spells: input.spells || [],
+    proficiencies: proficiencyChoices,
     createdAt: new Date().toISOString(),
     propertyIds: props.map((p) => p._id),
   };
   const nextSkills = state.skills.map((s) => ({
     ...s,
-    multiplier:
-      s.save &&
-      ((state.className === "monk" && to.level === 14) ||
-        (state.className === "rogue" &&
-          to.level === 15 &&
-          s.ability === "wisdom"))
-        ? Math.max(1, s.multiplier)
-        : s.multiplier,
+    multiplier: nextMultiplier(s),
   }));
   const next = {
     ...state,

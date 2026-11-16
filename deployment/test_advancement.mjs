@@ -231,3 +231,32 @@ test("ranger 1→2 creates its first spell list and slots without an external bu
   );
   assert.equal(castingDelta(p.state, p.state.casting[0].id), 0);
 });
+
+test("new expertise continues to scale at a later proficiency increase", () => {
+  const { base, state } = fixture("ranger", 11);
+  const first = planLevel(
+    state,
+    {
+      ...choice,
+      asiMode: "abilities",
+      increases: { constitution: 2 },
+      proficiencies: [{ id: "athletics", multiplier: 2 }],
+    },
+    base,
+    id,
+  );
+  assert.equal(first.changes.find((x) => x.variable === "athletics").delta, 4);
+  const second = planLevel(
+    first.state,
+    choice,
+    {
+      ...base,
+      level: 12,
+      slots: table("ranger", 12).slots.flatMap((n, i) =>
+        n ? [{ variable: "slot" + i, level: i + 1, total: n }] : [],
+      ),
+    },
+    id,
+  );
+  assert.equal(second.changes.find((x) => x.variable === "athletics").delta, 2);
+});

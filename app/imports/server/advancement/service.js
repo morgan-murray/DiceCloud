@@ -9,9 +9,7 @@ import CreatureProperties from "/imports/api/creature/creatureProperties/Creatur
 import { assertEditPermission } from "/imports/api/sharing/sharingPermissions";
 import { buildComputationFromProps } from "/imports/api/engine/computation/buildCreatureComputation";
 import computeCreatureComputation from "/imports/api/engine/computation/computeCreatureComputation";
-import computedOnlySchemas from "/imports/api/properties/computedOnlyPropertySchemasIndex";
-import removeSchemaFields from "/imports/api/engine/computation/buildComputation/removeSchemaFields";
-import { DenormalisedOnlyCreaturePropertySchema } from "/imports/api/creature/creatureProperties/CreatureProperties";
+import inputSchemas from "/imports/api/properties/propertySchemasIndex";
 import {
   AdvancementRuleError,
   initialState,
@@ -45,12 +43,21 @@ function identifier(id) {
 function fingerprint(creature, props) {
   const inputs = props
     .map((p) => {
-      const copy = EJSON.clone(p);
-      removeSchemaFields(
-        [computedOnlySchemas[p.type], DenormalisedOnlyCreaturePropertySchema],
-        copy,
-      );
-      for (const key of ["left", "right", "dirty"]) delete copy[key];
+      const copy = inputSchemas[p.type].clean(EJSON.clone(p));
+      for (const key of [
+        "_id",
+        "type",
+        "root",
+        "parentId",
+        "tags",
+        "disabled",
+        "icon",
+        "libraryNodeId",
+        "slotQuantityFilled",
+        "advancementBundle",
+        "color",
+      ])
+        if (p[key] !== undefined) copy[key] = EJSON.clone(p[key]);
       return copy;
     })
     .sort((a, b) => a._id.localeCompare(b._id));
@@ -380,7 +387,17 @@ export const api = {
       try {
         // Staged properties are inactive until the ONE atomic creature update below.
         for (const p of props) {
-          await CreatureProperties.insertAsync(p);
+          const existing = await CreatureProperties.findOneAsync(p._id);
+          if (existing) {
+            if (
+              fingerprint(doc.creature, [existing]) !==
+              fingerprint(doc.creature, [p])
+            )
+              fail(
+                "stale",
+                "A staged property changed. Preview the level-up again.",
+              );
+          } else await CreatureProperties.insertAsync(p);
           inserted.push(p._id);
         }
         await fault("staged");

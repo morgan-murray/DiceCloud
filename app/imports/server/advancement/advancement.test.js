@@ -217,7 +217,11 @@ describe("Native advancement: complete staged bundles, ownership and preservatio
         "root.id": id,
         variableName: "hitPoints",
       });
-    await CreatureProperties.updateAsync(hp._id, { $set: { damage: 13 } });
+    await CreatureProperties.updateAsync(
+      hp._id,
+      { $set: { damage: 13 } },
+      { selector: { type: "attribute" } },
+    );
     await rejects(
       () => api.commit(owner, { previewId: p.previewId, confirmed: true }),
       "stale",
@@ -289,7 +293,11 @@ describe("Native advancement: complete staged bundles, ownership and preservatio
       "root.id": id,
       variableName: "auroraSlots2",
     });
-    await CreatureProperties.updateAsync(pool._id, { $set: { damage: 3 } });
+    await CreatureProperties.updateAsync(
+      pool._id,
+      { $set: { damage: 3 } },
+      { selector: { type: "attribute" } },
+    );
     const state = (await Creatures.findOneAsync(id)).advancement;
     await rejects(
       () => api.undo(owner, { creatureId: id, revision: state.revision }),
@@ -316,5 +324,24 @@ describe("Native advancement: complete staged bundles, ownership and preservatio
     });
     const result = await api.context(owner, { creatureId: id });
     assert.isTrue(result.baseline.spells.some((s) => s.name === "Aid"));
+  });
+  it("does not invalidate a preview when only calculation caches change", async () => {
+    const id = await character(),
+      p = await preview(owner, id);
+    const hp = await CreatureProperties.findOneAsync({
+      "root.id": id,
+      variableName: "hitPoints",
+    });
+    await CreatureProperties.updateAsync(
+      hp._id,
+      { $set: { "baseValue.hash": 12345, "baseValue.value": 999 } },
+      { selector: { type: "attribute" } },
+    );
+    const result = await api.commit(owner, {
+      previewId: p.previewId,
+      confirmed: true,
+    });
+    assert.equal(result.level, 11);
+    assert.equal((await computed(id)).hitPoints.total, 109);
   });
 });
