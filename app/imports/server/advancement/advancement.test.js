@@ -150,7 +150,11 @@ describe("Native advancement: complete staged bundles, ownership and preservatio
     owner = Random.id();
     reader = Random.id();
     for (const id of [owner, reader])
-      await Meteor.users.insertAsync({ _id: id, username: "advance-" + id });
+      await Meteor.users.insertAsync({
+        _id: id,
+        username: "advance-" + id,
+        createdAt: new Date(),
+      });
   });
   after(async () => {
     for (const id of ids) {
@@ -276,5 +280,41 @@ describe("Native advancement: complete staged bundles, ownership and preservatio
     assert.equal(caster.dc.value, 17);
     assert.equal(caster.attackRollBonus.value, 9);
     assert.equal(caster.dc.calculation, "16");
+  });
+  it("does not undo into a smaller spell pool by discarding spent slots", async () => {
+    const id = await character(),
+      p = await preview(owner, id);
+    await api.commit(owner, { previewId: p.previewId, confirmed: true });
+    const pool = await CreatureProperties.findOneAsync({
+      "root.id": id,
+      variableName: "auroraSlots2",
+    });
+    await CreatureProperties.updateAsync(pool._id, { $set: { damage: 3 } });
+    const state = (await Creatures.findOneAsync(id)).advancement;
+    await rejects(
+      () => api.undo(owner, { creatureId: id, revision: state.revision }),
+      "used",
+    );
+    assert.equal((await computed(id)).level.total, 11);
+    assert.equal((await CreatureProperties.findOneAsync(pool._id)).damage, 3);
+  });
+
+  it("keeps unprepared spells in the existing-spell catalog", async () => {
+    const id = await character(),
+      caster = await CreatureProperties.findOneAsync({
+        "root.id": id,
+        type: "spellList",
+      });
+    await CreatureProperties.insertAsync({
+      _id: Random.id(),
+      root: { collection: "creatures", id },
+      parentId: caster._id,
+      type: "spell",
+      name: "Aid",
+      level: 2,
+      prepared: false,
+    });
+    const result = await api.context(owner, { creatureId: id });
+    assert.isTrue(result.baseline.spells.some((s) => s.name === "Aid"));
   });
 });

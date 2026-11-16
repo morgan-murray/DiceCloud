@@ -61,12 +61,13 @@ export function scores(state) {
   return result;
 }
 export function castingDelta(state, spellListId) {
-  const a = state.casting.find((x) => x.id === spellListId)?.ability;
+  const caster = state.casting.find((x) => x.id === spellListId);
+  const a = caster?.ability;
   return a
     ? proficiency(state.level) -
-        proficiency(state.baseLevel) +
+        proficiency(caster.baseLevel ?? state.baseLevel) +
         mod(scores(state)[a]) -
-        mod(state.baseAbilities[a])
+        mod(caster.baseScore ?? state.baseAbilities[a])
     : 0;
 }
 export function initialState(input, baseline) {
@@ -345,7 +346,7 @@ export function planLevel(state, input, baseline, makeId) {
     }
   }
   if (state.className === "monk") {
-    const speed = (n) => (n < 2 ? 0 : 10 + 5 * Math.floor(n / 4));
+    const speed = (n) => (n < 2 ? 0 : 10 + 5 * Math.floor((n - 2) / 4));
     if (state.armorMode === "monk")
       effect(
         "Unarmored movement",
@@ -453,6 +454,20 @@ export function planLevel(state, input, baseline, makeId) {
     (n, count, i) => (count ? i + 1 : n),
     0,
   );
+  let newCaster = null;
+  if (c.castingAbility && baseline.casting.length === 0 && maxSpellLevel > 0) {
+    const ability = c.castingAbility;
+    const id = add(
+      "spellList",
+      {
+        name: c.name + " spells",
+        attackRollBonus: field(to.proficiency + mod(after[ability])),
+        dc: field(8 + to.proficiency + mod(after[ability])),
+      },
+      folder,
+    );
+    newCaster = { id, ability, baseLevel: to.level, baseScore: after[ability] };
+  }
   for (const choice of input.spells || []) {
     const spell = catalog.spells.find((s) => s.name === choice);
     if (
@@ -467,7 +482,7 @@ export function planLevel(state, input, baseline, makeId) {
       )
     )
       fail("This spell is already on the character.");
-    const caster = baseline.casting[0];
+    const caster = baseline.casting[0] || newCaster;
     if (!caster) fail("Add a native spell list before choosing spells.");
     add(
       "spell",
@@ -496,6 +511,7 @@ export function planLevel(state, input, baseline, makeId) {
     bundleId,
     priorRetiredSpells: state.retiredSpells || [],
     priorSkills: state.skills,
+    priorCasting: state.casting,
     priorSubclass: state.subclass,
     initialDamage: Object.fromEntries(
       props
@@ -528,6 +544,7 @@ export function planLevel(state, input, baseline, makeId) {
     ...state,
     retiredSpells: [...(state.retiredSpells || []), ...replaced],
     skills: nextSkills,
+    casting: newCaster ? [...state.casting, newCaster] : state.casting,
     subclass:
       typeof input.subclass === "string"
         ? input.subclass.trim().slice(0, 160)

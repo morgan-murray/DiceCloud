@@ -185,3 +185,49 @@ test("minimum 1 HP applies after negative Constitution and custom feats stay ava
   assert.equal(plan.summary.hpGain, 1);
   assert.ok(plan.props.some((p) => p.name === "A custom table feat"));
 });
+
+test("monk unarmored speed changes at 6, 10, 14 and 18, not at 4", () => {
+  for (const [from, expected] of [
+    [3, 0],
+    [5, 5],
+    [9, 5],
+    [13, 5],
+    [17, 5],
+  ]) {
+    const { base, state } = fixture("monk", from);
+    state.armorMode = "monk";
+    const input = {
+      ...choice,
+      ...(from === 3
+        ? { asiMode: "abilities", increases: { strength: 2 } }
+        : {}),
+    };
+    const p = planLevel(state, input, base, id);
+    assert.equal(
+      p.changes.find((x) => x.variable === "speed")?.delta || 0,
+      expected,
+    );
+  }
+});
+test("ranger 1→2 creates its first spell list and slots without an external builder", () => {
+  const { base, state } = fixture("ranger", 1);
+  base.casting = [];
+  state.casting = [];
+  const p = planLevel(
+    state,
+    {
+      ...choice,
+      allowExtraSpells: false,
+      spells: ["Cure Wounds", "Hunter's Mark"],
+    },
+    base,
+    id,
+  );
+  assert.equal(p.props.filter((x) => x.type === "spellList").length, 1);
+  assert.equal(p.props.filter((x) => x.type === "spell").length, 2);
+  assert.equal(
+    p.props.find((x) => x.attributeType === "spellSlot").baseValue.calculation,
+    "2",
+  );
+  assert.equal(castingDelta(p.state, p.state.casting[0].id), 0);
+});

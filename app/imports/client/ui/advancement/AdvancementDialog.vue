@@ -373,7 +373,7 @@ async function undo() {
                     persistent-hint /></template
               ></template>
               <v-switch
-                v-if="context.baseline.casting.length"
+                v-if="catalog.classes[className].castingAbility"
                 v-model="choices.allowExtraSpells"
                 label="Include additional subclass, feat or DM-approved spells"
                 hint="This permits other class lists and additional spells known; check your rules source."
@@ -392,7 +392,7 @@ async function undo() {
                 clearable
               />
               <v-autocomplete
-                v-if="context.baseline.casting.length"
+                v-if="catalog.classes[className].castingAbility"
                 v-model="choices.spells"
                 label="Add SRD spells or cantrips"
                 :items="eligibleSpells"
@@ -400,7 +400,7 @@ async function undo() {
                 chips
                 clearable
               />
-              <p v-if="context.baseline.casting.length" class="mb-4">
+              <p v-if="catalog.classes[className].castingAbility" class="mb-4">
                 Spell slots after this level: {{ next.slots.join(" / ") }}.<span
                   v-if="next.known"
                 >

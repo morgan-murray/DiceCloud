@@ -225,8 +225,10 @@ function baseline(doc) {
         attack: p.attackRollBonus?.value,
         dc: p.dc?.value,
       })),
-    spells: props
-      .filter((p) => p.type === "spell")
+    spells: doc.computed
+      .filter(
+        (p) => p.type === "spell" && !p.disabled && !p.deactivatedByAncestor,
+      )
       .map((p) => ({ id: p._id, name: p.name, level: p.level })),
     resources: attrs
       .filter((p) => p.attributeType === "resource")
@@ -255,6 +257,18 @@ async function verifyCandidate(doc, state, props) {
   await computeCreatureComputation(c);
   if (c.errors.length)
     fail("computation", "The proposed level-up cannot be computed safely.");
+  for (const prop of c.props) {
+    const original = doc.props.find((p) => p._id === prop._id);
+    if (
+      original &&
+      prop.type === "attribute" &&
+      (prop.damage || 0) !== (original.damage || 0)
+    )
+      fail(
+        "used",
+        "This change would discard current damage or resource usage. Adjust the choices before applying.",
+      );
+  }
   const by = Object.fromEntries(
     c.props.filter((p) => p.variableName).map((p) => [p.variableName, p]),
   );
@@ -440,6 +454,7 @@ export const api = {
         ...state,
         retiredSpells: latest.priorRetiredSpells || [],
         skills: latest.priorSkills,
+        casting: latest.priorCasting,
         subclass: latest.priorSubclass,
         revision: state.revision + 1,
         level: state.level - 1,
@@ -448,6 +463,26 @@ export const api = {
           (id) => id !== latest.bundleId,
         ),
       };
+      const computation = buildComputationFromProps(
+        EJSON.clone(doc.props),
+        { ...EJSON.clone(doc.creature), advancement: next },
+        { _creatureId: creatureId },
+      );
+      await computeCreatureComputation(computation);
+      if (computation.errors.length)
+        fail("computation", "The previous level cannot be restored safely.");
+      for (const prop of computation.props) {
+        const original = doc.props.find((p) => p._id === prop._id);
+        if (
+          prop.type === "attribute" &&
+          !latest.propertyIds.includes(prop._id) &&
+          (prop.damage || 0) !== (original?.damage || 0)
+        )
+          fail(
+            "used",
+            "Current damage or resource usage exceeds the previous level’s capacity. Resolve that usage before undoing.",
+          );
+      }
       const changed = await Creatures.updateAsync(
         { _id: creatureId, "advancement.revision": revision },
         { $set: { advancement: next, dirty: true } },
