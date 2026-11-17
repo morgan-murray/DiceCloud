@@ -164,6 +164,9 @@ const CreatureSchema = TypedSimpleSchema.from({
     optional: true,
   },
 
+  // Validated server-generated native advancement state; no schema migration.
+  advancement: { type: Object, blackbox: true, optional: true },
+
   // Tabletop
   tabletopId: {
     type: String,

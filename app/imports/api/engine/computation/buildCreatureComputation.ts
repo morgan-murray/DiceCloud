@@ -75,6 +75,9 @@ export function buildComputationFromProps(
 
   // Process the properties one by one
   computation.props.forEach(prop => {
+    // A staged level-up is inert until its bundle is atomically activated.
+    if (prop.advancementBundle && !((creature?.advancement as any)?.activeBundles || []).includes(prop.advancementBundle)) prop.disabled = true;
+    if (((creature?.advancement as any)?.retiredSpells || []).includes(prop._id)) prop.disabled = true;
     // The prop has been processed, it's no longer dirty
     delete prop.dirty;
 

@@ -33,3 +33,5 @@ import '/imports/server/aurora/service';
 import '/imports/server/rulesReference/service';
 
 import '/imports/server/campaigns/service';
+
+import '/imports/server/advancement/service';
