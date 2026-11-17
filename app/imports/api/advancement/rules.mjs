@@ -186,9 +186,8 @@ export function planLevel(state, input, baseline, makeId) {
     return p._id;
   };
   const folder = add("folder", {
-    groupStats: true,
-    tab: "features",
-    location: "start",
+    // Keep this structural: native tabs render each child in its usual place.
+    groupStats: false,
     name: `${c.name} level ${to.level}`,
     advancementBundle: bundleId,
     description: {

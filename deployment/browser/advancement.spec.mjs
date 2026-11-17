@@ -183,6 +183,13 @@ test("Native advancement workflow: paladin 10→11, preview, usage, reload and u
     usedSlots: 1,
     note: "Preserve my current story.",
   });
+  await page.getByRole("tab", { name: "Features", exact: true }).click();
+  await expect(
+    page.getByText("Improved Divine Smite", { exact: true }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByText("Improved Divine Smite", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await stat(page, id, "level", 11);
   await page.locator('[data-id="creature-menu"]').click();
