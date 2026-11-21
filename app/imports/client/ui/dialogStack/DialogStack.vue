@@ -379,7 +379,7 @@ async function leave(target: Element, done: () => void) {
 
 .dialog.character-creation-card {
   max-width: 720px;
-  max-height: 640px;
+  max-height: 560px;
   width: calc(100% - 32px);
   height: calc(100% - 32px);
 }

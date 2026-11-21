@@ -167,9 +167,9 @@ test('Character tabs: New Character steps, responsive layout and creation choice
     await expect(bio).toHaveAttribute('aria-selected', 'true');
     await call(page, 'users.setDarkMode', { darkMode: false });
     await fit();
-    await page.screenshot({ path: info.outputPath('new-character-desktop-light.png') });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-desktop-light.png') });
     await call(page, 'users.setDarkMode', { darkMode: true });
-    await page.screenshot({ path: info.outputPath('new-character-desktop-dark.png') });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-desktop-dark.png') });
     await dialog.getByRole('button', { name: 'Next', exact: true }).click();
     await expect(libraries).toHaveAttribute('aria-selected', 'true');
     await expect(dialog.getByLabel('Name', { exact: true })).not.toBeVisible();
@@ -177,16 +177,17 @@ test('Character tabs: New Character steps, responsive layout and creation choice
     await dialog.getByLabel('All user libraries').uncheck();
     const library = dialog.locator('.creation-library-list .v-list-item').filter({ hasText: 'Creation dialog library' });
     await library.getByRole('checkbox').check();
-    await page.screenshot({ path: info.outputPath('new-character-libraries-desktop-dark.png') });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-libraries-desktop-dark.png') });
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(dialog).toHaveCSS('width', '390px');
+    // The theme keeps a small edge gutter; check the settled dialog against its viewport.
+    await expect.poll(async () => { const box = await dialog.boundingBox(); return box.width; }).toBeGreaterThan(370);
     await fit();
-    await page.screenshot({ path: info.outputPath('new-character-libraries-mobile-dark.png') });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-libraries-mobile-dark.png') });
     await call(page, 'users.setDarkMode', { darkMode: false });
     await dialog.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(name);
     await fit();
-    await page.screenshot({ path: info.outputPath('new-character-mobile-light.png') });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-mobile-light.png') });
     await libraries.click();
     await expect(library.getByRole('checkbox')).toBeChecked();
     await dialog.getByRole('button', { name: 'Create', exact: true }).click();

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
-import { useRouter } from "vue-router";
 import { autorun, subscribe } from "vue-meteor-tracker";
 import { snackbar } from "/imports/client/ui/components/snackbars/SnackbarQueue";
-import { defer, union, without } from "lodash";
+import { union, without } from "lodash";
 import DialogBase from "/imports/client/ui/dialogStack/DialogBase.vue";
 import insertCreature from "/imports/api/creature/creatures/methods/insertCreature";
 import LibraryList from "/imports/client/ui/library/LibraryList.vue";
@@ -13,7 +12,6 @@ import { key } from "/imports/client/ui/vuexStore";
 
 const emit = defineEmits(["pop"]);
 const store = useStore(key);
-const router = useRouter();
 
 autorun(() => {
   subscribe("libraries");
@@ -84,9 +82,6 @@ async function submit() {
     const creatureId = await insertCreature.callAsync(char);
     store.commit("setTabForCharacterSheet", { id: creatureId, tab: "build" });
     emit("pop", creatureId);
-    defer(() => {
-      router.push({ name: "characterSheet", params: { id: creatureId } });
-    });
     return creatureId;
   } catch (error: any) {
     console.error(error);
@@ -254,6 +249,10 @@ async function submit() {
 }
 .biography-fields {
   margin-top: 0;
+}
+.biography-fields :deep(.v-field:not(.v-field--error) .v-label) {
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.85;
 }
 .library-switch {
   margin-bottom: 16px;

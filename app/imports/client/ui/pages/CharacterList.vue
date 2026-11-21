@@ -92,7 +92,11 @@ function insertCharacter() {
   store.commit('pushDialogStack', {
     component: 'character-creation-dialog',
     elementId: 'new-character-button',
-    callback: (creatureId: string) => creatureId,
+    callback: (creatureId: string) => {
+      // Navigate after dialog history.back has completed, as for Aurora imports.
+      if (creatureId) setTimeout(() => router.push({ name: 'characterSheet', params: { id: creatureId } }), 0);
+      return creatureId;
+    },
   });
 }
 
