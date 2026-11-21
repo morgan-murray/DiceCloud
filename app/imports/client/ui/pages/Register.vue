@@ -99,7 +99,7 @@ function googleLogin() {
         <v-text-field
           v-model="password2"
           type="password"
-          label="Password Again"
+          label="Password again"
           :rules="password2Rules"
           class="ma-2"
           variant="outlined"

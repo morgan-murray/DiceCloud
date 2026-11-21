@@ -75,13 +75,13 @@ function changeTab(path: string | string[], value: any, ack?: Function) {
               clearable
               label="Tab"
               :items="[
-                { text: 'Stats Tab', value: 'stats' },
-                { text: 'Features Tab', value: 'features' },
-                { text: 'Actions Tab', value: 'actions' },
-                { text: 'Spells Tab', value: 'spells' },
-                { text: 'Inventory Tab', value: 'inventory' },
-                { text: 'Journal Tab', value: 'journal' },
-                { text: 'Build Tab', value: 'build' },
+                { text: 'Stats tab', value: 'stats' },
+                { text: 'Features tab', value: 'features' },
+                { text: 'Actions tab', value: 'actions' },
+                { text: 'Spells tab', value: 'spells' },
+                { text: 'Inventory tab', value: 'inventory' },
+                { text: 'Journal tab', value: 'journal' },
+                { text: 'Build tab', value: 'build' },
               ]"
               :value="model.tab"
               :error-messages="errors.tab"

@@ -5,13 +5,13 @@ const base=(process.env.DICECLOUD_TEST_URL||'http://127.0.0.1:31080').replace(/\
 const fixture=process.env.DICECLOUD_TEST_FIXTURE;
 const url=p=>new URL(p,base).href;
 const call=(page,name,arg)=>page.evaluate(({name,arg})=>window.Meteor.callAsync('rulesReference.'+name,...(arg===undefined?[]:[arg])),{name,arg});
-async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.waitForFunction(()=>!!window.Meteor?.userId());await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
+async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForFunction(()=>!!window.Meteor?.userId());await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
 const title=page=>page.locator('.reference-article > h2');
 
 test('Rules reference workflow: full corpus, body search, tables, links and private sharing',async({page,browser},info)=>{
  test.skip(!fixture,'Requires workflow account');test.setTimeout(180000);
  const data=JSON.parse(readFileSync(fixture,'utf8'));const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await login(page,data.owner);await page.goto(url('rules'));await expect(page.getByRole('heading',{name:'Rules Reference',exact:true})).toBeVisible();
+ await login(page,data.owner);await page.goto(url('rules'));await expect(page.getByRole('heading',{name:'Rules reference',exact:true})).toBeVisible();
  if(!(await call(page,'list')).length){await page.getByRole('button',{name:'Add 2014 rules to my library',exact:true}).click();}
  await expect.poll(async()=> (await call(page,'list')).length,{timeout:90000}).toBeGreaterThan(0);
  const book=(await call(page,'list')).find(b=>b.canManage);expect(book.entryCount).toBe(1000);

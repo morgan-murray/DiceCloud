@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 
 const library = ref({
-  name: 'New Library',
+  name: 'New library',
   description: undefined as string | undefined,
 });
 const valid = ref(true);
@@ -29,7 +29,7 @@ function descriptionChanged(val: string, ack: () => void) {
   <dialog-base>
     <template #toolbar>
       <v-toolbar-title>
-        New Library
+        New library
       </v-toolbar-title>
     </template>
     <text-field
@@ -51,7 +51,7 @@ function descriptionChanged(val: string, ack: () => void) {
         :disabled="!valid"
         @click="$store.dispatch('popDialogStack', library)"
       >
-        Insert Library
+        Insert library
       </v-btn>
     </template>
   </dialog-base>

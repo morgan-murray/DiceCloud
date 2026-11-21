@@ -13,7 +13,7 @@ const props = defineProps<{ model: Record<string, any> }>();
       {{ model.name }}
     </div>
     <div>
-      Spell Save DC: {{ model.dc && model.dc.value }}
+      Spell save DC: {{ model.dc && model.dc.value }}
     </div>
     <div v-if="model.ability">
       Spell casting ability: {{ model.ability }}

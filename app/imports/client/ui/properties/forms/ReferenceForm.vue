@@ -56,7 +56,7 @@ async function updateReferenceNode() {
       <v-col cols="12">
         <outlined-input
           v-ripple
-          name="Linked Property"
+          name="Linked property"
           class="pa-4 mb-6"
           data-id="change-ref"
           style="cursor: pointer;"

@@ -137,7 +137,7 @@ function testSlot() {
             style="justify-content: start;"
             @click="testSlot"
           >
-            Test Slot
+            Test slot
           </v-btn>
         </outlined-input>
       </v-col>

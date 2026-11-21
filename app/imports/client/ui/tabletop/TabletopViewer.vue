@@ -44,7 +44,7 @@ defineProps<{
         </property-field>
         <property-field
           v-if="users.gameMasters.length"
-          name="Game Masters"
+          name="Game masters"
           :cols="{ cols: 12 }"
         >
           <li

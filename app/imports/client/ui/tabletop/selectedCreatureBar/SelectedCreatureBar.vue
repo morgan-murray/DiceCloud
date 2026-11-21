@@ -143,7 +143,7 @@ const { result: iconGroups } = autorun(() => {
   const iconGroupsArr: any[] = [];
 
   const standardIconsById: Record<string, any> = {
-    'cast-spell': { standardId: 'cast-spell', groupName: 'Standard Actions', icon: 'mdi-fire', actionName: 'Cast Spell' },
+    'cast-spell': { standardId: 'cast-spell', groupName: 'Standard actions', icon: 'mdi-fire', actionName: 'Cast spell' },
     'tab-stats': { standardId: 'tab-stats', groupName: 'Tabs', icon: 'mdi-chart-box', tab: 'stats', tabName: 'Stats' },
     'tab-actions': { standardId: 'tab-actions', groupName: 'Tabs', icon: 'mdi-lightning-bolt', tab: 'actions', tabName: 'Actions' },
     'tab-spells': (creature.value as any)?.settings?.hideSpellsTab ? undefined : { standardId: 'tab-spells', groupName: 'Tabs', icon: 'mdi-fire', tab: 'spells', tabName: 'Spells' },

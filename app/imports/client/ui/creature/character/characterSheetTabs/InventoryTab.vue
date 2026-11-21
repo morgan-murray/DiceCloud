@@ -180,7 +180,7 @@ function softRemove(_id: string) {
                 <v-icon>$vuetify.icons.injustice</v-icon>
               </template>
               <v-list-item-title>
-                Weight Carried
+                Weight carried
               </v-list-item-title>
               <template #append>
                 <v-list-item-title>

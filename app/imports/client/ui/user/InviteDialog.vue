@@ -60,7 +60,7 @@ function revokeInviteFn() {
           color="primary"
           @click="revokeInvite"
         >
-          Revoke Invite
+          Revoke invite
         </v-btn>
       </div>
     </div>
@@ -77,7 +77,7 @@ function revokeInviteFn() {
           :disabled="loading"
           @click="getInviteLink"
         >
-          Get Invite Link
+          Get invite link
         </v-btn>
         <h3 v-else>
           {{ inviteLink }}

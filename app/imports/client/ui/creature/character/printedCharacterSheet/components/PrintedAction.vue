@@ -37,11 +37,11 @@ const cardClasses = computed(() => ({
 
 const actionTypeName = computed(() => ({
   'action': 'Action',
-  'bonus': 'Bonus Action',
+  'bonus': 'Bonus action',
   'attack': 'Attack',
   'reaction': 'Reaction',
-  'free': 'Free Action',
-  'long': 'Long Action',
+  'free': 'Free action',
+  'long': 'Long action',
 } as Record<string, string>)[props.model.actionType] || props.model.actionType);
 
 const { result: children } = autorun(() => {

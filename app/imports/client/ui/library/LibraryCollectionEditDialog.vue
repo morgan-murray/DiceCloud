@@ -125,7 +125,7 @@ function share() {
         </v-list-item-subtitle>
       </v-list-item>
       <text-field
-        label="name"
+        label="Name"
         :value="model.name"
         @change="(name, ack) => updateLibraryCollection({ name }, ack)"
       />

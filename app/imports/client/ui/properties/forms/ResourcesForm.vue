@@ -116,13 +116,13 @@ function addCondition() {
       </template>
       <v-list>
         <v-list-item @click="addCondition">
-          <v-list-item-title>Add Condition</v-list-item-title>
+          <v-list-item-title>Add condition</v-list-item-title>
         </v-list-item>
         <v-list-item @click="addAttributesConsumed">
-          <v-list-item-title>Add Resource</v-list-item-title>
+          <v-list-item-title>Add resource</v-list-item-title>
         </v-list-item>
         <v-list-item @click="addItemsConsumed">
-          <v-list-item-title>Add Ammo</v-list-item-title>
+          <v-list-item-title>Add ammo</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>

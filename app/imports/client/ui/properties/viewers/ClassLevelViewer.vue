@@ -18,7 +18,7 @@ const context = inject<any>('context', {});
         :value="model.level"
       />
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />

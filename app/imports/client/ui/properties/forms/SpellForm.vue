@@ -122,7 +122,7 @@ const isAttack = computed(() =>
         md="6"
       >
         <text-field
-          label="Casting Time"
+          label="Casting time"
           :value="model.castingTime"
           :error-messages="errors.castingTime"
           @change="change('castingTime', ...arguments)"
@@ -220,8 +220,8 @@ const isAttack = computed(() =>
           label="Target creature"
           :value="model.target"
           :options="[
-            {name: 'Single Target', value: 'singleTarget'},
-            {name: 'Multiple Targets', value: 'multipleTargets'},
+            {name: 'Single target', value: 'singleTarget'},
+            {name: 'Multiple targets', value: 'multipleTargets'},
             {name: 'Self', value: 'self'},
           ]"
           :error-messages="errors.target"
@@ -242,7 +242,7 @@ const isAttack = computed(() =>
           />
           <computed-field
             v-else
-            label="To Hit"
+            label="To hit"
             prefix="1d20 + "
             hint="The bonus to attack if this action has an attack roll"
             :model="model.attackRoll"
@@ -280,7 +280,7 @@ const isAttack = computed(() =>
         $emit('change', {path: ['description', ...path], value, ack})"
     />
     <form-sections type="spell">
-      <form-section name="Resources Consumed">
+      <form-section name="Resources consumed">
         <resources-form
           :model="model.resources"
           @change="({path, value, ack}) => $emit('change', {path: ['resources', ...path], value, ack})"
@@ -289,7 +289,7 @@ const isAttack = computed(() =>
         />
       </form-section>
 
-      <form-section name="Limit Uses">
+      <form-section name="Limit uses">
         <v-row dense>
           <v-col
             cols="12"

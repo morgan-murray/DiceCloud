@@ -115,7 +115,7 @@ function addExtraTags() {
           md="6"
         >
           <smart-select
-            label="Event Type"
+            label="Event type"
             style="flex-basis: 300px;"
             hint="Which action event causes this trigger to fire"
             :items="actionPropertyTypeOptions"

@@ -7,7 +7,7 @@ import LibraryBrowser from '/imports/client/ui/pages/LibraryBrowser.vue';
   <dialog-base>
     <template #toolbar>
       <v-toolbar-title>
-        Community Libraries
+        Community libraries
       </v-toolbar-title>
     </template>
     <template #unwrapped-content>

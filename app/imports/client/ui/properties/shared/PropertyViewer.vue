@@ -101,7 +101,7 @@ function selectSubProperty(_id: string) {
       >
         <property-field
           v-if="model.fillSlots || model.searchable"
-          name="Library Behavior"
+          name="Library behavior"
         >
           <ul>
             <li
@@ -128,11 +128,11 @@ function selectSubProperty(_id: string) {
           :value="model.slotFillerCondition"
         />
         <property-field 
-          name="Condition Error Text"
+          name="Condition error text"
           :value="model.slotFillerConditionNote"
         />
         <property-field 
-          name="Library Tags"
+          name="Library tags"
           :cols="{cols: 12}"
         >
           <div

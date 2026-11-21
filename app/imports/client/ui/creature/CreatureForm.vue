@@ -237,7 +237,7 @@ function showDependencyGraph() {
           @update:model-value="changeShowTreeTab"
         />
         <text-field
-          label="Hit Dice reset multiplier"
+          label="Hit dice reset multiplier"
           hint="What fraction of your hit dice are reset every long rest"
           placeholder="0.5"
           type="number"
@@ -249,7 +249,7 @@ function showDependencyGraph() {
           @change="(value, ack) => $emit('change', { path: ['settings', 'hitDiceResetMultiplier'], value, ack })"
         />
         <text-field
-          label="Discord Webhook URL"
+          label="Discord webhook URL"
           hint="This creature's logs will be posted to the discord channel"
           placeholder="https://discordapp.com/api/webhooks/<id>/<token>"
           :disabled="!editPermission"
@@ -312,7 +312,7 @@ function showDependencyGraph() {
           prepend-icon="mdi-graph"
           @click="showDependencyGraph"
         >
-          Dependency Graph
+          Dependency graph
         </v-btn>
       </form-section>
     </form-sections>

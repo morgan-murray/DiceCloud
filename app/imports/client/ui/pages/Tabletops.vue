@@ -82,7 +82,7 @@ function clickTabletop(tabletopId: string) {
                 :src="tabletop.imageUrl"
               />
               <v-card-title>
-                {{ tabletop.name || 'Unnamed Tabletop' }}
+                {{ tabletop.name || 'Unnamed tabletop' }}
               </v-card-title>
               <v-card-text v-if="tabletop.description">
                 <markdown-text

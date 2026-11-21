@@ -9,7 +9,7 @@ async function login(page,owner) {
   await ready(page,'/sign-in');
   await page.getByLabel('Username or email').fill(owner.username);
   await page.getByLabel('Password',{exact:true}).fill(owner.password);
-  await page.getByRole('button',{name:'Sign In',exact:true}).click();
+  await page.getByRole('button',{name:'Sign in',exact:true}).click();
   await page.waitForFunction(()=>!!window.Meteor.userId());
 }
 async function call(page,name,argument) { return page.evaluate(({name,argument})=>window.Meteor.callAsync(name,argument),{name,argument}); }

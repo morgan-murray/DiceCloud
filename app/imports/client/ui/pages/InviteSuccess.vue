@@ -7,7 +7,7 @@
       class="d-flex flex-column align-center justify-center"
     >
       <h2 style="margin: 48px 28px 16px">
-        Invite Success
+        Invite success
       </h2>
       <h3>
         You can now use DiceCloud

@@ -352,7 +352,7 @@ function openPropertyDetails(id: string) {
                   class="ma-4"
                   @click="loadMore"
                 >
-                  Load More
+                  Load more
                 </v-btn>
               </div>
             </v-fade-transition>
@@ -375,7 +375,7 @@ function openPropertyDetails(id: string) {
         :disabled="!valid"
         @click="$store.dispatch('popDialogStack', model)"
       >
-        create
+        Create
       </v-btn>
       <v-btn
         v-else-if="tab === 2"

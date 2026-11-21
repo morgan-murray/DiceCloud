@@ -140,7 +140,7 @@ function restore(_id: string) {
         </v-list-item-subtitle>
       </v-list-item>
       <text-field
-        label="name"
+        label="Name"
         :value="model.name"
         @change="updateName"
       />
@@ -157,7 +157,7 @@ function restore(_id: string) {
       />
     </template>
     <template v-if="removedDocs.length">
-      <h3>Recently Deleted Properties</h3>
+      <h3>Recently deleted properties</h3>
       <v-list>
         <v-list-item
           v-for="model in removedDocs"

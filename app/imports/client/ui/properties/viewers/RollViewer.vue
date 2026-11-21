@@ -6,7 +6,7 @@ defineProps<{ model: Record<string, any> }>();
   <div class="roll-viewer">
     <v-row dense>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />

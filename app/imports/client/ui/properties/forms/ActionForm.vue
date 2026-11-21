@@ -111,8 +111,8 @@ const isAttack = computed(() =>
       label="Target creature"
       :value="model.target"
       :options="[
-        {name: 'Single Target', value: 'singleTarget'},
-        {name: 'Multiple Targets', value: 'multipleTargets'},
+        {name: 'Single target', value: 'singleTarget'},
+        {name: 'Multiple targets', value: 'multipleTargets'},
         {name: 'Self', value: 'self'},
       ]"
       :error-messages="errors.target"
@@ -137,7 +137,7 @@ const isAttack = computed(() =>
     />
 
     <form-sections type="action">
-      <form-section name="Resources Consumed">
+      <form-section name="Resources consumed">
         <resources-form
           :model="model.resources"
           @change="({path, value, ack}) => $emit('change', {path: ['resources', ...path], value, ack})"
@@ -145,7 +145,7 @@ const isAttack = computed(() =>
           @pull="({path, ack}) => $emit('pull', {path: ['resources', ...path], ack})"
         />
       </form-section>
-      <form-section name="Limit Uses">
+      <form-section name="Limit uses">
         <v-row dense>
           <v-col
             cols="12"

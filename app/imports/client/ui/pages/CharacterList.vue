@@ -183,14 +183,14 @@ async function insertFolder() {
               data-id="import-character-button"
               @click="importCharacter"
             >
-              import character
+              Import character
             </v-btn>
             <v-btn
               variant="text"
               :loading="loadingInsertFolder"
               @click="insertFolder"
             >
-              add folder
+              Add folder
             </v-btn>
           <v-btn
             color="accent"
@@ -199,7 +199,7 @@ async function insertFolder() {
             :disabled="characterSpaceLeft <= 0"
             @click="insertCharacter"
           >
-            New Character
+            New character
           </v-btn>
           </div>
           <v-card :class="{ 'mb-4': folders && folders.length }">

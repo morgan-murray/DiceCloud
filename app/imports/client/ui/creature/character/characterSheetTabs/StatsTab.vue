@@ -380,7 +380,7 @@ async function softRemove(_id: string) {
       >
         <v-card>
           <v-list>
-            <v-list-subheader>Hit Dice</v-list-subheader>
+            <v-list-subheader>Hit dice</v-list-subheader>
             <template
               v-for="(hitDie, index) in properties.attribute.hitDice"
               :key="hitDie._id"
@@ -435,7 +435,7 @@ async function softRemove(_id: string) {
       >
         <v-card>
           <v-list>
-            <v-list-subheader>Saving Throws</v-list-subheader>
+            <v-list-subheader>Saving throws</v-list-subheader>
             <skill-list-tile
               v-for="save in properties.skill.save"
               :key="save._id"

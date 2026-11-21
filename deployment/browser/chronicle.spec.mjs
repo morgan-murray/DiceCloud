@@ -55,7 +55,7 @@ test('Lance Chronicle: artwork, mobile layout, stored preferences and print', as
   await page.goto(url('/sign-in'));
   await page.getByLabel('Username or email').fill(owner.username);
   await page.getByLabel('Password', { exact: true }).fill(owner.password);
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
   await page.evaluate(() => window.Meteor.callAsync('users.setDarkMode', { darkMode: false }));
   await page.goto(url(`/character/${creatureId}`));

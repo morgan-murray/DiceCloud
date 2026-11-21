@@ -124,9 +124,9 @@ function insertLibraryCollectionAction() {
   >
     <v-container>
       <v-card class="pa-4 mb-4">
-        <v-card-title>Rules Reference</v-card-title>
+        <v-card-title>Rules reference</v-card-title>
         <v-card-text>Browse the 2014 SRD and search inside rules, spells, items and creature descriptions.</v-card-text>
-        <v-card-actions><v-btn to="/rules" variant="outlined">Open Rules Reference</v-btn></v-card-actions>
+        <v-card-actions><v-btn to="/rules" variant="outlined">Open rules reference</v-btn></v-card-actions>
       </v-card>
       <v-row justify="center">
         <v-col
@@ -148,7 +148,7 @@ function insertLibraryCollectionAction() {
               :loading="loadingInsertLibraryCollection"
               @click="insertLibraryCollectionAction"
             >
-              Add Collection
+              Add collection
             </v-btn>
             <v-btn
               color="accent"

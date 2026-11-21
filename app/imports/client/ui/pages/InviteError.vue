@@ -10,7 +10,7 @@ defineProps<{
       class="d-flex flex-column align-center justify-center"
     >
       <h2 style="margin: 48px 28px 16px">
-        Invite Error
+        Invite error
       </h2>
       <h3>
         {{ error.reason || error.message || error }}

@@ -40,7 +40,7 @@ async function login(page, user) {
   await ready(page, '/sign-in');
   await page.getByLabel('Username or email').fill(user.username);
   await page.getByLabel('Password', { exact: true }).fill(user.password);
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForFunction(() => Boolean(window.Meteor.userId()));
 }
 
@@ -245,7 +245,7 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   await expect(page.getByText('Runtime verified character', { exact: true }).first()).toBeVisible();
   // Exercise Vue's user-facing history, after navigation has actually finished.
   await page.getByRole('link', { name: 'Files', exact: true }).click();
-  await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
+  await expect(page.getByText('Archived characters', { exact: true })).toBeVisible();
   await page.goBack();
   await page.waitForFunction(() => window.Meteor?.status().connected);
   await expect(page).toHaveURL(appURL(`/character/${creatureId}/Encoded%20name?tab=spells#slot`));
@@ -253,9 +253,9 @@ test('URL contract: assets, scoped storage, navigation, print and private API', 
   await page.goForward();
   await page.waitForFunction(() => window.Meteor?.status().connected);
   await expect(page).toHaveURL(appURL('/my-files'));
-  await expect(page.getByText('Archived Characters', { exact: true })).toBeVisible();
+  await expect(page.getByText('Archived characters', { exact: true })).toBeVisible();
   await page.locator('.sidebar').getByRole('link').filter({ hasText: 'Runtime verified character' }).click();
-  await expect(page.getByRole('button', { name: 'Long Rest', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Long rest', exact: true })).toBeVisible();
   await page.locator('[data-id="creature-menu"]').click();
   const print = page.getByRole('link', { name: 'Print', exact: true });
   expect(new URL(await print.getAttribute('href'), baseURL).pathname).toContain(configured.pathname + 'print-character/');

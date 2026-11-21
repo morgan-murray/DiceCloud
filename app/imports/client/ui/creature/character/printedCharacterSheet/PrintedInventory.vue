@@ -112,7 +112,7 @@ function clickProperty(_id: string) {
       </div>
       <div class="d-flex inventory-stat">
         <v-icon>$vuetify.icons.injustice</v-icon>
-        Weight Carried:
+        Weight carried:
         {{ weightCarried }} lb
       </div>
       <div class="d-flex inventory-stat">

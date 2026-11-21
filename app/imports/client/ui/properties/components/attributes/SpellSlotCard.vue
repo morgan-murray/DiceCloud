@@ -40,7 +40,7 @@ function clickProperty({ _id }: { _id: string }) {
       lines="two"
       subheader
     >
-      <v-list-subheader>Spell Slots</v-list-subheader>
+      <v-list-subheader>Spell slots</v-list-subheader>
       <spell-slot-list-tile
         v-for="spellSlot in spellSlots"
         :key="spellSlot._id"

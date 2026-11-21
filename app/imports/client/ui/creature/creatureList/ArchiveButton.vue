@@ -26,7 +26,7 @@ function openArchive() {
     @click="openArchive"
   >
     <template v-if="text">
-      Archive Characters
+      Archive characters
     </template>
     <v-icon :class="text ? 'ml-1' : ''">
       mdi-archive

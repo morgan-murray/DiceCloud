@@ -230,7 +230,7 @@ function makeOwner(user: any) {
                   <template #prepend>
                     <v-icon>mdi-signature</v-icon>
                   </template>
-                  <v-list-item-title>Transfer Ownership</v-list-item-title>
+                  <v-list-item-title>Transfer ownership</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="updateSharing(user._id, 'none')">
                   <template #prepend>

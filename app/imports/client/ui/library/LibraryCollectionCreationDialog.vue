@@ -6,7 +6,7 @@ import DialogBase from '/imports/client/ui/dialogStack/DialogBase.vue';
 import Libraries from '/imports/api/library/Libraries';
 
 const libraryCollection = ref({
-  name: 'New Collection',
+  name: 'New collection',
   description: undefined as string | undefined,
   libraries: [] as string[],
 });
@@ -53,7 +53,7 @@ function librariesChanged(val: string[], ack: () => void) {
   <dialog-base>
     <template #toolbar>
       <v-toolbar-title>
-        New Collection
+        New collection
       </v-toolbar-title>
     </template>
     <template>
@@ -88,7 +88,7 @@ function librariesChanged(val: string[], ack: () => void) {
         :disabled="!valid"
         @click="$store.dispatch('popDialogStack', libraryCollection)"
       >
-        Insert Collection
+        Insert collection
       </v-btn>
     </template>
   </dialog-base>

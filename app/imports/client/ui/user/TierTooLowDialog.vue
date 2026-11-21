@@ -61,7 +61,7 @@ async function linkWithPatreonFn() {
             class="ma-4"
             @click="linkWithPatreon"
           >
-            Link Patreon Account
+            Link Patreon account
           </v-btn>
         </template>
       </div>

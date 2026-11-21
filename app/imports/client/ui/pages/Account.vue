@@ -286,7 +286,7 @@ function deleteAccount() {
             <div v-if="showEmailInput" class="email-input-row">
               <v-text-field
                 v-model="inputEmail"
-                label="Add Email Address"
+                label="Add email address"
                 type="email"
                 variant="outlined"
                 density="comfortable"
@@ -340,12 +340,12 @@ function deleteAccount() {
               v-if="!user?.services?.google"
               color="primary"
               @click="linkWithGoogleAccount"
-              >Link Google Account</v-btn
+              >Link Google account</v-btn
             ><v-btn
               v-if="!user?.services?.patreon"
               color="primary"
               @click="linkWithPatreonAccount"
-              >Link Patreon Account</v-btn
+              >Link Patreon account</v-btn
             >
           </div>
         </v-card-text>
@@ -367,13 +367,13 @@ function deleteAccount() {
       </v-card>
     </div>
     <div class="account-footer settings-actions">
-      <v-btn color="primary" variant="tonal" @click="signOut">Sign Out</v-btn
+      <v-btn color="primary" variant="tonal" @click="signOut">Sign out</v-btn
       ><v-btn
         color="error"
         variant="outlined"
         data-id="delete-account-btn"
         @click="deleteAccount"
-        >Delete Account</v-btn
+        >Delete account</v-btn
       >
     </div>
   </v-container>

@@ -220,14 +220,14 @@ async function removeCreature(creatureId: string) {
             prepend-icon="mdi-plus"
             @click="addCreature"
           >
-            Add Character
+            Add character
           </v-btn>
           <v-btn
             data-id="creatures-from-library"
             prepend-icon="mdi-plus"
             @click="addCreatureFromLibrary"
           >
-            Add Creature
+            Add creature
           </v-btn>
         </div>
       </v-row>

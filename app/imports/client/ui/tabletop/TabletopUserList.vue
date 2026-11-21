@@ -82,7 +82,7 @@ const { result: currentUserId } = autorun(() => Meteor.userId());
                 <template #prepend>
                   <v-icon>mdi-signature</v-icon>
                 </template>
-                <v-list-item-title>Transfer Ownership</v-list-item-title>
+                <v-list-item-title>Transfer ownership</v-list-item-title>
               </v-list-item>
 
               <v-list-item

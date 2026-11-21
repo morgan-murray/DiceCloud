@@ -26,7 +26,7 @@ const uniqueText = computed(() => {
   <div class="slot-viewer">
     <v-row dense>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />
@@ -47,7 +47,7 @@ const uniqueText = computed(() => {
         :value="uniqueText"
       />
       <property-field
-        name="Tags Required"
+        name="Tags required"
         :cols="{cols: 12}"
       >
         <div>

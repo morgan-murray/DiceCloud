@@ -69,7 +69,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
       >
         <computed-field
           ref="focusFirst"
-          label="Base Value"
+          label="Base value"
           class="base-value-field"
           hint="This is the value of the attribute before effects are applied. Can be a number or a calculation"
           :model="model.baseValue"
@@ -95,7 +95,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
           cols="12"
         >
           <smart-select
-            label="Hit Dice Size"
+            label="Hit dice size"
             :items="['d4', 'd6', 'd8', 'd10', 'd12', 'd20']"
             :value="model.hitDiceSize"
             :error-messages="errors.hitDiceSize"
@@ -128,7 +128,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
       <v-expand-transition>
         <form-section
           v-if="model.attributeType === 'healthBar'"
-          name="Health Bar"
+          name="Health bar"
         >
           <div class="d-flex flex-column align-center mb-4">
             <div class="text-caption mb-4">

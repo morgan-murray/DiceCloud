@@ -31,7 +31,7 @@ async function transfer() {
   <dialog-base>
     <template #toolbar>
       <v-toolbar-title>
-        Transfer Ownership
+        Transfer ownership
       </v-toolbar-title>
     </template>
     <v-alert

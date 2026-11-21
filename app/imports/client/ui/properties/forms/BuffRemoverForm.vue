@@ -60,7 +60,7 @@ function change(path: string | string[], value: any, ack?: Function) {
               label="Target creature"
               :value="model.target"
               :options="[
-                {name: 'Action Target', value: 'target'},
+                {name: 'Action target', value: 'target'},
                 {name: 'Self', value: 'self'},
               ]"
               :error-messages="errors.target"

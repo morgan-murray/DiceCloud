@@ -113,7 +113,7 @@ function select(icon?: unknown) {
             variant="text"
             @click="select()"
           >
-            clear
+            Clear
           </v-btn>
         </div>
         <div
