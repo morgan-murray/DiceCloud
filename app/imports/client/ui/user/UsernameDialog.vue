@@ -55,6 +55,7 @@ async function updateUsername() {
 
 <template lang="html">
   <dialog-base>
+    <template #toolbar><v-toolbar-title>Change username</v-toolbar-title></template>
     <text-field
       label="Username"
       :value="newUsername || username"

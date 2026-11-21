@@ -41,6 +41,7 @@ function clickTabletop(tabletopId: string) {
     style="height: 100%"
   >
     <v-container>
+      <div class="d-flex justify-end mb-4"><v-btn color="primary" prepend-icon="mdi-plus" :loading="addTabletopLoading" @click="addTabletop">New tabletop</v-btn></div>
       <v-fade-transition mode="out-in">
         <v-row
           v-if="!tabletopsReady"
@@ -117,16 +118,7 @@ function clickTabletop(tabletopId: string) {
         </v-row>
       </v-fade-transition>
     </v-container>
-    <v-btn
-      color="primary"
-      fixed
-      location="bottom right"
-      
-      :loading="addTabletopLoading"
-      @click="addTabletop"
-    >
-      <v-icon>mdi-plus</v-icon>
-    </v-btn>
+
   </div>
 </template>
 

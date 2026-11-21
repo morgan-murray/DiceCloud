@@ -15,7 +15,7 @@ import { key } from '/imports/client/ui/vuexStore';
 const store = useStore(key);
 const route = useRoute();
 const theme = useTheme();
-const display = useDisplay();
+const { smAndUp } = useDisplay();
 
 const chronicleHeading = computed(() => {
   if (route.name === 'characterSheet') return { title: String(store.state.pageTitle), subtitle: 'A character chronicle' };
@@ -95,9 +95,9 @@ function toggleDrawer() {
           <router-view name="toolbarItems" />
         </div>
       </v-fade-transition>
-      <template #extension>
+      <template v-if="smAndUp && route.matched.some(record => record.components?.toolbarExtension)" #extension>
         <v-fade-transition
-          v-if="display.smAndUp"
+          v-if="smAndUp"
           mode="out-in"
         >
           <div

@@ -27,11 +27,8 @@ async function updateStorageUsedFn() {
 </script>
 
 <template>
-  <v-col
-    cols="12"
-    md="4"
-    lg="3"
-    class="d-flex flex-column justify-center align-center"
+  <div
+    class="file-storage-stats d-flex flex-column justify-center align-center"
   >
     <v-progress-circular
       :rotate="-90"
@@ -43,18 +40,32 @@ async function updateStorageUsedFn() {
     >
       {{ percentFileStorageUsed }}%
     </v-progress-circular>
-    <div class="ma-2 mt-4">
+    <div class="storage-caption">
       {{ prettyBytes(storageUsed) }} / {{ prettyBytes(storageAllowed) }}
       <v-btn
         icon
-        @click="updateStorageUsed"
+        @click="updateStorageUsedFn"
+        :loading="updateStorageUsedLoading"
+        aria-label="Refresh file storage usage"
       >
         <v-icon>mdi-refresh</v-icon>
       </v-btn>
     </div>
-  </v-col>
+  </div>
 </template>
 
-<style>
-
+<style scoped>
+.file-storage-stats {
+  min-width: 0;
+  padding: 16px;
+}
+.storage-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  text-align: center;
+}
 </style>

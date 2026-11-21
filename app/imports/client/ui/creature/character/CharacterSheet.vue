@@ -153,9 +153,6 @@ onBeforeUnmount(() => {
     <character-sheet-fab
       v-if="!embedded && $vuetify.display.xs"
       direction="top"
-      fixed
-      bottom
-      right
       class="character-sheet-bottom-fab"
       :edit-permission="editPermission"
     />
@@ -208,17 +205,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.bottom-nav-btns > .v-btn {
-  min-width: 0 !important;
-  padding: 0 !important;
-  flex: 1 1 auto !important;
-  font-size: 0.6rem !important;
-}
-
-.character-sheet-bottom-fab {
-  z-index: 5;
-  bottom: 50px;
-}
+.bottom-nav-btns :deep(.v-bottom-navigation__content) { width: 100%; min-width: 0; }
+.bottom-nav-btns :deep(.v-btn) { min-width: 0 !important; max-width: none; padding: 0 !important; flex: 1 1 0 !important; }
+.bottom-nav-btns :deep(.v-btn__content) { max-width: 100%; font-size: 0.6rem; line-height: 1.2; }
+.bottom-nav-btns :deep(.v-btn__content > span) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bottom-nav-btns :deep(.v-icon) { font-size: 20px; }
+.character-sheet .character-sheet-bottom-fab { position: fixed !important; z-index: 5; right: 16px; bottom: calc(72px + env(safe-area-inset-bottom)); max-width: calc(100vw - 32px); }
+.character-sheet .character-sheet-bottom-fab :deep(.character-add-menu) { position: absolute; right: 0; bottom: calc(100% + 8px); min-width: min(240px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: calc(100dvh - 200px); overflow-y: auto; }
 </style>
 
 <style>
