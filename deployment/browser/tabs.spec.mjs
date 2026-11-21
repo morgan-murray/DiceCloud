@@ -264,7 +264,10 @@ test('Character tabs: Settings and shared responsive layout controls', async ({ 
   await expect(page.locator('.feedback-card .v-card-title')).toHaveText('DiceCloud Discord server');
   await page.screenshot({ path: info.outputPath('feedback-phone.png'), animations: 'disabled' });
   await navigate('/character-list');
-  await expect(page.getByRole('button', { name: 'Import Aurora character', exact: true })).toBeVisible();
+  const { enabled: auroraEnabled } = await page.evaluate(() => window.Meteor.callAsync('aurora.status'));
+  const auroraImport = page.getByRole('button', { name: 'Import Aurora character', exact: true });
+  if (auroraEnabled) await expect(auroraImport).toBeVisible();
+  else await expect(auroraImport).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'New character', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Add folder', exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('character-list-phone.png'), animations: 'disabled' });
