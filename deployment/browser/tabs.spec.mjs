@@ -197,8 +197,9 @@ test('Character tabs: New Character steps, responsive layout and creation choice
     id = creature._id;
     expect(creature.gender).toBe('Unspecified');
     expect(creature.alignment).toBe('Neutral good');
-    expect(creature.allowedLibraries).toEqual([libraryId]);
     await expect(page).toHaveURL(new RegExp(`/character/${id}(?:/|$)`));
+    // characterList publishes biography only; wait for singleCharacter's library settings.
+    await expect.poll(() => page.evaluate(id => window.Mongo.getCollection('creatures').findOne(id)?.allowedLibraries, id), { timeout: 15000 }).toEqual([libraryId]);
     await page.waitForTimeout(700);
     expect(errors).toEqual([]);
   } finally {
