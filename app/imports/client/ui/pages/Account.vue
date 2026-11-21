@@ -4,10 +4,7 @@ import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { autorun, subscribe } from 'vue-meteor-tracker';
-import getEntitledCents from '/imports/api/users/patreon/getEntitledCents';
 import Invites from '/imports/api/users/Invites';
-import linkWithPatreon from '/imports/api/users/methods/linkWithPatreon';
-import { getUserTier } from '/imports/api/users/patreon/tiers';
 import addEmail from '/imports/api/users/methods/addEmail';
 import removeEmail from '/imports/api/users/methods/removeEmail';
 import CreatureStorageStats from '/imports/client/ui/creature/creatureList/CreatureStorageStats.vue';
@@ -19,7 +16,6 @@ const store = useStore(key);
 const router = useRouter();
 
 const { result: user } = autorun(() => Meteor.user());
-const googleAccount = computed(() => (user.value as any)?.services?.google);
 const emails = computed(() => (user.value as any)?.emails);
 const darkMode = computed(() => (user.value as any)?.darkMode);
 
@@ -43,20 +39,10 @@ subscribe(() => [
   invites.value?.map((i: any) => i.invitee).filter(Boolean) ?? [],
 ]);
 
-const entitledCents = computed(() => getEntitledCents(user.value));
-const tier = computed(() => {
-  if (!user.value) return {};
-  return getUserTier(user.value);
-});
-
 const showApiKey = ref(false);
 const signOutBusy = ref(false);
 const apiKeyGenerationError = ref<string | null>(null);
 const emailVerificationError = ref<string | null>(null);
-const linkGoogleError = ref('');
-const linkPatreonError = ref('');
-const updatePatreonError = ref('');
-const updatePatreonLoading = ref(false);
 const showEmailInput = ref(false);
 const addEmailLoading = ref(false);
 const inputEmail = ref('');
@@ -161,39 +147,6 @@ function clickInvite(invite: any) {
     elementId: invite._id,
     data: { inviteId: invite._id },
   });
-}
-
-function linkWithGoogleAccount() {
-  linkGoogleError.value = '';
-  Meteor.linkWithGoogle((error: any) => {
-    if (error) linkGoogleError.value = error;
-  });
-}
-
-function linkWithPatreonAccount() {
-  linkPatreonError.value = '';
-  linkWithPatreon(async (error: any) => {
-    if (error) {
-      linkPatreonError.value = error;
-    } else {
-      try {
-        await Meteor.callAsync('updateMyPatreonDetails');
-      } catch (err: any) {
-        linkPatreonError.value = err;
-      }
-    }
-  });
-}
-
-async function updatePatreon() {
-  updatePatreonLoading.value = true;
-  updatePatreonError.value = '';
-  try {
-    await Meteor.callAsync('updateMyPatreonDetails');
-  } catch (error: any) {
-    updatePatreonError.value = error;
-  }
-  updatePatreonLoading.value = false;
 }
 
 function deleteAccount() {
@@ -314,42 +267,6 @@ function deleteAccount() {
               >Add email address</v-btn
             >
           </section>
-        </v-card-text>
-      </v-card>
-      <v-card class="settings-card">
-        <v-card-title>Linked accounts</v-card-title>
-        <v-card-text>
-          <div class="account-row mb-4">
-            <span class="account-value">Patreon tier: {{ tier.name }}</span
-            ><v-btn
-              variant="text"
-              icon="mdi-refresh"
-              aria-label="Refresh Patreon status"
-              :loading="updatePatreonLoading"
-              @click="updatePatreon"
-            />
-          </div>
-          <v-alert
-            v-if="updatePatreonError || linkGoogleError || linkPatreonError"
-            type="error"
-            class="mb-4"
-            >{{
-              updatePatreonError || linkGoogleError || linkPatreonError
-            }}</v-alert
-          >
-          <div class="settings-actions">
-            <v-btn
-              v-if="!user?.services?.google"
-              color="primary"
-              @click="linkWithGoogleAccount"
-              >Link Google account</v-btn
-            ><v-btn
-              v-if="!user?.services?.patreon"
-              color="primary"
-              @click="linkWithPatreonAccount"
-              >Link Patreon account</v-btn
-            >
-          </div>
         </v-card-text>
       </v-card>
       <v-card v-if="invites?.length" class="settings-card profile-card">
