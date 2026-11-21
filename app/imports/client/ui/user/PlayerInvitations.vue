@@ -46,7 +46,7 @@ async function copyLink() {
       </div>
     </v-card-text>
     <v-dialog v-model="open" max-width="600" :persistent="busy">
-      <v-card class="invite-dialog">
+      <v-card class="invite-dialog lance-chronicle">
         <v-card-title>Invite player</v-card-title>
         <v-card-text>
           <template v-if="!setupLink">

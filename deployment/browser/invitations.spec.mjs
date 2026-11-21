@@ -37,6 +37,7 @@ test('Player invitation workflow: chosen password, replacement, revocation and p
     await dialog.getByRole('button', { name: 'Create invitation', exact: true }).click();
     const link = dialog.getByLabel('Invitation link', { exact: true });
     await expect(link).toHaveValue(/accept-invite/);
+    await expect(dialog.getByRole('button', { name: 'Copy link', exact: true })).toHaveCSS('text-transform', 'none');
     const address = await link.inputValue();
     await page.screenshot({ path: info.outputPath('invite-player-desktop.png'), animations: 'disabled', mask: [link] });
     await dialog.getByRole('button', { name: 'Done', exact: true }).click();
