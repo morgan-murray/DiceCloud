@@ -35,3 +35,5 @@ import '/imports/server/rulesReference/service';
 import '/imports/server/campaigns/service';
 
 import '/imports/server/advancement/service';
+
+import '/imports/server/playerInvitations/service';

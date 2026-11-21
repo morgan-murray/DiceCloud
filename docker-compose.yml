@@ -40,7 +40,7 @@ services:
       NATIVE_ADVANCEMENT_ENABLED: ${NATIVE_ADVANCEMENT_ENABLED:-false}
       AURORA_IMPORT_ENABLED: ${AURORA_IMPORT_ENABLED:-false}
       DICECLOUD_STORAGE_PATH: /var/lib/dicecloud
-      METEOR_SETTINGS: '{"public":{"environment":"production","disablePatreon":true},"private":{"allowRegistration":${ALLOW_REGISTRATION:-false}}}'
+      METEOR_SETTINGS: '{"public":{"environment":"production","disablePatreon":true},"private":{"allowRegistration":${ALLOW_REGISTRATION:-false},"playerInvitationManagers":${PLAYER_INVITATION_MANAGERS:-[]}}}'
     secrets: [mongo_app_password]
     ports: ["127.0.0.1:${DICECLOUD_PORT:-31080}:3000"]
     volumes: [files:/var/lib/dicecloud]

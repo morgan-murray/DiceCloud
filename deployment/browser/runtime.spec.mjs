@@ -170,6 +170,7 @@ test('native workflow: accounts, character CRUD, libraries, reconnect and access
   expect(errors).toEqual([]);
   await propertyHasValue(page, abilityId, 14);
   await propertyHasValue(page, slotId, 2);
+  owner.userId = await page.evaluate(() => window.Meteor.userId());
   if (fixturePath) writeFileSync(fixturePath, JSON.stringify({ owner, creatureId, libraryId, abilityId, slotId, imagePath }), { mode: 0o600 });
   await context.close();
 });

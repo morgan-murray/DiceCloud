@@ -59,19 +59,23 @@ jobs:
           npm test -- --grep 'Lance Chronicle|Character tabs|Rules reference workflow|Campaign workflow|Native advancement workflow'
       - name: Verify restart persistence and closed registration
         run: |
+          python3 deployment/configure-invitation-test-manager.py --env "$RUNNER_TEMP/dicecloud-config/runtime.env" --fixture "$RUNNER_TEMP/dicecloud-browser-fixture.json"
           docker compose --env-file "$RUNNER_TEMP/dicecloud-config/runtime.env" -p dicecloud-ci up -d --no-build --force-recreate --wait --wait-timeout 180 app
           cd deployment/browser
           DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained|Native advancement retained'
+          DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'Player invitation workflow'
       - name: Consistent backup and guarded restore
         run: |
           python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-config/runtime.env" --project dicecloud-ci backup --destination "$RUNNER_TEMP/dicecloud-backup"
           python3 deployment/initialize.py --directory "$RUNNER_TEMP/dicecloud-restore-config" --port 31081
+          python3 deployment/configure-invitation-test-manager.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --fixture "$RUNNER_TEMP/dicecloud-browser-fixture.json"
           IMAGE_ID=$(docker image inspect dicecloud:runtime --format '{{.Id}}')
           sed -i "s|DICECLOUD_IMAGE=.*|DICECLOUD_IMAGE=$IMAGE_ID|" "$RUNNER_TEMP/dicecloud-restore-config/runtime.env"
           python3 deployment/operations.py --env "$RUNNER_TEMP/dicecloud-restore-config/runtime.env" --project dicecloud-restore-ci restore --backup "$RUNNER_TEMP/dicecloud-backup"
           curl --fail http://127.0.0.1:31081/api/status
           cd deployment/browser
           DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'retained fixture|closed registration|Rules reference retained|Campaign retained|Native advancement retained'
+          DICECLOUD_TEST_URL=http://127.0.0.1:31081 DICECLOUD_VERIFY_RESTORE=1 DICECLOUD_TEST_FIXTURE="$RUNNER_TEMP/dicecloud-browser-fixture.json" npm test -- --grep 'Player invitation retained'
       - name: Verify HTTPS prefix, restart and recovery
         run: bash deployment/verify-prefix.sh
       - name: Verify archive dialog controls in Firefox
@@ -79,7 +83,7 @@ jobs:
         env:
           DICECLOUD_TEST_URL: https://localhost:31082/dnd/
           DICECLOUD_TEST_FIXTURE: ${{ runner.temp }}/dicecloud-prefix-fixture.json
-        run: npx playwright test --config playwright.firefox.config.mjs --grep 'archive dialog close controls|Lance Chronicle|Character tabs'
+        run: npx playwright test --config playwright.firefox.config.mjs --grep 'archive dialog close controls|Lance Chronicle|Character tabs|Player invitation workflow'
       - name: Export built image for private VPS verification
         if: always()
         run: |
