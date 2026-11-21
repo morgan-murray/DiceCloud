@@ -150,7 +150,7 @@ function inputArchiveFile() {
       justify="center"
       class="mt-2"
     >
-      <file-storage-stats />
+      <v-col cols="12" sm="6" md="4" lg="3"><file-storage-stats /></v-col>
     </v-row>
     <v-row dense>
       <v-col cols="12">

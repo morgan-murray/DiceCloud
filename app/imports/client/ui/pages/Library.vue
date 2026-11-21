@@ -133,6 +133,33 @@ function insertLibraryCollectionAction() {
           cols="12"
           xl="8"
         >
+          <div class="page-actions d-flex flex-wrap justify-end mb-4">
+            <v-btn
+              variant="text"
+              to="/community-libraries"
+            >
+              Browse community libraries
+            </v-btn>
+            <v-btn
+              v-if="paidBenefits"
+              variant="text"
+              data-id="insert-library-collection-button"
+              color="accent"
+              :loading="loadingInsertLibraryCollection"
+              @click="insertLibraryCollectionAction"
+            >
+              Add Collection
+            </v-btn>
+            <v-btn
+              color="accent"
+              prepend-icon="mdi-plus"
+              data-id="insert-library-button"
+              :disabled="!paidBenefits"
+              @click="insertLibraryAction"
+            >
+              New library
+            </v-btn>
+          </div>
           <v-card :class="{ 'mb-4': libraryCollections && libraryCollections.length }">
             <v-fade-transition
               hide-on-leave
@@ -153,37 +180,15 @@ function insertLibraryCollectionAction() {
               <library-list v-else />
             </v-fade-transition>
           </v-card>
-          <div class="d-flex flex-wrap justify-end mt-2">
-            <v-btn
-              variant="text"
-              to="/community-libraries"
-            >
-              Browse community libraries
-            </v-btn>
-            <v-btn
-              v-if="paidBenefits"
-              variant="text"
-              data-id="insert-library-collection-button"
-              color="accent"
-              :loading="loadingInsertLibraryCollection"
-              @click="insertLibraryCollectionAction"
-            >
-              Add Collection
-            </v-btn>
-          </div>
-          <v-btn
-            color="accent"
-            fixed
-            location="bottom right"
-            
-            data-id="insert-library-button"
-            :disabled="!paidBenefits"
-            @click="insertLibraryAction"
-          >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
+
         </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
+
+<style scoped>
+.page-actions { gap: 8px; }
+.page-actions :deep(.v-btn) { max-width: 100%; height: auto; min-height: 36px; }
+.page-actions :deep(.v-btn__content) { white-space: normal; text-align: center; }
+</style>

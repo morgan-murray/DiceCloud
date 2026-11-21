@@ -5,7 +5,7 @@
   <div
     class="d-flex flex-column align-center pa-2"
   >
-    <v-card>
+    <v-card class="feedback-card">
       <iframe
         src="https://discordapp.com/widget?id=120762305087668224&theme=dark"
         width="100%"
@@ -24,6 +24,7 @@
           </div>
         </div>
       </v-card-title>
+      <v-card-text>To give feedback or get support using DiceCloud, join the official Discord server.</v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn

@@ -33,8 +33,9 @@ async function linkWithPatreonFn() {
 
 <template lang="html">
   <dialog-base>
+    <template #toolbar><v-toolbar-title>Patreon tier</v-toolbar-title></template>
     <div
-      class="d-flex flex-column align-center justify-center"
+      class="d-flex flex-column align-center justify-center text-center"
     >
       <h2 style="margin: 48px 28px 16px">
         Your current Patreon tier is {{ tier.name }}
@@ -44,7 +45,7 @@ async function linkWithPatreonFn() {
         a higher tier) to perform this action
       </h3>
       <div
-        class="d-flex"
+        class="d-flex flex-wrap justify-center"
       >
         <v-btn
           href="https://www.patreon.com/join/dicecloud/"

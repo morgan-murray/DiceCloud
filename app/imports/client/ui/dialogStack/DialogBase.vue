@@ -58,7 +58,7 @@ function close() {
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <slot name="toolbar" />
-      <template #extension>
+      <template v-if="$slots['toolbar-extension']" #extension>
         <slot name="toolbar-extension" />
       </template>
     </v-toolbar>
@@ -86,12 +86,14 @@ function close() {
 
 <style scoped>
 .base-dialog-toolbar {
+  flex: 0 0 auto;
   z-index: 2;
   border-radius: 2px 2px 0 0;
 }
 
 #base-dialog-body,
 .unwrapped-content {
+  min-height: 0;
   flex-grow: 1;
   overflow: auto;
 }
@@ -103,4 +105,5 @@ function close() {
 .v-theme--dark #base-dialog-body.dark-body {
   background-color: #303030;
 }
+.v-card-actions { flex: 0 0 auto; flex-wrap: wrap; gap: 4px; }
 </style>

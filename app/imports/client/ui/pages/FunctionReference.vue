@@ -31,7 +31,7 @@ const functionList = computed(() => {
               <div class="my-2">
                 {{ fn.comment }}
               </div>
-              <table style="min-width: initial;">
+              <table class="function-examples">
                 <tr
                   v-for="example in fn.examples"
                   :key="example.input"
@@ -54,3 +54,11 @@ const functionList = computed(() => {
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.function-examples { width: 100%; table-layout: fixed; min-width: 0; }
+.function-examples td { vertical-align: top; padding: 6px; overflow-wrap: anywhere; }
+.function-examples td:first-child { width: 60%; }
+.function-examples td:nth-child(2) { width: 32px; }
+.function-examples code { white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>

@@ -212,3 +212,53 @@ test('Character tabs: New Character steps, responsive layout and creation choice
     await call(page, 'libraries.remove', { _id: libraryId });
   }
 });
+
+test('Character tabs: Settings and shared responsive layout controls', async ({ page }, info) => {
+  test.skip(!fixture, 'Requires the native workflow account');
+  test.setTimeout(90000);
+  const { owner, creatureId } = JSON.parse(readFileSync(fixture, 'utf8'));
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(url('sign-in'));
+  await page.getByLabel('Username or email').fill(owner.username);
+  await page.getByLabel('Password', { exact: true }).fill(owner.password);
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
+  const navigate = path => page.evaluate(path => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push(path), path);
+  await navigate('/account');
+  await expect(page.getByRole('heading', { name: 'Account & settings', exact: true })).toBeVisible();
+  const togglesFit = () => page.locator('.smart-toggle-options').evaluateAll(elements => elements.every(el => {
+    const p = el.getBoundingClientRect();
+    return el.scrollHeight <= el.clientHeight + 2 && [...el.querySelectorAll('.v-btn')].every(button => { const b = button.getBoundingClientRect(); return b.left >= p.left - 1 && b.right <= p.right + 1 && b.top >= p.top - 1 && b.bottom <= p.bottom + 1; });
+  }));
+  await page.getByRole('button', { name: 'Light', exact: true }).click();
+  await expect(page.locator('.v-application')).toHaveClass(/v-theme--light/);
+  await page.screenshot({ path: info.outputPath('settings-desktop-light.png'), fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 320, height: 844 });
+  await expect.poll(togglesFit).toBe(true);
+  await expect(page.getByRole('button', { name: 'Light', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('settings-phone-light.png'), fullPage: true, animations: 'disabled' });
+  await page.getByRole('button', { name: 'Dark', exact: true }).click();
+  await expect(page.locator('.v-application')).toHaveClass(/v-theme--dark/);
+  await expect.poll(togglesFit).toBe(true);
+  await page.getByRole('button', { name: 'Add email address', exact: true }).click();
+  await expect(page.getByLabel('Add Email Address', { exact: true })).toBeVisible();
+  await page.locator('.email-input-row').getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.getByLabel('Add Email Address', { exact: true })).not.toBeVisible();
+  await page.screenshot({ path: info.outputPath('settings-phone-dark.png'), fullPage: true, animations: 'disabled' });
+  await navigate(`/character/${creatureId}`);
+  await page.locator('.bottom-nav-btns').waitFor();
+  await expect.poll(() => page.locator('.bottom-nav-btns .v-btn').evaluateAll(buttons => buttons.every(el => { const r = el.getBoundingClientRect(); return r.left >= -1 && r.right <= innerWidth + 1; }))).toBe(true);
+  const fab = page.locator('.character-sheet-bottom-fab');
+  await expect.poll(() => fab.evaluate(el => el.getBoundingClientRect().bottom <= document.querySelector('.bottom-nav-btns').getBoundingClientRect().top)).toBe(true);
+  await fab.locator('[data-id="insert-creature-property-fab"]').click();
+  await expect(fab.locator('.character-add-menu')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('character-phone-navigation.png'), animations: 'disabled' });
+  await fab.locator('[data-id="insert-creature-property-fab"]').click();
+  await navigate('/docs/functions');
+  await page.locator('.function-examples').first().waitFor();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await navigate('/account');
+  await page.getByRole('button', { name: 'Light', exact: true }).click();
+  expect(errors).toEqual([]);
+});

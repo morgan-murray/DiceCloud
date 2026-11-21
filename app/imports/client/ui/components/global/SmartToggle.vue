@@ -32,10 +32,7 @@ function click(val: unknown) {
 </script>
 
 <template lang="html">
-  <outlined-input
-    :name="label"
-    class="mb-6 pt-1"
-  >
+  <outlined-input :name="label" class="smart-toggle mb-4">
     <v-btn-toggle
       v-bind="$attrs"
       mandatory
@@ -43,7 +40,7 @@ function click(val: unknown) {
       group
       :model-value="safeValue"
       color="accent"
-      style="flex-wrap: wrap;"
+      class="smart-toggle-options"
     >
       <v-btn
         v-for="(option, i) in options"
@@ -52,25 +49,55 @@ function click(val: unknown) {
         :disabled="isDisabled || (clickedValue != option.value && loading)"
         :variant="clickedValue != option.value && loading ? 'plain' : undefined"
         :loading="clickedValue == option.value && loading"
-        height="42"
-        v-on="(value == option.value) ? {} : { click() { click(option.value) } }"
+        class="smart-toggle-option"
+        v-on="
+          value == option.value
+            ? {}
+            : {
+                click() {
+                  click(option.value);
+                },
+              }
+        "
       >
-        <v-icon
-          v-if="option.icon"
-          start
-        >
+        <v-icon v-if="option.icon" start>
           {{ option.icon }}
         </v-icon>
         {{ option.name }}
       </v-btn>
     </v-btn-toggle>
     <v-expand-transition>
-      <div
-        v-if="errors.length"
-        class="pa-2 text-error"
-      >
-        {{ errors.join('\n\n') }}
+      <div v-if="errors.length" class="pa-2 text-error">
+        {{ errors.join("\n\n") }}
       </div>
     </v-expand-transition>
   </outlined-input>
 </template>
+
+<style scoped>
+.smart-toggle {
+  min-width: 0;
+  width: 100%;
+}
+.smart-toggle-options {
+  display: flex;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 42px;
+  max-width: 100%;
+  gap: 4px;
+  overflow: visible;
+}
+.smart-toggle-option {
+  flex: 0 1 auto;
+  height: auto !important;
+  min-height: 42px;
+  max-width: 100%;
+}
+.smart-toggle-option :deep(.v-btn__content) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  padding-block: 8px;
+}
+</style>

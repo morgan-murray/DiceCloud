@@ -175,13 +175,7 @@ async function insertFolder() {
               Increase Patreon tier
             </v-btn>
           </v-alert>
-          <v-card :class="{ 'mb-4': folders && folders.length }">
-            <creature-folder-list
-              :creatures="CreaturesWithNoParty"
-              :folders="folders"
-            />
-          </v-card>
-          <div class="d-flex flex-wrap justify-end mt-2">
+          <div class="page-actions d-flex flex-wrap justify-end mb-4">
             <v-btn v-if="auroraEnabled" variant="text" data-id="aurora-import-button" :disabled="characterSpaceLeft <= 0" @click="importAurora">Import Aurora character</v-btn>
             <v-btn
               v-if="showImportButton"
@@ -198,20 +192,31 @@ async function insertFolder() {
             >
               add folder
             </v-btn>
-          </div>
           <v-btn
             color="accent"
-            fixed
-            location="bottom right"
-            
+            prepend-icon="mdi-plus"
             data-id="new-character-button"
             :disabled="characterSpaceLeft <= 0"
             @click="insertCharacter"
           >
-            <v-icon>mdi-plus</v-icon>
+            New Character
           </v-btn>
+          </div>
+          <v-card :class="{ 'mb-4': folders && folders.length }">
+            <creature-folder-list
+              :creatures="CreaturesWithNoParty"
+              :folders="folders"
+            />
+          </v-card>
+
         </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
+
+<style scoped>
+.page-actions { gap: 8px; }
+.page-actions :deep(.v-btn) { max-width: 100%; height: auto; min-height: 36px; }
+.page-actions :deep(.v-btn__content) { white-space: normal; text-align: center; }
+</style>
