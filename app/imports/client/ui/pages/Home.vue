@@ -38,15 +38,6 @@ const { result: signedIn } = autorun(() => !!Meteor.userId());
         <v-btn
           color="accent"
           rounded
-          size="large"
-          to="/register"
-          class="mr-4"
-        >
-          Register
-        </v-btn>
-        <v-btn
-          color="accent"
-          rounded
           variant="outlined"
           size="large"
           to="/sign-in"

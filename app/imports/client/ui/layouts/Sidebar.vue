@@ -34,8 +34,6 @@ const { result: links } = autorun(() => {
     { title: 'Documentation', icon: 'mdi-book-open-variant', to: '/docs' },
     { title: 'Feedback', icon: 'mdi-bug', to: '/feedback' },
     { title: 'About', icon: 'mdi-sign-text', to: '/about' },
-    { title: 'Patreon', icon: 'mdi-patreon', href: 'https://www.patreon.com/dicecloud' },
-    { title: 'GitHub', icon: 'mdi-github', href: 'https://github.com/ThaumRystra/DiceCloud/' },
   ];
   return allLinks.filter((link: any) => !link.requireLogin || isLoggedIn);
 });
