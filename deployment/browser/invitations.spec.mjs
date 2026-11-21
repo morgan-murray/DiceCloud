@@ -18,7 +18,7 @@ async function closed(page) {
   expect(await page.evaluate(() => window.Meteor.userId())).toBeNull();
 }
 
-test('Player invitation workflow: private creation, chosen password, replacement, revocation and closed registration', async ({ page, browser }, info) => {
+test('Player invitation workflow: chosen password, replacement, revocation and permission boundaries', async ({ page, browser }, info) => {
   test.skip(!fixturePath, 'Requires the configured private native fixture');
   test.setTimeout(120000);
   const data = JSON.parse(readFileSync(fixturePath, 'utf8'));
