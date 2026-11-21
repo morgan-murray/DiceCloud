@@ -36,7 +36,10 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
   await page.getByRole('button', { name: 'Archive characters', exact: true }).first().waitFor();
   const id = await call(page, 'creatures.insertCreature', { name: 'Tab interaction fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
   try {
-    await page.goto(url(`character/${id}`));
+    // Use the same SPA navigation as the character list; a forced reload can emit
+    // Firefox's interrupted-WebSocket console diagnostic while tearing down DDP.
+    await page.evaluate(id => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push({ name: 'characterSheet', params: { id } }), id);
+    await expect(page).toHaveURL(new RegExp(`/character/${id}(?:/|$)`));
     await page.getByRole('tab', { name: 'Actions', exact: true }).click();
     await expect(page.getByText('No actions yet', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Build', exact: true }).click();
