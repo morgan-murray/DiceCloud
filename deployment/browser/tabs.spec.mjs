@@ -36,7 +36,10 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
   await page.getByRole('button', { name: 'Archive characters', exact: true }).first().waitFor();
   const id = await call(page, 'creatures.insertCreature', { name: 'Tab interaction fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
   try {
-    await page.goto(url(`character/${id}`));
+    // Use the same SPA navigation as the character list; a forced reload can emit
+    // Firefox's interrupted-WebSocket console diagnostic while tearing down DDP.
+    await page.evaluate(id => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push({ name: 'characterSheet', params: { id } }), id);
+    await expect(page).toHaveURL(new RegExp(`/character/${id}(?:/|$)`));
     await page.getByRole('tab', { name: 'Actions', exact: true }).click();
     await expect(page.getByText('No actions yet', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Build', exact: true }).click();
@@ -121,5 +124,91 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
   } finally {
     await page.evaluate(async () => { const store = document.querySelector('#app').__vue_app__.config.globalProperties.$store; while (store.state.dialogStack.dialogs.length) store.commit('popDialogStackMutation'); }).catch(() => {});
     await call(page, 'Creatures.methods.removeCreature', { charId: id });
+  }
+});
+
+test('Character tabs: New Character steps, responsive layout and creation choices', async ({ page }, info) => {
+  test.skip(!fixture, 'Requires the native workflow account');
+  test.setTimeout(120_000);
+  const { owner } = JSON.parse(readFileSync(fixture, 'utf8'));
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(url('sign-in'));
+  await page.getByLabel('Username or email').fill(owner.username);
+  await page.getByLabel('Password', { exact: true }).fill(owner.password);
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
+  await page.getByRole('button', { name: 'Archive characters', exact: true }).first().waitFor();
+  const name = `Creation dialog fixture ${Date.now()}`;
+  const libraryId = await call(page, 'libraries.insert', { name: 'Creation dialog library', description: 'Synthetic UI fixture', public: false, readers: [], writers: [], readersCanCopy: false });
+  let id;
+  try {
+    const dialog = await open(page, page.locator('[data-id="new-character-button"]'), 'character-creation-dialog');
+    const bio = dialog.getByRole('tab', { name: 'Biography', exact: true });
+    const libraries = dialog.getByRole('tab', { name: 'Libraries', exact: true });
+    const fit = async () => {
+      const box = await dialog.boundingBox(), viewport = page.viewportSize();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+      expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
+      expect(await dialog.locator('.creation-toolbar').evaluate(el => el.getBoundingClientRect().height)).toBeLessThanOrEqual(65);
+      expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      await expect(dialog.getByRole('button', { name: 'Create', exact: true })).toBeInViewport();
+    };
+    await expect(bio).toHaveAttribute('aria-selected', 'true');
+    await expect(dialog.getByLabel('Name', { exact: true })).toBeVisible();
+    await expect(dialog.getByLabel('All user libraries')).not.toBeVisible();
+    await dialog.getByLabel('Name', { exact: true }).fill('');
+    await expect(dialog.getByRole('button', { name: 'Create', exact: true })).toBeDisabled();
+    await expect(dialog.getByText('Name required', { exact: true })).toBeVisible();
+    await dialog.getByLabel('Name', { exact: true }).fill(name);
+    await dialog.getByLabel('Alignment', { exact: true }).fill('Neutral good');
+    await dialog.getByLabel('Gender', { exact: true }).fill('Unspecified');
+    await dialog.getByLabel('Level', { exact: true }).fill('4');
+    await dialog.getByLabel('Level', { exact: true }).press('Tab');
+    await expect(bio).toHaveAttribute('aria-selected', 'true');
+    await call(page, 'users.setDarkMode', { darkMode: false });
+    await fit();
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-desktop-light.png') });
+    await call(page, 'users.setDarkMode', { darkMode: true });
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-desktop-dark.png') });
+    await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(libraries).toHaveAttribute('aria-selected', 'true');
+    await expect(dialog.getByLabel('Name', { exact: true })).not.toBeVisible();
+    await expect(dialog.getByLabel('All user libraries')).toBeChecked();
+    await dialog.getByLabel('All user libraries').uncheck();
+    const library = dialog.locator('.creation-library-list .v-list-item').filter({ hasText: 'Creation dialog library' });
+    await library.getByRole('checkbox').check();
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-libraries-desktop-dark.png') });
+    await page.setViewportSize({ width: 390, height: 844 });
+    // The theme keeps a small edge gutter; check the settled dialog against its viewport.
+    await expect.poll(async () => { const box = await dialog.boundingBox(); return box.width; }).toBeGreaterThan(370);
+    await fit();
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-libraries-mobile-dark.png') });
+    await call(page, 'users.setDarkMode', { darkMode: false });
+    await dialog.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(name);
+    await fit();
+    await page.screenshot({ animations: 'disabled', path: info.outputPath('new-character-mobile-light.png') });
+    await libraries.click();
+    await expect(library.getByRole('checkbox')).toBeChecked();
+    await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect.poll(() => stack(page)).toEqual([]);
+    await page.waitForFunction(name => window.Mongo.getCollection('creatures').findOne({ name }), name);
+    const creature = await page.evaluate(name => window.Mongo.getCollection('creatures').findOne({ name }), name);
+    id = creature._id;
+    expect(creature.gender).toBe('Unspecified');
+    expect(creature.alignment).toBe('Neutral good');
+    await expect(page).toHaveURL(new RegExp(`/character/${id}(?:/|$)`));
+    // characterList publishes biography only; wait for singleCharacter's library settings.
+    await expect.poll(() => page.evaluate(id => window.Mongo.getCollection('creatures').findOne(id)?.allowedLibraries, id), { timeout: 15000 }).toEqual([libraryId]);
+    await page.waitForTimeout(700);
+    expect(errors).toEqual([]);
+  } finally {
+    await page.evaluate(async () => { const store = document.querySelector('#app').__vue_app__.config.globalProperties.$store; while (store.state.dialogStack.dialogs.length) store.commit('popDialogStackMutation'); }).catch(() => {});
+    if (!id) id = await page.evaluate(name => window.Mongo.getCollection('creatures').findOne({ name })?._id, name).catch(() => undefined);
+    if (id) await call(page, 'Creatures.methods.removeCreature', { charId: id });
+    await call(page, 'libraries.remove', { _id: libraryId });
   }
 });

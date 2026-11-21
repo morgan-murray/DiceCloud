@@ -228,6 +228,7 @@ async function leave(target: Element, done: () => void) {
           :key="dialog._id"
           :ref="(el: any) => { if (el) dialogRefs[index] = el; else delete dialogRefs[index]; }"
           class="dialog"
+          :class="{ 'character-creation-card': dialog.component === 'character-creation-dialog' }"
           :data-element-id="dialog.elementId"
           :data-id="dialog._id"
           :data-index="index"
@@ -373,6 +374,21 @@ async function leave(target: Element, done: () => void) {
 @media only screen and (min-width: 601px) {
   .dialog-stack {
     padding: 32px;
+  }
+}
+
+.dialog.character-creation-card {
+  max-width: 720px;
+  max-height: 560px;
+  width: calc(100% - 32px);
+  height: calc(100% - 32px);
+}
+
+@media only screen and (max-width: 600px) {
+  .dialog.character-creation-card {
+    width: 100%;
+    height: 100%;
+    max-height: none;
   }
 }
 
