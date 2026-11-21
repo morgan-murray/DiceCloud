@@ -270,6 +270,11 @@ const router = createRouter({
     },
     beforeEnter: ensureLoggedIn,
   }, {
+    name: 'acceptPlayerInvitation',
+    path: '/accept-invite/:token',
+    component: () => import('/imports/client/ui/pages/AcceptPlayerInvitation.vue'),
+    meta: { title: 'Join DiceCloud' },
+  }, {
     name: 'signIn',
     path: '/sign-in',
     components: {

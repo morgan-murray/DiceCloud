@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlayerInvitations from "/imports/client/ui/user/PlayerInvitations.vue";
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
@@ -207,6 +208,7 @@ function deleteAccount() {
   <v-container class="account-page">
     <h1 class="text-h4 mb-6">Account &amp; settings</h1>
     <div class="account-grid">
+      <player-invitations />
       <v-card class="settings-card storage-card">
         <v-card-title>Storage</v-card-title>
         <v-card-text>
