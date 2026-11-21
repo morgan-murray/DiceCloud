@@ -52,7 +52,7 @@ const activeTab = computed({
 });
 
 watch(() => creature.value?.name, (value) => {
-  store.commit('setPageTitle', value || 'Character Sheet');
+  store.commit('setPageTitle', value || 'Character sheet');
 });
 
 let nameObserver: any;
@@ -62,14 +62,14 @@ let logObserver: any;
 const notifiedLogs = new Set<string>();
 
 onMounted(() => {
-  store.commit('setPageTitle', creature.value?.name || 'Character Sheet');
+  store.commit('setPageTitle', creature.value?.name || 'Character sheet');
   nameObserver = Creatures.find({
     _id: props.creatureId,
   }, {
     fields: { name: 1 },
   }).observe({
-    added: ({ name }: any) => store.commit('setPageTitle', name || 'Character Sheet'),
-    changed: ({ name }: any) => store.commit('setPageTitle', name || 'Character Sheet'),
+    added: ({ name }: any) => store.commit('setPageTitle', name || 'Character sheet'),
+    changed: ({ name }: any) => store.commit('setPageTitle', name || 'Character sheet'),
   });
   if (route.name === 'characterSheet') {
     logObserver = CreatureLogs.find({

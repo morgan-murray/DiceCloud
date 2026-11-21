@@ -48,7 +48,7 @@ const typeHint = computed(() => {
 <template lang="html">
   <div class="buff-form">
     <smart-select
-      label="Branch Type"
+      label="Branch type"
       :items="typeOptions"
       :hint="typeHint"
       :value="model.branchType"

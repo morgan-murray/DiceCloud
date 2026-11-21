@@ -119,23 +119,23 @@ const classes = computed(() =>
 );
 
 watch(() => creature.value?.name, (value) => {
-  store.commit('setPageTitle', value ? ('Print ' + value) : 'Print Character Sheet');
+  store.commit('setPageTitle', value ? ('Print ' + value) : 'Print character sheet');
 });
 
 let nameObserver: any;
 
 onMounted(() => {
   const name = creature.value?.name;
-  store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet');
+  store.commit('setPageTitle', name ? ('Print ' + name) : 'Print character sheet');
   nameObserver = Creatures.find({
     _id: creatureId.value,
   }, {
     fields: { name: 1 },
   }).observe({
     added: ({ name }: any) =>
-      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
+      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print character sheet'),
     changed: ({ name }: any) =>
-      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print Character Sheet'),
+      store.commit('setPageTitle', name ? ('Print ' + name) : 'Print character sheet'),
   });
 });
 

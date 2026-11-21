@@ -29,7 +29,7 @@ function toggleSelect(id: string) {
   <dialog-base>
     <template #toolbar>
       <v-toolbar-title>
-        Add Characters
+        Add characters
       </v-toolbar-title>
     </template>
     <v-list>

@@ -154,7 +154,7 @@ function inputArchiveFile() {
     </v-row>
     <v-row dense>
       <v-col cols="12">
-        <v-list-subheader> Archived Characters </v-list-subheader>
+        <v-list-subheader> Archived characters </v-list-subheader>
       </v-col>
       
       <v-col

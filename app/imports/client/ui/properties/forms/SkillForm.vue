@@ -98,14 +98,14 @@ const { result: abilityScoreList } = autorun(() =>
     />
 
     <form-sections type="skill">
-      <form-section name="Base Values">
+      <form-section name="Base values">
         <v-row dense>
           <v-col
             cols="12"
             md="6"
           >
             <proficiency-select
-              label="Base Proficiency"
+              label="Base proficiency"
               :value="model.baseProficiency"
               :error-messages="errors.baseProficiency"
               @change="change('baseProficiency', ...arguments)"
@@ -116,7 +116,7 @@ const { result: abilityScoreList } = autorun(() =>
             md="6"
           >
             <computed-field
-              label="Base Value"
+              label="Base value"
               hint="This is the value of the skill before effects are applied"
               :model="model.baseValue"
               :error-messages="errors.baseValue"

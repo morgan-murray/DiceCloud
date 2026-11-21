@@ -92,7 +92,7 @@ function patreonLogin() {
           variant="text"
           to="/reset-password"
         >
-          Reset Password
+          Reset password
         </v-btn>
         <div
           v-if="error"
@@ -107,7 +107,7 @@ function patreonLogin() {
             class="ma-2"
             @click="submit"
           >
-            Sign In
+            Sign in
           </v-btn>
           <v-btn
             color="accent"

@@ -6,7 +6,7 @@ const call=(p,name,arg)=>p.evaluate(({name,arg})=>window.Meteor.callAsync(name,a
 test('Character tabs: grouped proficiencies and language details',async({page},info)=>{
  test.skip(!fixture,'Requires a workflow account');test.setTimeout(120000);
  const {owner}=JSON.parse(readFileSync(fixture,'utf8')),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(new URL('sign-in',base).href);await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();
+ await page.goto(new URL('sign-in',base).href);await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();
  let id;
  try{
   id=await call(page,'creatures.insertCreature',{name:'Grouped feature review',startingLevel:1,allowedLibraries:[],allowedLibraryCollections:[]});

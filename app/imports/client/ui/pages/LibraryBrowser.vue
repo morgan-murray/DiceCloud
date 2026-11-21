@@ -66,7 +66,7 @@ async function changeSubscribe(card: any, ack: (err?: string) => void) {
         subscribe: sub,
       });
     } else {
-      ack('Library or Library Collection not found');
+      ack('Library or Library collection not found');
       return;
     }
     if (ack) ack();

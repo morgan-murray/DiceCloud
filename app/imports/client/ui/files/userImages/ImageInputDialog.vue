@@ -56,7 +56,7 @@ function selectUserImage(href: string) {
         :color="$vuetify.theme.themes.dark.colors.accent"
         grow
       >
-        <v-tab>User Files</v-tab>
+        <v-tab>User files</v-tab>
         <v-tab>From URL</v-tab>
       </v-tabs>
     </template>

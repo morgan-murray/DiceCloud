@@ -42,7 +42,7 @@ const highlightCards = [
           cols="12"
         >
           <h1 class="text-h4 mb-4">
-            Free, Auditable, real-time character tracking for 5th edition
+            Free, auditable, real-time character tracking for 5th edition
           </h1>
           <h4 class="text-subtitle-1">
             Spend less time shuffling paper, and more time playing the game
@@ -69,7 +69,7 @@ const highlightCards = [
           size="large"
           to="/sign-in"
         >
-          Sign In
+          Sign in
         </v-btn>
       </div>
       <div
@@ -83,7 +83,7 @@ const highlightCards = [
           to="/character-list"
           class="mr-4"
         >
-          My Characters
+          My characters
         </v-btn>
       </div>
     </section>
@@ -141,7 +141,7 @@ const highlightCards = [
             mdi-file-tree-outline
           </v-icon>
           <h3 class="mb-2">
-            Advanced Character Engine
+            Advanced character engine
           </h3>
           <p>
             Characters are computed in real-time based on their equipment,

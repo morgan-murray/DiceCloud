@@ -25,15 +25,10 @@ const prop = computed(() => propsByDocsPath.get(path.value));
 
 const title = computed(() => {
   if (prop.value) {
-    return prop.value.name + ' Docs';
+    return prop.value.name + ' docs';
   } else {
-    const titleCase = path.value.replace(
-      /(\w*)(\W+)/g,
-      function (_txt: string, word: string) {
-        return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase() + ' ';
-      }
-    );
-    return titleCase || 'DiceCloud Docs';
+    const heading = path.value.replace(/[^a-zA-Z0-9]+/g, ' ').trim();
+    return heading ? heading.charAt(0).toUpperCase() + heading.slice(1) : 'DiceCloud docs';
   }
 });
 

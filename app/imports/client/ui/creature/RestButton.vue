@@ -44,6 +44,6 @@ async function rest() {
     :prepend-icon="type === 'shortRest' ? 'mdi-music-rest-quarter' : 'mdi-bed'"
     @click="rest"
   >
-    {{ type === 'shortRest' ? 'Short Rest' : 'Long Rest' }}
+    {{ type === 'shortRest' ? 'Short rest' : 'Long rest' }}
   </v-btn>
 </template>

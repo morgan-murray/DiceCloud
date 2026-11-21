@@ -290,7 +290,7 @@ const { result: notes } = autorun(() => {
             style="text-align: center;"
             class="label"
           >
-            Hit Dice
+            Hit dice
           </div>
         </div>
       </div>
@@ -355,7 +355,7 @@ const { result: notes } = autorun(() => {
             * {{ effect.text }}
           </div>
           <div class="label text-center">
-            Saving Throws
+            Saving throws
           </div>
         </div>
       </div>
@@ -411,7 +411,7 @@ const { result: notes } = autorun(() => {
       >
         <div class="double-border">
           <div class="label text-center">
-            Spell Slots
+            Spell slots
           </div>
           <div
             v-for="spellSlot in spellSlots"

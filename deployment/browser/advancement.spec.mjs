@@ -15,7 +15,7 @@ async function login(page, owner) {
   await page.goto(url("sign-in"));
   await page.getByLabel("Username or email").fill(owner.username);
   await page.getByLabel("Password", { exact: true }).fill(owner.password);
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForFunction(() => !!window.Meteor.userId());
 }
 async function stat(page, id, key, total) {

@@ -64,7 +64,7 @@ function change(path: string | string[], value: any, ack?: Function) {
         </v-icon>
       </v-btn>
       <smart-combobox
-        label="Tags Required"
+        label="Tags required"
         :hint="tagHint"
         class="mb-2"
         multiple

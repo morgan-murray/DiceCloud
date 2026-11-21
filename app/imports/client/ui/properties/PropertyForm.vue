@@ -174,7 +174,7 @@ function selectSubProperty(_id: string) {
           >
             <text-field
               v-if="context.isLibraryForm"
-              label="Condition Error Text"
+              label="Condition error text"
               hint="Text to display if the condition isn't met"
               placeholder="Always active"
               :value="model.slotFillerConditionNote"
@@ -184,7 +184,7 @@ function selectSubProperty(_id: string) {
           </v-col>
           <v-col cols="12">
             <smart-combobox
-              label="Library Tags"
+              label="Library tags"
               multiple
               small-chips
               deletable-chips

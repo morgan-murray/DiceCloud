@@ -62,7 +62,7 @@ onBeforeUnmount(() => { clearTimeout(timer); request++; });
 <template>
   <v-container fluid class="rules-reference">
     <div class="reference-header">
-      <div><h1>Rules Reference</h1><p>D&amp;D 2014 · System Reference Document 5.1</p></div>
+      <div><h1>Rules reference</h1><p>D&amp;D 2014 · System Reference Document 5.1</p></div>
       <v-btn v-if="!selected?.canManage" color="primary" :loading="busy" :disabled="busy || !catalog?.enabled" @click="mutate('install', {})">Add 2014 rules to my library</v-btn>
       <div v-else class="reference-actions">
         <v-btn variant="outlined" :disabled="busy" @click="showSharing">Share</v-btn>
@@ -75,7 +75,7 @@ onBeforeUnmount(() => { clearTimeout(timer); request++; });
     <v-alert v-if="notice" type="success" class="mb-4" role="status">{{ notice }}</v-alert>
     <v-alert v-if="busy" type="info" class="mb-4">Preparing your private reference library. This can take a moment; your characters are unchanged.</v-alert>
     <v-card v-if="!selected" class="pa-6">
-      <h2>D&amp;D 2014 — Rules Reference</h2>
+      <h2>D&amp;D 2014 — Rules reference</h2>
       <p class="my-4">Add {{ catalog?.entryCount || 'the' }} reference pages covering core rules, character options, spells, equipment, magic items and monsters. Browse the source text and search inside descriptions.</p>
       <p>This is the Creative Commons SRD 5.1. It does not include every option from the commercial books and does not change character calculations.</p>
     </v-card>

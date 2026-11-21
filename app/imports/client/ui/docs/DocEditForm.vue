@@ -61,7 +61,7 @@ async function pull({ path, ack }: { path: string[]; ack?: Function }) {
 async function add({ ack }: { ack?: Function }) {
   try {
     await insertDoc.callAsync({
-      doc: { name: 'New Doc' },
+      doc: { name: 'New document' },
       parentId: docId.value,
     });
     if (ack) ack();

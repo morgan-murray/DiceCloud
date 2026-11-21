@@ -6,7 +6,7 @@ defineProps<{ model: Record<string, any> }>();
   <div class="spell-list-viewer">
     <v-row dense>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />
@@ -30,7 +30,7 @@ defineProps<{ model: Record<string, any> }>();
         :value="model.abilityMod"
       />
       <property-field
-        name="Spell Save DC"
+        name="Spell save DC"
         large
         center
         :calculation="model.dc"

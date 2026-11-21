@@ -196,7 +196,7 @@ async function archiveAction() {
         @click="archiveAction"
       >
         <template v-if="mode === 'restore' && characterSlots <= 0">
-          No Character Slots Left
+          No character slots left
         </template>
         <template v-else>
           {{ mode === 'archive' ? 'Archive' : 'Restore' }}

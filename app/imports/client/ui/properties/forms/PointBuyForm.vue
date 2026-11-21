@@ -131,7 +131,7 @@ function addRow() {
                 >
                   <text-field
                     ref="focusFirst"
-                    label="Row Name"
+                    label="Row name"
                     :value="row.name"
                     :error-messages="errors.values && errors.values[i] && errors.values[i].name"
                     @change="change(['values', i, 'name'], ...arguments)"

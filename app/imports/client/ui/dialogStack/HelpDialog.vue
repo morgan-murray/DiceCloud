@@ -28,13 +28,8 @@ const title = computed(() => {
   if (prop.value) {
     return prop.value.name;
   } else {
-    const titleCase = props.path.replace(
-      /(\w*)(\W+)/g,
-      function (_txt: string, word: string) {
-        return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase() + ' ';
-      }
-    );
-    return titleCase || 'Character Sheet';
+    const heading = props.path.replace(/[^a-zA-Z0-9]+/g, ' ').trim();
+    return heading ? heading.charAt(0).toUpperCase() + heading.slice(1) : 'Character sheet';
   }
 });
 

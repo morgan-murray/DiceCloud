@@ -38,7 +38,7 @@ const accentColor = computed(() => {
       :active="hover"
     />
     <v-card-title>
-      {{ model.name || 'Point Buy' }}
+      {{ model.name || 'Point buy' }}
     </v-card-title>
     <v-card-text>
       {{ model.spent }}

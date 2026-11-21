@@ -342,7 +342,7 @@ function openPropertyDetails(id: string) {
         variant="outlined"
         @click="loadMore"
       >
-        Load More
+        Load more
       </v-btn>
     </div>
     <template v-if="!showDisabled && disabledNodeCount">
@@ -356,7 +356,7 @@ function openPropertyDetails(id: string) {
           color="accent"
           @click="showDisabled = true"
         >
-          Show All
+          Show all
         </v-btn>
       </div>
     </template>
@@ -381,7 +381,7 @@ function openPropertyDetails(id: string) {
           Insert
         </template>
         <template v-else>
-          Close Test
+          Close test
         </template>
       </v-btn>
     </template>

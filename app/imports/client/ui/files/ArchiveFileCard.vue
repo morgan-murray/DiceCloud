@@ -35,7 +35,7 @@ function removeArchiveCharacter() {
     elementId: `${props.model._id}-archive-card`,
     data: {
       name: props.model.meta.creatureName,
-      typeName: 'Character Archive',
+      typeName: 'Character archive',
     },
     async callback(confirmation: boolean) {
       if (!confirmation) return;

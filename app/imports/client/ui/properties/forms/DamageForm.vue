@@ -75,7 +75,7 @@ function saveChange({ path, value, ack }: { path: string[]; value: any; ack?: Fu
         md="6"
       >
         <smart-combobox
-          label="Damage Type"
+          label="Damage type"
           style="flex-basis: 200px;"
           hint="Use the Healing type to restore hit points"
           :rules="damageTypeRules"
@@ -91,7 +91,7 @@ function saveChange({ path, value, ack }: { path: string[]; value: any; ack?: Fu
           label="Target creature"
           :value="model.target"
           :options="[
-            {name: 'Action Target', value: 'target'},
+            {name: 'Action target', value: 'target'},
             {name: 'Self', value: 'self'},
           ]"
           :error-messages="errors.target"

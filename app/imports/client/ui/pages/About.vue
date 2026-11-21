@@ -34,7 +34,7 @@ const paragons = [
     <section class="d-flex flex-column align-center ma-2 mt-4">
       <div>
         <h3 class="text-h5 mb-2">
-          Special Thanks
+          Special thanks
         </h3>
         <p>
           <b>Sam;</b> without her love, DiceCloud could not hope to exist

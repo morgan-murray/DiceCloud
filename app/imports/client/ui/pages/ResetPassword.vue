@@ -75,7 +75,7 @@ async function submit() {
           <v-text-field
             v-model="password"
             type="password"
-            label="New Password"
+            label="New password"
             :rules="passwordRules"
             class="ma-2"
             variant="outlined"
@@ -85,7 +85,7 @@ async function submit() {
           <v-text-field
             v-model="password2"
             type="password"
-            label="Password Again"
+            label="Password again"
             :rules="password2Rules"
             class="ma-2"
             variant="outlined"
@@ -126,7 +126,7 @@ async function submit() {
             color="accent"
             @click="submit"
           >
-            Reset Password
+            Reset password
           </v-btn>
         </div>
       </div>

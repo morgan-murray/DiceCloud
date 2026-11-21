@@ -151,7 +151,7 @@ function helpDialog() {
               @click="$emit('copy')"
             >
               <v-list-item-title>
-                Copy To
+                Copy to
               </v-list-item-title>
               <template #append>
                 <v-icon>mdi-content-duplicate</v-icon>
@@ -163,7 +163,7 @@ function helpDialog() {
               @click="$emit('make-reference')"
             >
               <v-list-item-title>
-                Create Reference
+                Create reference
               </v-list-item-title>
               <template #append>
                 <v-icon>mdi-link-plus</v-icon>

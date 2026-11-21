@@ -28,14 +28,14 @@ const { result: links } = autorun(() => {
     { title: 'Characters', icon: 'mdi-account-group', to: '/character-list', requireLogin: true },
     { title: 'Library', icon: 'mdi-library-shelves', to: '/library', requireLogin: true },
     { title: 'Campaigns', icon: 'mdi-book-open-page-variant', to: '/campaigns', requireLogin: true },
-    { title: 'Rules Reference', icon: 'mdi-book-open-variant', to: '/rules', requireLogin: true },
+    { title: 'Rules reference', icon: 'mdi-book-open-variant', to: '/rules', requireLogin: true },
     { title: 'Tabletops', icon: 'mdi-table-furniture', to: '/tabletops', requireLogin: true },
     { title: 'Files', icon: 'mdi-file-multiple', to: '/my-files', requireLogin: true },
     { title: 'Documentation', icon: 'mdi-book-open-variant', to: '/docs' },
     { title: 'Feedback', icon: 'mdi-bug', to: '/feedback' },
     { title: 'About', icon: 'mdi-sign-text', to: '/about' },
     { title: 'Patreon', icon: 'mdi-patreon', href: 'https://www.patreon.com/dicecloud' },
-    { title: 'Github', icon: 'mdi-github', href: 'https://github.com/ThaumRystra/DiceCloud/' },
+    { title: 'GitHub', icon: 'mdi-github', href: 'https://github.com/ThaumRystra/DiceCloud/' },
   ];
   return allLinks.filter((link: any) => !link.requireLogin || isLoggedIn);
 });
@@ -109,7 +109,7 @@ const { result: CreaturesWithNoParty } = autorun(() => {
                 v-bind="props"
               />
             </template>
-            <span>Account Settings</span>
+            <span>Account settings</span>
           </v-tooltip>
         </template>
       </v-list-item>

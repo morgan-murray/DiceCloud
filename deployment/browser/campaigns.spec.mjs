@@ -5,7 +5,7 @@ import { randomBytes, createHash } from 'node:crypto';
 const base=(process.env.DICECLOUD_TEST_URL||'http://127.0.0.1:31080').replace(/\/?$/,'/');
 const fixture=process.env.DICECLOUD_TEST_FIXTURE,url=p=>new URL(p,base).href;
 const call=(p,name,arg)=>p.evaluate(({name,arg})=>window.Meteor.callAsync('campaigns.'+name,...(arg===undefined?[]:[arg])),{name,arg});
-async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
+async function login(page,owner){await page.goto(url('sign-in'));await page.getByLabel('Username or email').fill(owner.username);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Archive characters',exact:true}).first().waitFor();}
 const dialog=p=>p.locator('.v-overlay--active .v-card').last();
 async function save(p,campaignId,type,title,extra={}){return call(p,'save',{campaignId,type,title,body:'A shared page for the northern journey.',...extra});}
 async function edit(p,campaignId,entryId,extra={}){const e=await call(p,'entry',{campaignId,entryId});return call(p,'save',{campaignId,entryId,revision:e.revision,type:e.type,title:e.title,body:e.body,tags:e.tags,parentId:e.parentId,relatedIds:e.relatedIds,assetIds:e.assetIds,visibility:e.visibility,playerId:e.playerId,kind:e.kind,date:e.date,...extra});}

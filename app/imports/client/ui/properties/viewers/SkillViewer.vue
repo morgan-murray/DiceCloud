@@ -129,7 +129,7 @@ function clickEffect(id: string) {
         </div>
       </property-field>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />

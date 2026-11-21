@@ -161,7 +161,7 @@ const router = createRouter({
       toolbarItems: CharacterListToolbarItems,
     },
     meta: {
-      title: 'Character List',
+      title: 'Character list',
     },
     beforeEnter: ensureLoggedIn,
   }, {
@@ -190,7 +190,7 @@ const router = createRouter({
     name: 'rulesReference',
     path: '/rules',
     component: RulesReference,
-    meta: { title: 'Rules Reference' },
+    meta: { title: 'Rules reference' },
     beforeEnter: ensureLoggedIn,
   }, {
     name: 'singleLibrary',
@@ -210,7 +210,7 @@ const router = createRouter({
       toolbar: LibraryCollectionToolbar,
     },
     meta: {
-      title: 'Library Collection',
+      title: 'Library collection',
     },
   }, {
     name: 'libraryBrowser',
@@ -219,7 +219,7 @@ const router = createRouter({
       default: LibraryBrowser,
     },
     meta: {
-      title: 'Community Libraries',
+      title: 'Community libraries',
     },
   }, {
     name: 'characterSheet',
@@ -231,7 +231,7 @@ const router = createRouter({
       rightDrawer: CharacterSheetRightDrawer,
     },
     meta: {
-      title: 'Character Sheet',
+      title: 'Character sheet',
     },
   }, {
     name: 'printCharacterSheet',
@@ -242,7 +242,7 @@ const router = createRouter({
       toolbar: CharacterSheetPrintedToolbar,
     },
     meta: {
-      title: 'Print Character Sheet',
+      title: 'Print character sheet',
     },
   }, {
     path: '/tabletops',
@@ -276,7 +276,7 @@ const router = createRouter({
       default: SignIn,
     },
     meta: {
-      title: 'Sign In',
+      title: 'Sign in',
     },
   }, {
     name: 'register',
@@ -355,7 +355,7 @@ const router = createRouter({
       default: true,
     },
     meta: {
-      title: 'Invite Error',
+      title: 'Invite error',
     },
   }, {
     path: '/invite-success',
@@ -363,7 +363,7 @@ const router = createRouter({
       default: InviteSuccess,
     },
     meta: {
-      title: 'Invite Success',
+      title: 'Invite success',
     },
   }, {
     name: 'emailVerificationError',
@@ -375,7 +375,7 @@ const router = createRouter({
       default: true,
     },
     meta: {
-      title: 'Email Verification Error',
+      title: 'Email verification error',
     },
   }, {
     path: '/email-verification-success',
@@ -383,7 +383,7 @@ const router = createRouter({
       default: EmailVerificationSuccess,
     },
     meta: {
-      title: 'Email Verification Success',
+      title: 'Email verification success',
     },
   }, {
     path: '/reset-password/:token?',
@@ -391,7 +391,7 @@ const router = createRouter({
       default: ResetPassword,
     },
     meta: {
-      title: 'Reset Password',
+      title: 'Reset password',
     },
   }, {
     path: '/patreon-level-too-low',
@@ -399,7 +399,7 @@ const router = createRouter({
       default: PatreonLevelTooLow,
     },
     meta: {
-      title: 'Patreon Tier Too Low',
+      title: 'Patreon tier too low',
     },
   }, {
     path: '/icon-admin',

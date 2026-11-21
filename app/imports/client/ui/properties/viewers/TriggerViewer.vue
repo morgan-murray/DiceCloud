@@ -33,12 +33,12 @@ const eventText = computed(() => {
         :value="eventText"
       />
       <property-field
-        name="Event Type"
+        name="Event type"
         :value="actionPropertyText"
       />
       <property-field
         v-if="(model.targetTags && model.targetTags.length) || (model.extraTags && model.extraTags.length)"
-        name="Tags Required"
+        name="Tags required"
         :cols="{cols: 12}"
       >
         <div>

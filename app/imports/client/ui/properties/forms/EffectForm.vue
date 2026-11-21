@@ -20,7 +20,7 @@ function change(path: string | string[], value: any, ack?: Function) {
 }
 
 const operations = [
-  { value: 'base', text: 'Base Value' },
+  { value: 'base', text: 'Base value' },
   { value: 'add', text: 'Add' },
   { value: 'mul', text: 'Multiply' },
   { value: 'min', text: 'Minimum' },
@@ -28,9 +28,9 @@ const operations = [
   { value: 'set', text: 'Set' },
   { value: 'advantage', text: 'Advantage' },
   { value: 'disadvantage', text: 'Disadvantage' },
-  { value: 'passiveAdd', text: 'Passive Bonus' },
+  { value: 'passiveAdd', text: 'Passive bonus' },
   { value: 'fail', text: 'Fail' },
-  { value: 'conditional', text: 'Conditional Benefit' },
+  { value: 'conditional', text: 'Conditional benefit' },
 ];
 
 const { result: attributeList } = autorun(() =>

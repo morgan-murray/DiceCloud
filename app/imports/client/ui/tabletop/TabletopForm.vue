@@ -156,7 +156,7 @@ async function getUser({ value, ack }: { value: string; ack: Function }) {
             <smart-select
               label="Permission"
               :items="[
-                {text: 'Game Master', value: 'gameMaster'},
+                {text: 'Game master', value: 'gameMaster'},
                 {text: 'Player', value: 'player'},
                 {text: 'Spectator', value: 'spectator'},
               ]"
@@ -187,7 +187,7 @@ async function getUser({ value, ack }: { value: string; ack: Function }) {
             md="6"
             class="mb-4"
           >
-            <outlined-input name="Game Masters">
+            <outlined-input name="Game masters">
               <tabletop-user-list
                 :users="users.gameMasters"
                 :edit-permission="editPermission"

@@ -36,7 +36,7 @@ function levelUpDialog() {
   <div class="class-viewer">
     <v-row dense>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />
@@ -46,7 +46,7 @@ function levelUpDialog() {
       />
       <property-field
         v-if="(model.slotTags && model.slotTags.length) || (model.extraTags && model.extraTags.length)"
-        name="Tags Required"
+        name="Tags required"
         :cols="{ cols: 12 }"
       >
         <div>
@@ -63,7 +63,7 @@ function levelUpDialog() {
         </div>
       </property-field>
       <property-field
-        name="Missing Levels"
+        name="Missing levels"
         mono
         :value="model.missingLevels &&
           (model.missingLevels.length || undefined) &&
@@ -77,7 +77,7 @@ function levelUpDialog() {
       />
       <property-field
         v-if="context.creatureId"
-        name="Level Up"
+        name="Level up"
         :cols="{ cols: 12 }"
       >
         <v-btn
@@ -89,10 +89,10 @@ function levelUpDialog() {
           @click="levelUpDialog"
         >
           <template v-if="model.missingLevels && model.missingLevels.length">
-            Get Missing Levels
+            Get missing levels
           </template>
           <template v-else>
-            Level Up
+            Level up
           </template>
         </v-btn>
       </property-field>

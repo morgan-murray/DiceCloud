@@ -31,7 +31,7 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
   await page.goto(url('sign-in'));
   await page.getByLabel('Username or email').fill(owner.username);
   await page.getByLabel('Password', { exact: true }).fill(owner.password);
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
   await page.getByRole('button', { name: 'Archive characters', exact: true }).first().waitFor();
   const id = await call(page, 'creatures.insertCreature', { name: 'Tab interaction fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
@@ -55,7 +55,7 @@ test('Character tabs: populated entries, single dialogs, journal, Build choices 
     const creator = await open(page, page.locator('[data-id="insert-creature-property-type-null"]'), 'insert-property-dialog');
     await creator.locator('.v-card').filter({ has: page.locator('.v-card-title').filter({ hasText: /^\s*Note\s*$/ }) }).first().click();
     await creator.getByLabel('Name', { exact: true }).fill('Note created through Build');
-    await creator.getByRole('button', { name: 'create', exact: true }).click();
+    await creator.getByRole('button', { name: 'Create', exact: true }).click();
     await expect.poll(() => stack(page)).toEqual([]);
     await page.waitForFunction(id => Boolean(window.Mongo.getCollection('creatureProperties').findOne({ 'root.id': id, name: 'Note created through Build' })), id);
     await expect(add).toBeVisible();
@@ -136,7 +136,7 @@ test('Character tabs: New Character steps, responsive layout and creation choice
   await page.goto(url('sign-in'));
   await page.getByLabel('Username or email').fill(owner.username);
   await page.getByLabel('Password', { exact: true }).fill(owner.password);
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
   await page.getByRole('button', { name: 'Archive characters', exact: true }).first().waitFor();
   const name = `Creation dialog fixture ${Date.now()}`;
@@ -222,7 +222,7 @@ test('Character tabs: Settings and shared responsive layout controls', async ({ 
   await page.goto(url('sign-in'));
   await page.getByLabel('Username or email').fill(owner.username);
   await page.getByLabel('Password', { exact: true }).fill(owner.password);
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForFunction(() => Boolean(window.Meteor?.userId()));
   const navigate = path => page.evaluate(path => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push(path), path);
   await navigate('/account');
@@ -242,9 +242,9 @@ test('Character tabs: Settings and shared responsive layout controls', async ({ 
   await expect(page.locator('.v-application')).toHaveClass(/v-theme--dark/);
   await expect.poll(togglesFit).toBe(true);
   await page.getByRole('button', { name: 'Add email address', exact: true }).click();
-  await expect(page.getByLabel('Add Email Address', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Add email address', { exact: true })).toBeVisible();
   await page.locator('.email-input-row').getByRole('button', { name: 'Cancel', exact: true }).click();
-  await expect(page.getByLabel('Add Email Address', { exact: true })).not.toBeVisible();
+  await expect(page.getByLabel('Add email address', { exact: true })).not.toBeVisible();
   await page.screenshot({ path: info.outputPath('settings-phone-dark.png'), fullPage: true, animations: 'disabled' });
   await navigate(`/character/${creatureId}`);
   await page.locator('.bottom-nav-btns').waitFor();
@@ -258,6 +258,16 @@ test('Character tabs: Settings and shared responsive layout controls', async ({ 
   await navigate('/docs/functions');
   await page.locator('.function-examples').first().waitFor();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await navigate('/feedback');
+  await expect(page.getByText('DiceCloud Discord server', { exact: true })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator('.feedback-card .v-card-title')).toHaveText('DiceCloud Discord server');
+  await page.screenshot({ path: info.outputPath('feedback-phone.png'), animations: 'disabled' });
+  await navigate('/character-list');
+  await expect(page.getByRole('button', { name: 'Import Aurora character', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New character', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add folder', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('character-list-phone.png'), animations: 'disabled' });
   await navigate('/account');
   await page.getByRole('button', { name: 'Light', exact: true }).click();
   expect(errors).toEqual([]);

@@ -18,7 +18,7 @@ autorun(() => {
 });
 
 const step = ref(1);
-const name = ref("New Character");
+const name = ref("New character");
 const gender = ref("");
 const alignment = ref("");
 const startingLevel = ref(1);
@@ -98,11 +98,11 @@ async function submit() {
       <v-toolbar color="secondary" height="64" class="creation-toolbar">
         <v-btn
           icon="mdi-arrow-left"
-          aria-label="Close New Character"
+          aria-label="Close new character"
           :disabled="submitting"
           @click="$emit('pop')"
         />
-        <v-toolbar-title>New Character</v-toolbar-title>
+        <v-toolbar-title>New character</v-toolbar-title>
       </v-toolbar>
     </template>
     <template #unwrapped-content>

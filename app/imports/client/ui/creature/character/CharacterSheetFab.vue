@@ -30,7 +30,7 @@ const speedDials = computed(() => speedDialsByTab[tabName.value]);
 const properties = PROPERTIES;
 
 function getPropertyLabel(type: string | null) {
-  if (type === 'buff') return 'Buff or Condition';
+  if (type === 'buff') return 'Buff or condition';
   return type ? PROPERTIES[type].name : 'Property';
 }
 

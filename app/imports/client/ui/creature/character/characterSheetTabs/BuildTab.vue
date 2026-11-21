@@ -437,10 +437,10 @@ async function unhideProp(_id: string) {
                   @click.stop="levelUpDialog(cls._id)"
                 >
                   <template v-if="cls.missingLevels && cls.missingLevels.length">
-                    Get Missing Levels
+                    Get missing levels
                   </template>
                   <template v-else>
-                    Level Up
+                    Level up
                   </template>
                 </v-btn>
               </template>

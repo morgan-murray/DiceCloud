@@ -58,7 +58,7 @@ function error(e: any) {
     <v-row dense>
       <v-col cols="12">
         <smart-combobox
-          label="Damage Types"
+          label="Damage types"
           multiple
           chips
           deletable-chips

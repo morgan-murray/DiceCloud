@@ -154,7 +154,7 @@ async function damageProperty({ type, value }: { type: string; value: number }) 
         </div>
       </property-field>
       <property-field
-        name="Variable Name"
+        name="Variable name"
         mono
         :value="model.variableName"
       />

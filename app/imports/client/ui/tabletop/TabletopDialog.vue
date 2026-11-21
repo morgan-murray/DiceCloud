@@ -104,7 +104,7 @@ function removeTabletopFn() {
   <dialog-base v-if="model">
     <template #toolbar>
       <v-toolbar-title>
-        {{ model.name || 'Unnamed Tabletop' }}
+        {{ model.name || 'Unnamed tabletop' }}
       </v-toolbar-title>
       <v-spacer />
       <v-slide-x-transition>

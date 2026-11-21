@@ -216,7 +216,7 @@ function insertCustomFiller() {
         variant="outlined"
         @click="loadMore"
       >
-        Load More
+        Load more
       </v-btn>
     </div>
     <div class="d-flex align-center justify-center text-caption text-disabled mt-8 mb-2">

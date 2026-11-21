@@ -23,7 +23,7 @@ const name = computed(() => {
   <div class="branch-viewer">
     <v-row dense>
       <property-field
-        name="Branch Type"
+        name="Branch type"
         :value="name"
       />
       <property-field

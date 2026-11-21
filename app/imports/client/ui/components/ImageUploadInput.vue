@@ -99,7 +99,7 @@ function resetState() {
       @click="hiddenFileInput?.click()"
     >
       <div>
-        Upload Image
+        Upload image
       </div>
       <template #loader>
         <v-progress-circular

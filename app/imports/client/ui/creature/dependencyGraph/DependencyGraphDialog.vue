@@ -114,7 +114,7 @@ onMounted(() => {
   <dialog-base class="dependency-graph">
     <template #toolbar>
       <div>
-        Dependency Graph
+        Dependency graph
       </div>
     </template>
     <template #unwrapped-content>

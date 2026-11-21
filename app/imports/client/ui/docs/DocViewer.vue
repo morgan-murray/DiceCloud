@@ -58,7 +58,7 @@ function mdClick(e: MouseEvent) {
       </div>
       <v-fade-transition mode="out-in">
         <div
-          :key="doc && doc.name || 'Documentation Home'"
+          :key="doc && doc.name || 'Documentation home'"
           class="d-flex align-center mb-4"
         >
           <v-avatar
