@@ -19,7 +19,6 @@ const CharacterSheetRightDrawer = () => import('/imports/client/ui/creature/char
 const CharacterSheetPrinted = () => import('/imports/client/ui/creature/character/printedCharacterSheet/CharacterSheetPrinted.vue');
 const CharacterSheetPrintedToolbar = () => import('/imports/client/ui/creature/character/printedCharacterSheet/CharacterSheetPrintedToolbar.vue');
 const SignIn = () => import('/imports/client/ui/pages/SignIn.vue');
-const Register = () => import('/imports/client/ui/pages/Register.vue');
 const IconAdmin = () => import('/imports/client/ui/icons/IconAdmin.vue');
 //const Friends = () => import('/imports/client/ui/pages/Friends.vue' );
 const Feedback = () => import('/imports/client/ui/pages/Feedback.vue');
@@ -284,14 +283,8 @@ const router = createRouter({
       title: 'Sign in',
     },
   }, {
-    name: 'register',
     path: '/register',
-    components: {
-      default: Register,
-    },
-    meta: {
-      title: 'Register',
-    },
+    redirect: to => ({ name: 'signIn', query: to.query }),
   }, {
     path: '/account',
     components: {

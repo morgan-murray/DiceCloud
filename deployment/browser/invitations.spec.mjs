@@ -22,6 +22,11 @@ test('Player invitation workflow: chosen password, replacement, revocation and p
   test.skip(!fixturePath, 'Requires the configured private native fixture');
   test.setTimeout(120000);
   const data = JSON.parse(readFileSync(fixturePath, 'utf8'));
+  await page.goto(url('register?redirect=%2Fcharacter-list'));
+  await expect(page).toHaveURL(new URL('sign-in?redirect=%2Fcharacter-list', base).href);
+  await expect(page.getByRole('link', { name: /register|sign[ -]?up/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /register|sign[ -]?up/i })).toHaveCount(0);
+  await expect(page.getByText('Accounts are by invitation.', { exact: false })).toBeVisible();
   await login(page, data.owner);
   expect((await call(page, 'status')).canInvite).toBe(true);
   await navigate(page, '/account');

@@ -109,20 +109,9 @@ function patreonLogin() {
           >
             Sign in
           </v-btn>
-          <v-btn
-            color="accent"
-            :to="{ name: 'register', query: { redirect: route.query.redirect} }"
-            class="ma-2"
-          >
-            Register
-          </v-btn>
         </div>
         <div class="text-caption mt-4 px-4">
-          <p>
-            DiceCloud Version 2 requires a new account to use.
-          </p><p>
-            Version 1 is still available at <a href="https://v1.dicecloud.com">v1.dicecloud.com</a>
-          </p>
+          <p>Accounts are by invitation. Ask your DM or the person running this game for an invitation link.</p>
         </div>
       </div>
     </v-form>
