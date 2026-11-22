@@ -44,8 +44,8 @@ export function recordedAttack(note) {
 export function weaponProfile(name, catalog) {
   const key = weaponKey(name);
   const base = key.replace(/(?:^\+[123]\s+|\s+\+[123]$)/g, '');
+  if (!Object.hasOwn(catalog, base)) return;
   const profile = catalog[base];
-  if (!profile) return;
   const magic = Number(key.match(/\+([123])/)?.[1] || 0);
   const { properties } = profile;
   const distance = properties.match(/range (\d+\/\d+)/i)?.[1];

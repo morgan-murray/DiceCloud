@@ -296,7 +296,7 @@ test('Character tabs: shared action templates and a physical weapon attack on a 
       await page.locator('[data-id="insert-creature-property-type-action"]:visible').click();
       const dialog = page.locator('.dialog-stack .dialog').last();
       await dialog.getByRole('button', { name: 'Choose an action template' }).click();
-      await dialog.getByRole('combobox', { name: 'Action template', exact: true }).click();
+      await dialog.locator('.v-field').filter({ has: page.getByRole('combobox', { name: 'Action template', exact: true }) }).click();
       return dialog;
     }
     const ready = await library();
@@ -312,7 +312,7 @@ test('Character tabs: shared action templates and a physical weapon attack on a 
     await expect(page.locator('.actions-tab .action-card').filter({ hasText: 'close the door' })).toBeVisible();
     const attack = await library();
     await page.getByRole('option', { name: 'Weapon attack', exact: true }).click();
-    await attack.getByRole('combobox', { name: 'Weapon from inventory' }).click();
+    await attack.locator('.v-field').filter({ has: page.getByRole('combobox', { name: 'Weapon from inventory' }) }).click();
     await page.getByRole('option', { name: 'Rapier +1 (equipped)', exact: true }).click();
     await expect(attack.getByLabel('Total to add to your d20')).toHaveValue('9');
     await expect(attack.getByLabel('Damage on a hit')).toHaveValue('1d8+5 piercing');
