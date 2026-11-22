@@ -45,12 +45,12 @@ Meteor.methods({
     if (!sheetAbilities(sheet, features).some(a => a.name === ability)) throw new Meteor.Error('missing-feature', 'This ability is unavailable on this sheet.');
     // Compare both the displayed balance and the underlying spent points. A stale
     // tab or repeat submission cannot spend the same last point or slot twice.
-    const updated = await CreatureProperties.rawCollection().updateOne({
+    const updated = await CreatureProperties.updateAsync({
       ...active, _id: poolId, type: 'attribute', attributeType: pool.attributeType,
       overridden: { $ne: true }, value: remaining, total: pool.total, damage: pool.damage ?? null,
       $expr: { $eq: [{ $subtract: ['$total', { $ifNull: ['$damage', 0] }] }, remaining] },
-    }, { $inc: { damage: amount, value: -amount }, $set: { dirty: true } });
-    if (!updated.modifiedCount) throw new Meteor.Error('balance-changed', 'The counter changed. Check its balance and try again.');
+    }, { $inc: { damage: amount, value: -amount }, $set: { dirty: true } }, { bypassCollection2: true });
+    if (!updated) throw new Meteor.Error('balance-changed', 'The counter changed. Check its balance and try again.');
     return remaining - amount;
   },
 });

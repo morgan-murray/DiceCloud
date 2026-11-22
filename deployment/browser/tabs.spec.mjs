@@ -348,7 +348,8 @@ test('Character tabs: physical class abilities spend the selected native counter
     const card = name => page.locator('[data-ability="'+name+'"]');
     const value = propId => page.evaluate(propId=>window.Mongo.getCollection('creatureProperties').findOne(propId)?.value,propId);
     const smite = card('Divine Smite');
-    await expect(smite).toContainText('2d8');
+    // Computed fields from the native sheet engine arrive on the publication poll.
+    await expect(smite).toContainText('2d8', { timeout: 20000 });
     await smite.getByRole('checkbox',{name:'Fiend or undead'}).check();
     await smite.getByRole('checkbox',{name:'Critical hit'}).check();
     await expect(smite).toContainText('6d8');
