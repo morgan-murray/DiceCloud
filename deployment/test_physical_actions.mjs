@@ -35,3 +35,23 @@ test('2014 weapon profiles, variable bonuses, proficiency, two-handed dice and e
   assert.match(action.summary.text,/\{dexterity\.modifier \+ 1 \+ proficiencyBonus\}/);
   assert.match(action.summary.text,/1d8 piercing, adding \{dexterity\.modifier \+ 1\}/);
 });
+
+import { classLevel, sheetAbilities, smiteDice, sneakDice, poolFor, validCost } from '../app/imports/api/classAbilities/physical.mjs';
+test('2014 class abilities use class levels and the existing sheet pools', () => {
+  const imported = [{type:'note',name:'Aurora import record',description:{text:'Level: 12\nRogue 10\nMonk 2'}}];
+  assert.equal(classLevel({},imported,'rogue'),10);
+  assert.equal(classLevel({advancement:{className:'rogue',level:11}},imported,'rogue'),11);
+  assert.deepEqual(sheetAbilities({},imported).map(a=>a.name), ['Cunning Action','Sneak Attack','Step of the Wind']);
+  assert.equal(sneakDice(10,false),5); assert.equal(sneakDice(10,true),10);
+  assert.equal(smiteDice(1,false,false),2); assert.equal(smiteDice(3,true,true),10); assert.equal(smiteDice(9,true,true),12);
+  for (const [name,id] of [['Step of the Wind','kiPoints'],['Lay on Hands','layOnHands']]) {
+    const pool={type:'attribute',attributeType:'resource',variableName:id};
+    assert.ok(poolFor(name,pool)); assert.equal(poolFor(name,{...pool,inactive:true}),false);
+    assert.equal(poolFor(name,{...pool,variableName:'auroragold'}),false);
+    assert.ok(poolFor(name,{...pool,variableName:'customCounter',tags:[id]}));
+  }
+  assert.ok(validCost('Lay on Hands',50,50));
+  for(const n of [0,51,1.5,-1])assert.equal(validCost('Lay on Hands',n,50),false);
+  assert.equal(validCost('Step of the Wind',2,10),false);
+  assert.equal(validCost('Cunning Action',1,10),false);
+});

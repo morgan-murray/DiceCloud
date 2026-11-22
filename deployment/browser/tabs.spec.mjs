@@ -328,3 +328,59 @@ test('Character tabs: shared action templates and a physical weapon attack on a 
     await call(page, 'Creatures.methods.removeCreature', { charId: id });
   }
 });
+
+test('Character tabs: physical class abilities spend the selected native counter', async ({ page }) => {
+  test.skip(!fixture, 'Requires the native workflow account');
+  const { owner } = JSON.parse(readFileSync(fixture, 'utf8'));
+  await page.goto(url('sign-in'));
+  await page.getByLabel('Username or email').fill(owner.username);
+  await page.getByLabel('Password', { exact: true }).fill(owner.password);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.waitForFunction(() => window.Meteor?.userId());
+  const id = await call(page, 'creatures.insertCreature', { name: 'Class ability fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
+  try {
+    const insert = prop => call(page, 'creatureProperties.insert', { creatureProperty: { ...prop, root:{collection:'creatures',id} } });
+    await insert({type:'note',name:'Aurora import record',description:{text:'Paladin 2\nRogue 5\nMonk 2'}});
+    const slotId = await insert({type:'attribute',name:'First level',attributeType:'spellSlot',variableName:'firstSlots',spellSlotLevel:{calculation:'1'},baseValue:{calculation:'2'},damage:1});
+    const handsId = await insert({type:'attribute',name:'Lay on Hands',attributeType:'resource',variableName:'layOnHands',baseValue:{calculation:'10'},damage:2,reset:'longRest'});
+    await page.evaluate(id => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push({name:'characterSheet',params:{id}}),id);
+    await page.getByRole('tab',{name:'Actions',exact:true}).click();
+    const card = name => page.locator('[data-ability="'+name+'"]');
+    const value = propId => page.evaluate(propId=>window.Mongo.getCollection('creatureProperties').findOne(propId)?.value,propId);
+    const smite = card('Divine Smite');
+    await expect(smite).toContainText('2d8');
+    await smite.getByRole('checkbox',{name:'Fiend or undead'}).check();
+    await smite.getByRole('checkbox',{name:'Critical hit'}).check();
+    await expect(smite).toContainText('6d8');
+    await smite.getByRole('button',{name:'Spend 1 slot'}).click();
+    await expect(smite.getByRole('status')).toContainText('0 remaining');
+    await expect.poll(()=>value(slotId)).toBe(0);
+    await expect(smite.getByRole('button',{name:'Spend 1 slot'})).toBeDisabled();
+    const hands=card('Lay on Hands');
+    await hands.getByLabel('HP to restore').fill('9');
+    await expect(hands.getByRole('button',{name:'Spend 9 points'})).toBeDisabled();
+    await hands.getByLabel('HP to restore').fill('5');
+    await hands.getByRole('button',{name:'Spend 5 points'}).click();
+    await expect(hands.getByRole('status')).toContainText('3 remaining');
+    await expect.poll(()=>value(handsId)).toBe(3);
+    const stale={creatureId:id,poolId:handsId,ability:'Lay on Hands',amount:5,remaining:8};
+    await expect(call(page,'classAbilities.spend',stale)).rejects.toThrow(/counter changed/);
+    await expect.poll(()=>value(handsId)).toBe(3);
+    await expect(card('Sneak Attack')).toContainText('3d6');
+    await card('Sneak Attack').getByRole('checkbox',{name:'Critical hit'}).check();
+    await expect(card('Sneak Attack')).toContainText('6d6');
+    await expect(card('Cunning Action')).toContainText('bonus action');
+    const step=card('Step of the Wind');
+    await step.getByLabel('Ki currently remaining',{exact:false}).fill('1');
+    await step.getByRole('button',{name:'Create ki pool'}).click();
+    await step.getByRole('button',{name:'Spend 1 ki'}).click();
+    await expect(step.getByRole('status')).toContainText('0 remaining');
+    await expect(step.getByRole('button',{name:'Spend 1 ki'})).toBeDisabled();
+    await page.reload();
+    await page.getByRole('tab',{name:'Actions',exact:true}).click();
+    await expect.poll(()=>value(handsId)).toBe(3);
+    await expect(step.getByRole('button',{name:'Spend 1 ki'})).toBeDisabled();
+  } finally {
+    await call(page,'Creatures.methods.removeCreature',{charId:id});
+  }
+});

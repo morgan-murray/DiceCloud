@@ -37,3 +37,5 @@ import '/imports/server/campaigns/service';
 import '/imports/server/advancement/service';
 
 import '/imports/server/playerInvitations/service';
+
+import '/imports/server/classAbilities/service';
