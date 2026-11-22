@@ -333,4 +333,162 @@
   <element id="ID_INTERNAL_OPTION_ALLOW_MULTICLASSING" name="Multiclassing" type="Option" source="Aurora Core Reference (2014)">
     <description>A source build choice. This import preserves a snapshot rather than offering future level progression.</description>
   </element>
+  <defaults>
+    <element id="ID_BACKGROUND_ACOLYTE" name="Acolyte" type="Background" source="Aurora Core Reference (2014)" />
+    <element id="ID_BACKGROUND_FEATURE_SHELTER_OF_THE_FAITHFUL" name="Feature: Shelter of the Faithful" type="Feature" source="Aurora Core Reference (2014)" />
+    <element id="ID_EXPERTISE_SKILL_INVESTIGATION" name="Skill Expertise (Investigation)" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Double the proficiency bonus for this selection.</description>
+      <rules>
+        <stat name="investigation:proficiency" value="proficiency" bonus="double" />
+      </rules>
+    </element>
+    <element id="ID_EXPERTISE_SKILL_SLEIGHTOFHAND" name="Skill Expertise (Sleight of Hand)" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Double the proficiency bonus for this selection.</description>
+      <rules>
+        <stat name="sleight of hand:proficiency" value="proficiency" bonus="double" />
+      </rules>
+    </element>
+    <element id="ID_EXPERTISE_SKILL_STEALTH" name="Skill Expertise (Stealth)" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Double the proficiency bonus for this selection.</description>
+      <rules>
+        <stat name="stealth:proficiency" value="proficiency" bonus="double" />
+      </rules>
+    </element>
+    <element id="ID_EXPERTISE_TOOL_THIEVES_TOOLS" name="Tool Expertise (Thieves’ Tools)" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Double the proficiency bonus for this selection.</description>
+      <rules>
+        <stat name="thieves tools:proficiency" value="proficiency" bonus="double" />
+      </rules>
+    </element>
+    <element id="ID_INTERNAL_CLASS_FEATURE_ASI_4_ROGUE" name="Improvement Option (Rogue 4)" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Fourth-level Rogue improvement. Any selected ability increases are recorded separately in the build.</description>
+    </element>
+    <element id="ID_INTERNAL_GRANTS_MULTICLASSING_PREREQUISITE" name="Multiclassing Prerequisite" type="Grants" source="Aurora Core Reference (2014)" />
+    <element id="ID_INTERNAL_GRANTS_MULTICLASS_SPELLCASTING" name="Multiclass Spellcasting" type="Grants" source="Aurora Core Reference (2014)" />
+    <element id="ID_LANGUAGE_COMMON" name="Common" type="Language" source="Aurora Core Reference (2014)" />
+    <element id="ID_LANGUAGE_DWARVISH" name="Dwarvish" type="Language" source="Aurora Core Reference (2014)" />
+    <element id="ID_LANGUAGE_HALFLING" name="Halfling" type="Language" source="Aurora Core Reference (2014)" />
+    <element id="ID_LANGUAGE_ORC" name="Orc" type="Language" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_ARMOR_PROFICIENCY_LEATHER" name="Armor Proficiency (Leather)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_ARMOR_PROFICIENCY_LIGHT_ARMOR" name="Armor Proficiency (Light Armor)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_ARMOR_PROFICIENCY_PADDED" name="Armor Proficiency (Padded)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_ARMOR_PROFICIENCY_STUDDED_LEATHER" name="Armor Proficiency (Studded Leather)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_TOOL_PROFICIENCY_THIEVES_TOOLS" name="Tool Proficiency (Thieves’ tools)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_CLUB" name="Weapon Proficiency (Club)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_CROSSBOW_HAND" name="Weapon Proficiency (Crossbow, Hand)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_CROSSBOW_LIGHT" name="Weapon Proficiency (Crossbow, Light)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_DAGGER" name="Weapon Proficiency (Dagger)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_DART" name="Weapon Proficiency (Dart)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_GREATCLUB" name="Weapon Proficiency (Greatclub)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_HANDAXE" name="Weapon Proficiency (Handaxe)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_JAVELIN" name="Weapon Proficiency (Javelin)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_LIGHT_HAMMER" name="Weapon Proficiency (Light Hammer)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_LONGSWORD" name="Weapon Proficiency (Longsword)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_MACE" name="Weapon Proficiency (Mace)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_QUARTERSTAFF" name="Weapon Proficiency (Quarterstaff)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_RAPIER" name="Weapon Proficiency (Rapier)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SHORTBOW" name="Weapon Proficiency (Shortbow)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SHORTSWORD" name="Weapon Proficiency (Shortsword)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SICKLE" name="Weapon Proficiency (Sickle)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SIMPLE_MELEE_WEAPONS" name="Weapon Proficiency (Simple Melee Weapons)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SIMPLE_RANGED_WEAPONS" name="Weapon Proficiency (Simple Ranged Weapons)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SIMPLE_WEAPONS" name="Weapon Proficiency (Simple Weapons)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SLING" name="Weapon Proficiency (Sling)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_SPEAR" name="Weapon Proficiency (Spear)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_PROFICIENCY_WEAPON_PROFICIENCY_UNARMED_STRIKE" name="Weapon Proficiency (Unarmed Strike)" type="Proficiency" source="Aurora Core Reference (2014)" />
+    <element id="ID_RACE_HALFLING" name="Halfling" type="Race" source="Aurora Core Reference (2014)">
+      <rules>
+        <stat name="dexterity" value="2" />
+        <stat name="innate speed" value="25" bonus="base" />
+      </rules>
+    </element>
+    <element id="ID_RACIAL_TRAIT_BRAVE" name="Brave" type="Racial Trait" source="Aurora Core Reference (2014)">
+      <description>You have advantage on saves against fear.</description>
+    </element>
+    <element id="ID_RACIAL_TRAIT_HALFLING_NIMBLENESS" name="Halfling Nimbleness" type="Racial Trait" source="Aurora Core Reference (2014)">
+      <description>You can pass through the space of a larger creature.</description>
+    </element>
+    <element id="ID_RACIAL_TRAIT_HALFLING_SUBRACE" name="Halfling Subrace" type="Racial Trait" source="Aurora Core Reference (2014)" />
+    <element id="ID_RACIAL_TRAIT_LUCKY" name="Lucky" type="Racial Trait" source="Aurora Core Reference (2014)">
+      <description>Reroll a natural 1 on an attack, check or save and use the new result.</description>
+    </element>
+    <element id="ID_RACIAL_TRAIT_NATURALLY_STEALTHY" name="Naturally Stealthy" type="Racial Trait" source="Aurora Core Reference (2014)">
+      <description>A larger creature can provide enough cover for you to attempt to hide.</description>
+    </element>
+    <element id="ID_SUB_RACE_LIGHTFOOT_HALFLING" name="Lightfoot Halfling" type="Sub Race" source="Aurora Core Reference (2014)">
+      <rules>
+        <stat name="charisma" value="1" />
+      </rules>
+    </element>
+    <element id="ID_WOTC_ARMOR_LIGHT_LEATHER" name="Leather" type="Armor" source="Aurora Core Reference (2014)">
+      <rules>
+        <stat name="ac:armored:armor" value="11" />
+      </rules>
+      <setters>
+        <set name="armor">Light</set>
+        <set name="armorClass">11 + Dex modifier</set>
+      </setters>
+    </element>
+    <element id="ID_WOTC_DMG_MAGIC_ITEM_GOGGLES_OF_NIGHT" name="Goggles of Night" type="Magic Item" source="Aurora Core Reference (2014)">
+      <description>While worn, these goggles grant 60 feet of darkvision or extend existing darkvision by 60 feet.</description>
+    </element>
+    <element id="ID_WOTC_DMG_MAGIC_ITEM_WEAPON_1" name="Weapon, +1" type="Magic Item" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_ITEM_EXPLORERS_PACK" name="Explorer’s Pack" type="Item" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_ARCHETYPE_FEATURE_THIEF_FASTHANDS" name="Fast Hands" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Use Cunning Action for Sleight of Hand, thieves’ tools to pick a lock or disarm a trap, or Use an Object.</description>
+    </element>
+    <element id="ID_WOTC_PHB_ARCHETYPE_FEATURE_THIEF_SECONDSTORYWORK" name="Second-Story Work" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Climbing costs no extra movement. Add your Dexterity modifier in feet to a running jump.</description>
+    </element>
+    <element id="ID_WOTC_PHB_ARCHETYPE_FEATURE_THIEF_SUPREMESNEAK" name="Supreme Sneak" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Gain advantage on Stealth when you move no farther than half your speed on that turn.</description>
+    </element>
+    <element id="ID_WOTC_PHB_ARCHETYPE_THIEF" name="Thief" type="Feature" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_ABILITYSCOREIMPROVEMENT_ROGUE" name="Ability Score Improvement" type="Class Feature" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_CUNNINGACTION" name="Cunning Action" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>As a bonus action, Dash, Disengage or Hide.</description>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_EVASION" name="Evasion" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>When a Dexterity save would halve damage, take half on failure or none on success.</description>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_EXPERTISE" name="Expertise" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Double your proficiency bonus for the selected skills or tools.</description>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_ROGUISHARCHETYPE" name="Roguish Archetype" type="Class Feature" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_SNEAKATTACK" name="Sneak Attack" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Once per turn, add the rogue’s Sneak Attack dice to a qualifying finesse or ranged hit.</description>
+      <rules>
+        <stat name="sneak-attack:count" value="1" level="1" />
+        <stat name="sneak-attack:count" value="1" level="3" />
+        <stat name="sneak-attack:count" value="1" level="5" />
+        <stat name="sneak-attack:count" value="1" level="7" />
+        <stat name="sneak-attack:count" value="1" level="9" />
+        <stat name="sneak-attack:count" value="1" level="11" />
+        <stat name="sneak-attack:count" value="1" level="13" />
+        <stat name="sneak-attack:count" value="1" level="15" />
+        <stat name="sneak-attack:count" value="1" level="17" />
+        <stat name="sneak-attack:count" value="1" level="19" />
+        <stat name="sneak-attack:die" value="6" bonus="die" />
+      </rules>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_THIEVES_CANT" name="Thieves’ Cant" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Recognise and convey hidden messages using the thieves’ code.</description>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_FEATURE_ROGUE_UNCANNY_DODGE" name="Uncanny Dodge" type="Class Feature" source="Aurora Core Reference (2014)">
+      <description>Use your reaction to halve the damage of an attack that hits you if you can see the attacker.</description>
+    </element>
+    <element id="ID_WOTC_PHB_CLASS_ROGUE" name="Rogue" type="Class" source="Aurora Core Reference (2014)">
+      <setters>
+        <set name="hd">d8</set>
+      </setters>
+    </element>
+    <element id="ID_WOTC_PHB_ITEM_LANTERN_HOODED" name="Lantern, Hooded" type="Item" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_ITEM_OIL_FLASK" name="Oil (flask)" type="Item" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_ITEM_TOOL_THIEVES_TOOLS" name="Thieves’ Tools" type="Item" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_LANGUAGE_THIEVES_CANT" name="Thieves’ Cant" type="Language" source="Aurora Core Reference (2014)">
+      <description>Recognise and convey hidden messages using the thieves’ code.</description>
+    </element>
+    <element id="ID_WOTC_PHB_WEAPON_DAGGER" name="Dagger" type="Weapon" source="Aurora Core Reference (2014)" />
+    <element id="ID_WOTC_PHB_WEAPON_SHORTSWORD" name="Shortsword" type="Weapon" source="Aurora Core Reference (2014)" />
+  </defaults>
 </elements>

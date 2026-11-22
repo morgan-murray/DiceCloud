@@ -36,6 +36,12 @@ class CompendiumQuery:
                 if len(self.elements) >= 5000: fail('ELEMENT_LIMIT', 'content', 'Content has more than 5,000 elements.')
                 self.elements[key] = element; ids.append(key)
             self.manifest.append(dict(name=name, sha256=digest(body), bytes=len(body), elements=sorted(ids)))
+        # Optional rules fill gaps after the user's chosen private sources resolve.
+        for element in builtin_root.findall('./defaults/element'):
+            key = element.get('id')
+            if not key or not ID.fullmatch(key) or key in self.builtin_ids:
+                fail('INVALID_BUILTIN', 'builtin', 'Invalid default element identifier.')
+            self.elements.setdefault(key, element)
         self.hash = digest(canonical(dict(builtin=self.builtin, privateFiles=self.manifest)))
     def quick_query_id(self, key):
         return self.elements.get(key)

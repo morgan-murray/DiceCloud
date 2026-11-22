@@ -14,6 +14,16 @@ def fixture(name):return upload((ROOT/'fixtures'/(name+'.dnd5e')).read_bytes(),n
 def pack():return [upload((ROOT/'fixtures/content.xml').read_bytes(),'content.xml')]
 
 class CharacterTests(unittest.TestCase):
+    def test_native_pact_slots_and_additional_spells(self):
+        char = fixture('caster')
+        body = base64.b64decode(char['data']).replace(
+            b'pool="spellcasting"', b'source="ID_WOTC_PHB_CLASS_FEATURE_WARLOCK_SPELLCASTING_WARLOCK_PACT_MAGIC"')
+        body = body.replace(b'</magic>', b'<additional><spell id="ID_TEST_SPELL" source="Innate"/></additional></magic>')
+        result = extract(upload(body, 'pact.dnd5e'), pack())
+        self.assertTrue(result['resources'])
+        self.assertTrue(all(slot['reset'] == 'shortRest' for slot in result['resources']))
+        self.assertTrue(any('Innate' in note for note in result['notes']))
+
     def test_future_hp_roll_queue_counts_only_current_levels(self):
         f=fixture('martial');body=base64.b64decode(f['data'])
         queued=body.replace(b'10,6,6',b'10,6,6'+b',1'*17)
