@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
+import { computed, inject } from 'vue';
+import SheetCounter from './SheetCounter.vue';
 import numberToSignedString from '/imports/api/utility/numberToSignedString';
 
 const props = defineProps<{
@@ -9,105 +10,41 @@ const props = defineProps<{
 const emit = defineEmits(['click', 'change']);
 const context = inject('context', {});
 
-const hover = ref(false);
-
-const signedConMod = computed(() => numberToSignedString(props.model.constitutionMod));
-
-function click(e: Event) {
-  emit('click', e);
-}
+const diceLabel = computed(() => [props.model.hitDiceSize, numberToSignedString(props.model.constitutionMod)]
+  .filter(value => value != null).join(' '));
 
 function increment(value: number) {
   emit('change', { type: 'increment', value });
 }
 </script>
 
-<template lang="html">
-  <v-list-item
+<template>
+  <sheet-counter
     class="hit-dice-list-tile"
-    :class="{hover}"
+    :label="diceLabel"
+    :value="model.value"
+    :total="model.total"
+    @click="emit('click', $event)"
   >
-    <template #prepend>
-      <div class="d-flex align-center float-left">
-        <div class="d-flex flex-column buttons justify-center">
-          <v-btn
-            icon
-            size="small"
-            :disabled="model.value >= model.total || context.editPermission === false"
-            @click="increment(1)"
-          >
-            <v-icon>mdi-chevron-up</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            size="small"
-            :disabled="model.value <= 0 || context.editPermission === false"
-            @click="increment(-1)"
-          >
-            <v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
-        </div>
-
-        <div class="d-flex align-end">
-          <div class="text-h4">
-            {{ model.value }}
-          </div>
-          <div class="text-h6 max-value ml-2">
-            /{{ model.total }}
-          </div>
-        </div>
-      </div>
-    </template>
-
-    <v-list-item-title
-      class="content"
-      @click="click"
-      @mouseover="hover = true"
-      @mouseleave="hover = false"
+    <v-btn
+      icon
+      size="small"
+      variant="text"
+      :disabled="model.value >= model.total || context.editPermission === false"
+      :aria-label="`Increase ${model.name}`"
+      @click="increment(1)"
     >
-      {{ model.hitDiceSize }} {{ signedConMod }}
-    </v-list-item-title>
-  </v-list-item>
+      <v-icon>mdi-chevron-up</v-icon>
+    </v-btn>
+    <v-btn
+      icon
+      size="small"
+      variant="text"
+      :disabled="model.value <= 0 || context.editPermission === false"
+      :aria-label="`Decrease ${model.name}`"
+      @click="increment(-1)"
+    >
+      <v-icon>mdi-chevron-down</v-icon>
+    </v-btn>
+  </sheet-counter>
 </template>
-
-<style lang="css" scoped>
-.hit-dice-list-tile {
-  background: inherit;
-}
-
-.hit-dice-list-tile :deep(.v-list-item) {
-  height: 88px;
-}
-
-.left {
-  height: 100%;
-}
-
-.buttons {
-  height: 100%;
-}
-
-.buttons>.v-btn {
-  margin: 0;
-}
-
-.hit-dice-list-tile.hover {
-  background: #f5f5f5 !important;
-}
-
-.v-theme--dark .hit-dice-list-tile.hover {
-  background: #515151 !important;
-}
-
-.content {
-  cursor: pointer;
-}
-
-.max-value {
-  color: rgba(0, 0, 0, .54);
-}
-
-.v-theme--dark .max-value {
-  color: rgba(255, 255, 255, 0.54);
-}
-</style>
