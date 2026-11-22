@@ -4,7 +4,7 @@ import PROPERTIES from '/imports/constants/PROPERTIES';
 import escapeRegex from '/imports/api/utility/escapeRegex';
 
 const allFilterOptions = Object.keys(PROPERTIES as Record<string, { name: string }>).map(key => ({
-  text: (PROPERTIES as Record<string, { name: string }>)[key].name,
+  title: (PROPERTIES as Record<string, { name: string }>)[key].name,
   value: key,
 }));
 

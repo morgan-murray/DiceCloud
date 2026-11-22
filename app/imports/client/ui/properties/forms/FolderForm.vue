@@ -86,7 +86,7 @@ function changeTab(path: string | string[], value: any, ack?: Function) {
               :value="model.tab"
               :error-messages="errors.tab"
               :menu-props="{auto: true, lazy: true}"
-              @change="changeTab('tab', ...arguments)"
+              @change="(value, ack) => changeTab('tab', value, ack)"
             />
             <smart-select
               clearable
@@ -95,7 +95,7 @@ function changeTab(path: string | string[], value: any, ack?: Function) {
               :value="model.location"
               :error-messages="errors.location"
               :menu-props="{auto: true, lazy: true}"
-              @change="change('location', ...arguments)"
+              @change="(value, ack) => change('location', value, ack)"
             />
           </div>
         </v-expand-transition>

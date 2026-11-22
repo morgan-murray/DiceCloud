@@ -73,10 +73,10 @@ function addExtraTags() {
           label="Timing"
           style="flex-basis: 300px;"
           hint="When this trigger will fire"
-          :items="timingOptions"
+          :items="timingOptionsList"
           :value="model.timing"
           :error-messages="errors.timing"
-          @change="change('timing', ...arguments)"
+          @change="(value, ack) => change('timing', value, ack)"
         />
       </v-col>
       <v-col
@@ -87,10 +87,10 @@ function addExtraTags() {
           label="Event"
           style="flex-basis: 300px;"
           hint="What causes this trigger to fire"
-          :items="eventOptions"
+          :items="eventOptionsList"
           :value="model.event"
           :error-messages="errors.event"
-          @change="change('event', ...arguments)"
+          @change="(value, ack) => change('event', value, ack)"
         />
       </v-col>
       <v-col
@@ -118,10 +118,10 @@ function addExtraTags() {
             label="Event type"
             style="flex-basis: 300px;"
             hint="Which action event causes this trigger to fire"
-            :items="actionPropertyTypeOptions"
+            :items="actionPropertyTypeOptionsList"
             :value="model.actionPropertyType"
             :error-messages="errors.actionPropertyType"
-            @change="change('actionPropertyType', ...arguments)"
+            @change="(value, ack) => change('actionPropertyType', value, ack)"
           />
         </v-col>
       </v-expand-transition>

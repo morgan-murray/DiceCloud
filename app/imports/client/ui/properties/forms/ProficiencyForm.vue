@@ -33,7 +33,7 @@ const { result: skillList } = autorun(() =>
           style="flex-basis: 300px;"
           :clearable="false"
           :value="model.value"
-          @change="change('value', ...arguments)"
+          @change="(value, ack) => change('value', value, ack)"
         />
       </v-col>
       <v-col
@@ -77,7 +77,7 @@ const { result: skillList } = autorun(() =>
             :value="model.stats"
             :items="skillList"
             :error-messages="errors.stats"
-            @change="change('stats', ...arguments)"
+            @change="(value, ack) => change('stats', value, ack)"
           />
         </v-slide-y-transition>
       </v-col>

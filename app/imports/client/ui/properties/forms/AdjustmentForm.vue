@@ -36,7 +36,7 @@ const { result: attributeList } = autorun(() =>
           :items="attributeList"
           :value="model.stat"
           :error-messages="errors.stat"
-          @change="change('stat', ...arguments)"
+          @change="(value, ack) => change('stat', value, ack)"
         />
       </v-col>
       <v-col

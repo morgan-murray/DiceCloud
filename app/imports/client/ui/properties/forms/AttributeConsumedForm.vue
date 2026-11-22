@@ -32,7 +32,7 @@ const { result: attributeList } = autorun(() =>
         :items="attributeList"
         :value="model.variableName"
         :error-messages="errors.variableName"
-        @change="change('variableName', ...arguments)"
+        @change="(value, ack) => change('variableName', value, ack)"
       />
     </v-col>
     <v-col

@@ -56,7 +56,7 @@ function testSlot() {
           :items="slotTypes"
           :value="model.slotType"
           :error-messages="errors.slotType"
-          @change="change('slotType', ...arguments)"
+          @change="(value, ack) => change('slotType', value, ack)"
         />
       </v-col>
       <v-col cols="12">
@@ -117,7 +117,7 @@ function testSlot() {
           :items="uniqueOptions"
           :value="model.unique"
           :error-messages="errors.unique"
-          @change="change('unique', ...arguments)"
+          @change="(value, ack) => change('unique', value, ack)"
         />
       </v-col>
       <v-col

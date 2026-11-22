@@ -73,7 +73,7 @@ function change(path: string | string[], value: any, ack?: Function) {
         persistent-hint
         :value="model[tagField]"
         :error-messages="errors[tagField]"
-        @change="change(tagField, ...arguments)"
+        @change="(value, ack) => change(tagField, value, ack)"
       />
     </div>
     <v-slide-x-transition
@@ -90,7 +90,7 @@ function change(path: string | string[], value: any, ack?: Function) {
           :items="['OR', 'NOT']"
           :value="extras.operation"
           :error-messages="errors[extraTagsField] && errors[extraTagsField][i]"
-          @change="change([extraTagsField, i, 'operation'], ...arguments)"
+          @change="(value, ack) => change([extraTagsField, i, 'operation'], value, ack)"
         />
         <smart-combobox
           label="Tags"
@@ -101,7 +101,7 @@ function change(path: string | string[], value: any, ack?: Function) {
           deletable-chips
           persistent-hint
           :value="extras.tags"
-          @change="change([extraTagsField, i, 'tags'], ...arguments)"
+          @change="(value, ack) => change([extraTagsField, i, 'tags'], value, ack)"
         />
         <v-btn
           icon

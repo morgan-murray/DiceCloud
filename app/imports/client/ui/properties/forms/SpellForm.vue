@@ -102,7 +102,7 @@ const isAttack = computed(() =>
           :items="spellLevels"
           :value="model.level"
           :error-messages="errors.level"
-          @change="change('level', ...arguments)"
+          @change="(value, ack) => change('level', value, ack)"
         />
       </v-col>
       <v-col
@@ -114,7 +114,7 @@ const isAttack = computed(() =>
           :items="magicSchools"
           :value="model.school"
           :error-messages="errors.school"
-          @change="change('school', ...arguments)"
+          @change="(value, ack) => change('school', value, ack)"
         />
       </v-col>
       <v-col
@@ -324,7 +324,7 @@ const isAttack = computed(() =>
           hint="When number of uses used should be reset to zero"
           :value="model.reset"
           :error-messages="errors.reset"
-          @change="change('reset', ...arguments)"
+          @change="(value, ack) => change('reset', value, ack)"
         />
       </form-section>
       <slot />

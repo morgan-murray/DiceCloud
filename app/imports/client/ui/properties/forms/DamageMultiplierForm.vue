@@ -68,7 +68,7 @@ function error(e: any) {
           :error-messages="errors.damageTypes"
           :menu-props="{auto: true, lazy: true}"
           @update:error="error"
-          @change="change('damageTypes', ...arguments)"
+          @change="(value, ack) => change('damageTypes', value, ack)"
         />
       </v-col>
     </v-row>
@@ -91,7 +91,7 @@ function error(e: any) {
               persistent-hint
               :items="['magical', 'silvered']"
               :value="model.includeTags"
-              @change="change('includeTags', ...arguments)"
+              @change="(value, ack) => change('includeTags', value, ack)"
             />
           </v-col>
           <v-col cols="12">
@@ -104,7 +104,7 @@ function error(e: any) {
               persistent-hint
               :items="['magical', 'silvered']"
               :value="model.excludeTags"
-              @change="change('excludeTags', ...arguments)"
+              @change="(value, ack) => change('excludeTags', value, ack)"
             />
           </v-col>
         </v-row>
