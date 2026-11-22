@@ -86,6 +86,8 @@ def extract(source, files):
         slots=caster.find('slots')
         if slots is not None:
             pool=caster.get('pool')
+            if pool is None and caster.get('source') == 'ID_WOTC_PHB_CLASS_FEATURE_WARLOCK_SPELLCASTING_WARLOCK_PACT_MAGIC':
+                pool = 'pact'
             if pool not in ['spellcasting','pact']:
                 # Separate multiple casters may duplicate shared totals. Never guess.
                 if len(saved_casters)>1:fail('AMBIGUOUS_SLOTS','spellcasting','Multiple casting sources require explicit spellcasting/pact pool labels.')
@@ -106,6 +108,15 @@ def extract(source, files):
             if node.get('type') not in ['Ability Score Improvement','Proficiency','Language','Alignment','Size']:
                 warn('MANUAL_FEATURES','features','Feature descriptions, conditions and senses require manual use; unrecognized active effects/resources are not automated.')
     notes=[bounded(text(n),'notes') for n in root.findall('./build/input/notes/note') if text(n)]
+    additional = character_nodes(root, 'magic', 'additional/spell')
+    for spell in additional:
+        element = content.quick_query_id(spell.get('id'))
+        if element is None: fail('MISSING_CONTENT', 'spells', 'Missing additional spell: '+str(spell.get('id')))
+        name = bounded(element.get('name', 'Spell'), 'spells.name', 128)
+        source = bounded(spell.get('source', 'Additional spell'), 'spells.source', 128)
+        notes.append(bounded(f'{source} — {name}\n{content.describe(element)}', 'notes'))
+    if additional:
+        warn('ADDITIONAL_SPELLS', 'spells', 'Additional spells are saved as notes with their source. Review casting limits and abilities separately.')
     warn('SNAPSHOT_ONLY','character','This is a 2014 current-sheet snapshot. Level-up, equipment changes and ongoing conditional effects require manual review.')
     warn('PLAY_STATE_UNKNOWN','resources','Aurora does not reliably save current damage/resource use. Import initializes HP, hit dice and slots to full, with zero temporary HP.')
     result=dict(schemaVersion=SCHEMA_VERSION,rulesVersion='2014',identity=dict(name=name,level=q.level,
