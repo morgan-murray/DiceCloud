@@ -248,14 +248,6 @@ function showDependencyGraph() {
           :value="model.settings.hitDiceResetMultiplier"
           @change="(value, ack) => $emit('change', { path: ['settings', 'hitDiceResetMultiplier'], value, ack })"
         />
-        <text-field
-          label="Discord webhook URL"
-          hint="This creature's logs will be posted to the discord channel"
-          placeholder="https://discordapp.com/api/webhooks/<id>/<token>"
-          :disabled="!editPermission"
-          :value="model.settings.discordWebhook"
-          @change="(value, ack) => $emit('change', { path: ['settings', 'discordWebhook'], value, ack })"
-        />
         <!--
         <v-switch
           label="Use variant encumbrance"
