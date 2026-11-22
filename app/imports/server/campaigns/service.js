@@ -234,6 +234,21 @@ export async function invite(user, arg) {
   const key = await Invites.insertAsync({ campaignId: tx.game._id, userId: target._id, role: r, invitedBy: user, expiresAt: new Date(Date.now() + 7 * 86400000) }); tx.game.inviteIds.push(key); return key;
  });
 }
+export async function availablePlayers(user, arg) {
+ fields(arg, ['campaignId']);
+ const accessInfo = await access(user, arg.campaignId, true);
+ const { game } = accessInfo;
+ if (game.archived) return [];
+ const pending = await Invites.find({
+  campaignId: game._id, _id: { $in: game.inviteIds }, expiresAt: { $gt: new Date() },
+ }, { fields: { userId: 1 } }).fetchAsync();
+ const excluded = [...game.members.map(m => m.userId), ...pending.map(i => i.userId)];
+ const users = await Meteor.users.find({
+  _id: { $nin: excluded }, username: { $type: 'string', $ne: '' },
+ }, { fields: { username: 1 }, sort: { username: 1 } }).fetchAsync();
+ await consistent(accessInfo);
+ return users.map(u => u.username);
+}
 export async function invitations(user, arg = {}) {
  auth(user); fields(arg, ['campaignId']); if (arg.campaignId) await access(user, arg.campaignId, true);
  const rows = await Invites.find(arg.campaignId ? { campaignId: arg.campaignId } : { userId: user, expiresAt: { $gt: new Date() } }).fetchAsync(), out = [];
@@ -332,7 +347,7 @@ export async function maintenance() {
  // Remove departed non-owner accounts without overwriting concurrent membership edits.
  for (const g of games) { const members = []; for (const m of g.members) if (await Meteor.users.findOneAsync(m.userId, { fields: { _id: 1 } })) members.push(m); if (members.length !== g.members.length && members.some(m => m.role === 'owner')) await Games.updateAsync({ _id: g._id, version: g.version }, { $set: { members }, $inc: { version: 1 } }); }
 }
-const methods = { create: createGame, list: listGames, state, entry: getEntry, save: saveEntry, history, restoreRevision, trash, purge, invite, accept, invitations, membership, configure, revokeInvite, upload: (u, a) => upload(u, a), image, updateAsset, removeAsset, destroy };
+const methods = { create: createGame, list: listGames, state, entry: getEntry, save: saveEntry, history, restoreRevision, trash, purge, invite, accept, invitations, availablePlayers, membership, configure, revokeInvite, upload: (u, a) => upload(u, a), image, updateAsset, removeAsset, destroy };
 for (const [name, fn] of Object.entries(methods)) Meteor.methods({ ['campaigns.' + name]: async function (arg) { const user=auth(this.userId); if(!await Meteor.users.findOneAsync(user,{fields:{_id:1}})) fail('auth','Your account is no longer available.'); return fn(user, arg); } });
 DDPRateLimiter.addRule({ name: name => typeof name === 'string' && name.startsWith('campaigns.'), connectionId: () => true }, 180, 10000);
 DDPRateLimiter.addRule({ name: 'campaigns.upload', userId: user => Boolean(user) }, 6, 60000);

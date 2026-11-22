@@ -4,7 +4,7 @@ import { Random } from 'meteor/random';
 import sharp from 'sharp';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import '/imports/api/users/methods/deleteMyAccount';
-import { Games, Revisions, Assets, Invites, createGame, listGames, state, getEntry, saveEntry, history, restoreRevision, trash, purge, invite, invitations, accept, revokeInvite, membership, configure, upload, image, updateAsset, removeAsset, destroy, maintenance } from './service';
+import { Games, Revisions, Assets, Invites, createGame, listGames, state, getEntry, saveEntry, history, restoreRevision, trash, purge, invite, invitations, availablePlayers, accept, revokeInvite, membership, configure, upload, image, updateAsset, removeAsset, destroy, maintenance } from './service';
 async function denied(fn, code) { let error; try { await fn(); } catch (e) { error = e; } assert.exists(error, 'operation must be denied'); if (code) assert.equal(error.error, 'campaign-' + code); return error; }
 describe('Campaign collaboration, atomic publishing, secrets and artwork', function () {
  this.timeout(120000);
@@ -26,6 +26,22 @@ describe('Campaign collaboration, atomic publishing, secrets and artwork', funct
   await Assets.updateAsync({ campaignId: { $in: [game, other] } }, { $set: { createdAt: new Date(0) } }, { multi: true });
   await Revisions.updateAsync({ campaignId: { $in: [game, other] } }, { $set: { createdAt: new Date(0) } }, { multi: true });
   await maintenance(); await Creatures.removeAsync(nativeId); await Creatures.removeAsync(protectedNativeId); await Meteor.users.removeAsync({ _id: { $in: [owner, gm, player, second, outsider] } });
+ });
+ it('lists eligible usernames only to campaign managers and restores revoked or expired choices', async () => {
+  const username = 'camp-' + outsider;
+  const args = { campaignId: game };
+  const names = await availablePlayers(owner, args);
+  assert.include(names, username);
+  assert.notInclude(names, (await Meteor.users.findOneAsync(owner)).username);
+  await denied(() => availablePlayers(player, args), 'permission');
+  let key = await invite(owner, { ...args, username });
+  assert.notInclude(await availablePlayers(gm, args), username);
+  await revokeInvite(owner, { ...args, inviteId: key });
+  assert.include(await availablePlayers(gm, args), username);
+  key = await invite(owner, { ...args, username });
+  await Invites.updateAsync(key, { $set: { expiresAt: new Date(0) } });
+  assert.include(await availablePlayers(owner, args), username);
+  await revokeInvite(owner, { ...args, inviteId: key });
  });
  it('requires accepted, unexpired invitations and isolates two games', async () => {
   assert.lengthOf(await listGames(player), 1); assert.lengthOf(await listGames(outsider), 1);
