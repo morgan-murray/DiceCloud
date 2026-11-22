@@ -26,7 +26,7 @@ jobs:
           python3 -m unittest discover -s reference -v
           node --test deployment/test_url_paths.mjs
           node --test deployment/test_aurora_adapter.mjs
-          node --test deployment/test_advancement.mjs
+          node --test deployment/test_advancement.mjs deployment/test_physical_actions.mjs
           PYTHONPATH=importer python3 -m unittest discover -s importer/tests -v
       - name: Build checked-out source
         run: |

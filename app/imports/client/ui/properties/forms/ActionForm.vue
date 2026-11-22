@@ -117,7 +117,7 @@ const isAttack = computed(() =>
         {name: 'Self', value: 'self'},
       ]"
       :error-messages="errors.target"
-      @change="change('target', ...arguments)"
+      @change="(value, ack) => change('target', value, ack)"
     />
 
     <inline-computation-field
