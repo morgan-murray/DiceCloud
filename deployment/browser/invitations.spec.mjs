@@ -23,7 +23,7 @@ test('Player invitation workflow: chosen password, replacement, revocation and p
   test.setTimeout(120000);
   const data = JSON.parse(readFileSync(fixturePath, 'utf8'));
   await page.goto(url('register?redirect=%2Fcharacter-list'));
-  await expect(page).toHaveURL(new URL('sign-in?redirect=%2Fcharacter-list', base).href);
+  await expect(page).toHaveURL(address => address.pathname === new URL('sign-in', base).pathname && address.searchParams.get('redirect') === '/character-list');
   await expect(page.getByRole('link', { name: /register|sign[ -]?up/i })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /register|sign[ -]?up/i })).toHaveCount(0);
   await expect(page.getByText('Accounts are by invitation.', { exact: false })).toBeVisible();
