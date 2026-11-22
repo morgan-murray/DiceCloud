@@ -86,7 +86,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
           :error-messages="errors.attributeType"
           :menu-props="{auto: true, lazy: true}"
           :hint="attributeTypeHints[model.attributeType]"
-          @change="change('attributeType', ...arguments)"
+          @change="(value, ack) => change('attributeType', value, ack)"
         />
       </v-col>
       <v-expand-transition>
@@ -100,7 +100,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
             :value="model.hitDiceSize"
             :error-messages="errors.hitDiceSize"
             :menu-props="{auto: true, lazy: true}"
-            @change="change('hitDiceSize', ...arguments)"
+            @change="(value, ack) => change('hitDiceSize', value, ack)"
           />
         </v-col>
         <v-col
@@ -267,7 +267,7 @@ watch(() => props.model.attributeType, (newVal, oldVal) => {
               hint="When damage should be reset to zero"
               :value="model.reset"
               :error-messages="errors.reset"
-              @change="change('reset', ...arguments)"
+              @change="(value, ack) => change('reset', value, ack)"
             />
           </v-col>
         </v-row>

@@ -118,7 +118,7 @@ function changeTargetByTags(value: string, ack?: Function) {
           :menu-props="{transition: 'slide-y-transition', lazy: true}"
           :items="operations"
           :value="model.operation"
-          @change="change('operation', ...arguments)"
+          @change="(value, ack) => change('operation', value, ack)"
         >
           <template #prepend-inner>
             <v-icon
@@ -186,7 +186,7 @@ function changeTargetByTags(value: string, ack?: Function) {
         :value="model.stats"
         :items="attributeList"
         :error-messages="errors.stats"
-        @change="change('stats', ...arguments)"
+        @change="(value, ack) => change('stats', value, ack)"
       />
       <tag-targeting
         v-if="model.targetByTags"

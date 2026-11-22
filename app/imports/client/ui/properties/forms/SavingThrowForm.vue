@@ -47,7 +47,7 @@ const { result: saveList } = autorun(() =>
           :value="model.stat"
           :items="saveList"
           :error-messages="errors.stat"
-          @change="change('stat', ...arguments)"
+          @change="(value, ack) => change('stat', value, ack)"
         />
       </v-col>
       <v-col

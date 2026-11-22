@@ -83,7 +83,7 @@ function saveChange({ path, value, ack }: { path: string[]; value: any; ack?: Fu
           :value="model.damageType"
           :error-messages="errors.damageType"
           :menu-props="{auto: true}"
-          @change="change('damageType', ...arguments)"
+          @change="(value, ack) => change('damageType', value, ack)"
         />
       </v-col>
       <v-col cols="12">

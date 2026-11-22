@@ -70,7 +70,7 @@ const { result: abilityScoreList } = autorun(() =>
           hint="Which ability is this skill based off of"
           :items="abilityScoreList"
           :error-messages="errors.ability"
-          @change="change('ability', ...arguments)"
+          @change="(value, ack) => change('ability', value, ack)"
         />
       </v-col>
       <v-col
@@ -85,7 +85,7 @@ const { result: abilityScoreList } = autorun(() =>
           :error-messages="errors.skillType"
           :menu-props="{auto: true, lazy: true}"
           :hint="skillTypeHints[model.skillType]"
-          @change="change('skillType', ...arguments)"
+          @change="(value, ack) => change('skillType', value, ack)"
         />
       </v-col>
     </v-row>
@@ -108,7 +108,7 @@ const { result: abilityScoreList } = autorun(() =>
               label="Base proficiency"
               :value="model.baseProficiency"
               :error-messages="errors.baseProficiency"
-              @change="change('baseProficiency', ...arguments)"
+              @change="(value, ack) => change('baseProficiency', value, ack)"
             />
           </v-col>
           <v-col

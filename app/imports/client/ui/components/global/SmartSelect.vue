@@ -19,10 +19,16 @@ const emit = defineEmits<{
 
 const attrs = useAttrs();
 const { loading, errors, safeValue, isDisabled, focused, change } = useSmartInput(props, emit, attrs);
+
+// Older forms use text for labels. Newer options use Vuetify's title field.
+function optionTitle(item: any) {
+  return item?.title ?? item?.text ?? item;
+}
 </script>
 
 <template lang="html">
   <v-select
+    :item-title="optionTitle"
     v-bind="$attrs"
     :loading="loading"
     :error-messages="errors"
