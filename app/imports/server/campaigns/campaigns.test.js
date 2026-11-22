@@ -28,23 +28,20 @@ describe('Campaign collaboration, atomic publishing, secrets and artwork', funct
   await maintenance(); await Creatures.removeAsync(nativeId); await Creatures.removeAsync(protectedNativeId); await Meteor.users.removeAsync({ _id: { $in: [owner, gm, player, second, outsider] } });
  });
  it('lists eligible usernames only to campaign managers and restores revoked or expired choices', async () => {
-  const username = 'candidate-' + Random.id();
-  const candidate = await Meteor.users.insertAsync({ username });
-  try {
-   const args = { campaignId: game };
-   const names = await availablePlayers(owner, args);
-   assert.include(names, username);
-   assert.notInclude(names, (await Meteor.users.findOneAsync(owner)).username);
-   await denied(() => availablePlayers(player, args), 'permission');
-   let key = await invite(owner, { ...args, username });
-   assert.notInclude(await availablePlayers(gm, args), username);
-   await revokeInvite(owner, { ...args, inviteId: key });
-   assert.include(await availablePlayers(gm, args), username);
-   key = await invite(owner, { ...args, username });
-   await Invites.updateAsync(key, { $set: { expiresAt: new Date(0) } });
-   assert.include(await availablePlayers(owner, args), username);
-   await revokeInvite(owner, { ...args, inviteId: key });
-  } finally { await Meteor.users.removeAsync(candidate); }
+  const username = 'camp-' + outsider;
+  const args = { campaignId: game };
+  const names = await availablePlayers(owner, args);
+  assert.include(names, username);
+  assert.notInclude(names, (await Meteor.users.findOneAsync(owner)).username);
+  await denied(() => availablePlayers(player, args), 'permission');
+  let key = await invite(owner, { ...args, username });
+  assert.notInclude(await availablePlayers(gm, args), username);
+  await revokeInvite(owner, { ...args, inviteId: key });
+  assert.include(await availablePlayers(gm, args), username);
+  key = await invite(owner, { ...args, username });
+  await Invites.updateAsync(key, { $set: { expiresAt: new Date(0) } });
+  assert.include(await availablePlayers(owner, args), username);
+  await revokeInvite(owner, { ...args, inviteId: key });
  });
  it('requires accepted, unexpired invitations and isolates two games', async () => {
   assert.lengthOf(await listGames(player), 1); assert.lengthOf(await listGames(outsider), 1);
