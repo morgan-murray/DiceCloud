@@ -1,5 +1,7 @@
 import base64
 import copy
+import tempfile
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -41,6 +43,18 @@ class ReferenceTests(unittest.TestCase):
         private = CompendiumQuery([upload(body)])
         self.assertEqual(private.read_setter(private.quick_query_id(key), 'hd'), 'd10')
         self.assertNotEqual(defaults.hash, private.hash)
+
+    def test_site_defaults_are_fingerprinted_and_private_packs_win(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'defaults.xml'
+            with patch('aurora.builtin.SITE_PACK_PATH', path):
+                base = CompendiumQuery([])
+                path.write_text('<elements><element id="ID_TEST_RULE" name="Site"/></elements>')
+                site = CompendiumQuery([])
+                self.assertNotEqual(base.hash, site.hash)
+                self.assertEqual(site.quick_query_id('ID_TEST_RULE').get('name'), 'Site')
+                private = CompendiumQuery([upload(b'<elements><element id="ID_TEST_RULE" name="Private"/></elements>')])
+                self.assertEqual(private.quick_query_id('ID_TEST_RULE').get('name'), 'Private')
 
     def test_exact_duplicate_deduplicated(self):
         root=ET.Element('elements')
