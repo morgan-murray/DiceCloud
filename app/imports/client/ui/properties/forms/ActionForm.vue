@@ -87,11 +87,12 @@ const isAttack = computed(() =>
         <smart-select
           label="Action type"
           :items="actionTypes"
+          item-title="text"
           :value="model.actionType"
           :error-messages="errors.actionType"
           :menu-props="{auto: true, lazy: true}"
           :hint="actionTypeHints[model.actionType]"
-          @change="change('actionType', ...arguments)"
+          @change="(value, ack) => change('actionType', value, ack)"
         />
       </v-col>
     </v-row>
