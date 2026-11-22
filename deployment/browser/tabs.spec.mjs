@@ -365,7 +365,15 @@ test('Character tabs: physical class abilities spend the selected native counter
     await expect(hands.getByRole('status')).toContainText('3 remaining');
     await expect.poll(()=>value(handsId)).toBe(3);
     const stale={creatureId:id,poolId:handsId,ability:'Lay on Hands',amount:5,remaining:8};
-    await expect(call(page,'classAbilities.spend',stale)).rejects.toThrow(/counter changed/);
+    const staleResult = await page.evaluate(async args => {
+      try {
+        await window.Meteor.callAsync('classAbilities.spend', args);
+        return 'accepted';
+      } catch (error) {
+        return error.error;
+      }
+    }, stale);
+    expect(staleResult).toBe('balance-changed');
     await expect.poll(()=>value(handsId)).toBe(3);
     await expect(card('Sneak Attack')).toContainText('3d6');
     await card('Sneak Attack').getByRole('checkbox',{name:'Critical hit'}).check();
