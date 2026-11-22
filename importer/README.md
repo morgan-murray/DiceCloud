@@ -1,6 +1,6 @@
 # Aurora snapshot importer
 
-The application bundles Aurora Core Reference (2014) v1.0.0, a partial compatibility pack with 91 definitions. It loads automatically; the user need not find or upload Aurora's internal data. See [reference/NOTICE.md](reference/NOTICE.md) for exact scope, CC-BY-4.0 attribution and provenance. Other required class/race/spell/item XML definitions remain private uploads. The full mixed-source Flare reference file is not included.
+The application bundles Aurora Core Reference (2014) v1.1.0, with common definitions and additional defaults for 2014 Lightfoot Halfling Rogue (Thief) imports. It loads automatically; the user need not find or upload Aurora's internal data. See [reference/NOTICE.md](reference/NOTICE.md) for exact scope, CC-BY-4.0 attribution and provenance. Other required class/race/spell/item XML definitions remain private uploads. The full mixed-source Flare reference file is not included.
 
 The feature is disabled by default. Set `AURORA_IMPORT_ENABLED=true` in the Compose environment and recreate the app after verification. No extra published port or network service is needed. The worker uses a digest-pinned Python 3.13.18 runtime included in the app image. It is an unprivileged subprocess with input, output, XML/ZIP, CPU, memory and wall-time limits. It never fetches remote indexes, images or URLs and never evaluates source expressions as code. No user-provided path or command reaches the subprocess API.
 
