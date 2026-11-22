@@ -12,6 +12,7 @@ import Libraries from '/imports/api/library/Libraries';
 import getThemeColor from '/imports/client/ui/utility/getThemeColor';
 import PropertySelector from '/imports/client/ui/properties/shared/PropertySelector.vue';
 import { snackbar } from '/imports/client/ui/components/snackbars/SnackbarQueue';
+import SheetActionLibrary from './actionPresets/SheetActionLibrary.vue';
 import PropertyForm from '/imports/client/ui/properties/PropertyForm.vue';
 import { key } from '/imports/client/ui/vuexStore';
 
@@ -79,6 +80,16 @@ const { result: libraryNames } = autorun(() => {
 });
 
 // Computed
+const sheetAction = computed(() => type.value === 'action' && !!props.creatureId && !isLibraryForm.value && !props.hideLibraryTab);
+const templateVersion = ref(0);
+function useTemplate(action: Record<string, any>) {
+  model.value = { ...schema.value.clean(action), type: action.type, tags: action.tags || [] };
+  templateVersion.value++;
+  tab.value = 1;
+}
+function openSheetAction(id: string) {
+  store.commit('pushDialogStack', { component: 'creature-property-dialog', data: { _id: id } });
+}
 const typeName = computed(() => getPropertyName(type.value) || 'Property');
 const toolbarColor = computed(() => getThemeColor('secondary'));
 const docsPath = computed(() => {
@@ -275,7 +286,9 @@ function openPropertyDetails(id: string) {
             v-if="!$slots['unwrapped-content']"
             class="dialog-background"
           >
+            <v-btn v-if="sheetAction" class="mb-4" variant="tonal" @click="tab = 2">Choose an action template</v-btn>
             <property-form
+              :key="templateVersion"
               v-if="type"
               class="creature-property-form"
               no-child-insert
@@ -292,6 +305,8 @@ function openPropertyDetails(id: string) {
           v-if="!hideLibraryTab"
           :disabled="!type"
         >
+          <sheet-action-library v-if="sheetAction && creatureId" :creature-id="creatureId" :search="searchValue"
+            @choose="useTemplate" @open="openSheetAction" />
           <v-expansion-panels
             variant="accordion"
             rounded="0"

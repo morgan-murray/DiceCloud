@@ -275,3 +275,56 @@ test('Character tabs: Settings and shared responsive layout controls', async ({ 
   await page.getByRole('button', { name: 'Light', exact: true }).click();
   expect(errors).toEqual([]);
 });
+
+test('Character tabs: shared action templates and a physical weapon attack on a restricted sheet', async ({ page }) => {
+  test.skip(!fixture, 'Requires a signed-in player');
+  const { owner } = JSON.parse(readFileSync(fixture, 'utf8'));
+  await page.goto(url('sign-in'));
+  await page.getByLabel('Username or email').fill(owner.username);
+  await page.getByLabel('Password', { exact: true }).fill(owner.password);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.waitForFunction(() => window.Meteor?.userId());
+  const id = await call(page, 'creatures.insertCreature', { name: 'Physical dice fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
+  try {
+    for (const prop of [{ type: 'item', name: 'Rapier +1', equipped: true }, { type: 'note', name: 'Rapier +1', description: { text: '+9 vs AC\n1d8+5 piercing\n5 ft' } }]) {
+      await call(page, 'creatureProperties.insert', { creatureProperty: { ...prop, root: { collection: 'creatures', id } } });
+    }
+    await page.evaluate(id => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push({ name: 'characterSheet', params: { id } }), id);
+    await page.getByRole('tab', { name: 'Actions', exact: true }).click();
+    async function library() {
+      await page.locator('.character-sheet-toolbar [data-id="insert-creature-property-fab"]').click();
+      await page.locator('[data-id="insert-creature-property-type-action"]:visible').click();
+      const dialog = page.locator('.dialog-stack .dialog').last();
+      await dialog.getByRole('button', { name: 'Choose an action template' }).click();
+      await dialog.getByRole('combobox', { name: 'Action template', exact: true }).click();
+      return dialog;
+    }
+    const ready = await library();
+    const options = page.getByRole('option');
+    await expect(options).toHaveCount(8);
+    expect((await options.allTextContents()).map(s => s.trim())).toEqual(['Dash', 'Dodge', 'Disengage', 'Help', 'Hide', 'Ready', 'Search', 'Weapon attack']);
+    await page.getByRole('option', { name: 'Ready', exact: true }).click();
+    await ready.getByLabel('Trigger (optional)').fill('the bell rings');
+    await ready.getByLabel('What you will do (optional)').fill('close the door');
+    await ready.getByRole('button', { name: 'Use template' }).click();
+    await expect(ready.getByLabel('Name', { exact: true })).toHaveValue('Ready');
+    await ready.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect(page.locator('.actions-tab .action-card').filter({ hasText: 'close the door' })).toBeVisible();
+    const attack = await library();
+    await page.getByRole('option', { name: 'Weapon attack', exact: true }).click();
+    await attack.getByRole('combobox', { name: 'Weapon from inventory' }).click();
+    await page.getByRole('option', { name: 'Rapier +1 (equipped)', exact: true }).click();
+    await expect(attack.getByLabel('Total to add to your d20')).toHaveValue('9');
+    await expect(attack.getByLabel('Damage on a hit')).toHaveValue('1d8+5 piercing');
+    await attack.getByRole('button', { name: 'Use template' }).click();
+    await attack.getByRole('button', { name: 'Create', exact: true }).click();
+    const card = page.locator('.actions-tab .action-card').filter({ hasText: 'Rapier +1' });
+    await expect(card).toContainText('d20 +9');
+    await expect(card).toContainText('1d8+5 piercing');
+    await page.reload();
+    await page.getByRole('tab', { name: 'Actions', exact: true }).click();
+    await expect(card).toContainText('5 ft');
+  } finally {
+    await call(page, 'Creatures.methods.removeCreature', { charId: id });
+  }
+});
