@@ -7,28 +7,34 @@ import CreatureProperties from '/imports/api/creature/creatureProperties/Creatur
 import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
 import { classLevel, poolFor, sheetAbilities, validCost } from '/imports/api/classAbilities/physical.mjs';
 
+async function createClassPool(userId, className, args) {
+  check(args, { creatureId: String, remaining: Number });
+  const { creatureId, remaining } = args;
+  const isKi = className === 'monk';
+  const ability = isKi ? 'Step of the Wind' : 'Font of Magic';
+  const name = isKi ? 'Ki points' : 'Sorcery points';
+  const sheet = await Creatures.findOneAsync(creatureId);
+  await assertEditPermission(sheet, userId);
+  const root = { collection: 'creatures', id: creatureId };
+  const props = await CreatureProperties.find({ 'root.id': creatureId, removed: { $ne: true } }).fetchAsync();
+  const level = classLevel(sheet, props.filter(p => !p.inactive && !p.disabled), className);
+  if (!Number.isInteger(level) || level < 2 || level > 20 || !Number.isInteger(remaining) || remaining < 0 || remaining > level) {
+    throw new Meteor.Error(isKi ? 'ki-balance' : 'sorcery-balance', 'Enter the current balance for this class level.');
+  }
+  if (props.some(p => poolFor(ability, { ...p, disabled: false, inactive: false, overridden: false }))) {
+    throw new Meteor.Error('existing-pool', 'This resource already exists on the sheet. Check it under Stats.');
+  }
+  // Stable ID makes simultaneous initialisation safe without resetting a pool.
+  const id = createHash('sha256').update((isKi ? 'class-ki/' : 'class-sorcery/') + creatureId).digest('hex').slice(0, 24);
+  await CreatureProperties.insertAsync({ _id: id, root, type: 'attribute', name,
+    variableName: isKi ? 'kiPoints' : 'sorceryPoints', attributeType: 'resource', baseValue: { calculation: String(level) },
+    damage: level - remaining, reset: isKi ? 'shortRest' : 'longRest', dirty: true });
+  await rebuildNestedSets(CreatureProperties, creatureId);
+}
+
 Meteor.methods({
-  async 'classAbilities.createKiPool'({ creatureId, remaining }) {
-    check(creatureId, String);
-    check(remaining, Number);
-    const sheet = await Creatures.findOneAsync(creatureId);
-    await assertEditPermission(sheet, this.userId);
-    const root = { collection: 'creatures', id: creatureId };
-    const props = await CreatureProperties.find({ 'root.id': creatureId, removed: { $ne: true } }).fetchAsync();
-    const level = classLevel(sheet, props.filter(p => !p.inactive && !p.disabled), 'monk');
-    if (!Number.isInteger(level) || level < 2 || level > 20 || !Number.isInteger(remaining) || remaining < 0 || remaining > level) {
-      throw new Meteor.Error('ki-balance', 'Confirm the current balance for this monk level.');
-    }
-    if (props.some(p => poolFor('Step of the Wind', { ...p, disabled: false, inactive: false, overridden: false }))) {
-      throw new Meteor.Error('existing-pool', 'There is already a ki pool on this sheet. Check it under Stats.');
-    }
-    // Stable ID makes simultaneous initialisation safe without resetting a pool.
-    const id = createHash('sha256').update('class-ki/' + creatureId).digest('hex').slice(0, 24);
-    await CreatureProperties.insertAsync({ _id: id, root, type: 'attribute', name: 'Ki points',
-      variableName: 'kiPoints', attributeType: 'resource', baseValue: { calculation: String(level) },
-      damage: level - remaining, reset: 'shortRest', dirty: true });
-    await rebuildNestedSets(CreatureProperties, creatureId);
-  },
+  'classAbilities.createKiPool'(args) { return createClassPool(this.userId, 'monk', args); },
+  'classAbilities.createSorceryPool'(args) { return createClassPool(this.userId, 'sorcerer', args); },
   async 'classAbilities.spend'(args) {
     check(args, { creatureId: String, poolId: String, ability: String, amount: Number, remaining: Number });
     const { creatureId, poolId, ability, amount, remaining } = args;
