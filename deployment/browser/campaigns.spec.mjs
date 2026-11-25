@@ -50,6 +50,24 @@ test('Campaign workflow: shared players, GM secrets, revisions, artwork and live
   await page.screenshot({path:info.outputPath('campaign-desktop-light.png'),animations:'disabled',fullPage:true});await page.evaluate(()=>window.Meteor.callAsync('users.setDarkMode',{darkMode:true}));await page.screenshot({path:info.outputPath('campaign-desktop-dark.png'),animations:'disabled',fullPage:true});await page.setViewportSize({width:390,height:844});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('campaign-mobile.png'),animations:'disabled',fullPage:true});await page.setViewportSize({width:1280,height:900});
   await call(page,'membership',{campaignId:id,userId:account.userId,action:'remove'});await expect(reader.locator('.campaign-article')).toHaveCount(0);expect(await call(reader,'state',{campaignId:id}).then(()=>false,()=>true)).toBe(true);expect(await call(reader,'image',{campaignId:id,assetId:art,original:true}).then(()=>false,()=>true)).toBe(true);
   const inviteId=await call(page,'invite',{campaignId:id,username:account.username,role:'player'});await call(reader,'accept',{inviteId});
+  // Exercise the shared form as a player, including first-use journal creation.
+  await reader.goto(url('campaigns/'+id));
+  await reader.getByRole('button',{name:'Journal',exact:true}).click();
+  await reader.getByRole('button',{name:'Finish session',exact:true}).click();
+  const finish=dialog(reader);
+  await expect(finish.getByRole('button',{name:'Save session'})).toBeDisabled();
+  await finish.getByLabel('What happened this session?').fill('The party returned to the Assembly.');
+  await finish.getByLabel('New lead, recovery or other progress').fill('Ask the archivist about the restraint.');
+  await finish.locator('.v-field').filter({has:finish.getByRole('combobox',{name:'Next game',exact:true})}).click();
+  await reader.getByRole('option',{name:'Set a date',exact:true}).click();
+  await finish.getByLabel('Game date').fill('2026-12-02');
+  await finish.getByRole('button',{name:'Save session'}).click();
+  await expect(reader.getByText('Session saved to the shared Journal.')).toBeVisible();
+  const journals=(await call(reader,'state',{campaignId:id})).entries;
+  for(const [kind,expected] of [['Session recap','returned to the Assembly'],['Quest log','Ask the archivist'],['Session arrangements','2 December 2026']]){
+   const target=journals.find(e=>e.kind===kind);
+   expect((await call(reader,'entry',{campaignId:id,entryId:target._id})).body).toContain(expected);
+  }
   data.campaign={id,journal,npc,secret,art,secretAsset,png,largeAsset,largeHash};writeFileSync(fixture,JSON.stringify(data),{mode:0o600});expect(errors).toEqual([]);
  }finally{await context.close();}
 });
