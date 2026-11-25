@@ -58,8 +58,7 @@ test('Campaign workflow: shared players, GM secrets, revisions, artwork and live
   await expect(finish.getByRole('button',{name:'Save session'})).toBeDisabled();
   await finish.getByLabel('What happened this session?').fill('The party returned to the Assembly.');
   await finish.getByLabel('New lead, recovery or other progress').fill('Ask the archivist about the restraint.');
-  await finish.locator('.v-field').filter({has:finish.getByRole('combobox',{name:'Next game',exact:true})}).click();
-  await reader.getByRole('option',{name:'Set a date',exact:true}).click();
+  await finish.getByRole('radio',{name:'Set a date'}).check({timeout:10000});
   await finish.getByLabel('Game date').fill('2026-12-02');
   await finish.getByRole('button',{name:'Save session'}).click();
   await expect(reader.getByText('Session saved to the shared Journal.')).toBeVisible();

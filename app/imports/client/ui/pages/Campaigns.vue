@@ -149,7 +149,7 @@ function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preve
 onBeforeRouteLeave(() => discardAllowed());
 onBeforeRouteUpdate(() => { if (!discardAllowed()) return false; resetEditor(); });
 watch(form, () => { if (editing.value && dirty.value) { try { sessionStorage.setItem(draftKey(), JSON.stringify(form.value)); } catch { notice.value = 'Your browser could not store a recovery draft. Keep this editor open until you save.'; } } }, { deep: true });
-watch(() => route.fullPath, () => { generation++; data.value = null; entry.value = null; void refresh(); });
+watch(() => route.fullPath, () => { finishOpen.value=false; generation++; data.value = null; entry.value = null; void refresh(); });
 watch(query, () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page.value = 0; if (!editing.value && route.query.entry) void router.replace({name:'campaign',params:{campaignId:gameId.value}}); else void refresh(); }, 300); });
 watch(page, () => void refresh());
 onMounted(() => {

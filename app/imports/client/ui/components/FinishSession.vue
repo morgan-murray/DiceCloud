@@ -76,15 +76,17 @@ async function save() {
     </section>
     <section>
      <h3>Quest tracker</h3>
-     <v-select v-if="quests.length" v-model="questId" label="Quest to update" :items="quests" item-title="title" item-value="_id" hide-details />
-     <v-select v-model="mode" label="Update type" :items="['Add a note','Edit tracker text']" hide-details />
+     <v-select v-if="quests.length" v-model="questId" :disabled="editingText && questChanged" label="Quest to update" :items="quests" item-title="title" item-value="_id" hide-details />
+     <v-select v-model="mode" :disabled="questChanged" label="Update type" :items="['Add a note','Edit tracker text']" hide-details />
      <v-textarea v-if="!editingText" v-model="note" label="New lead, recovery or other progress" rows="2" maxlength="48000" hide-details />
      <v-textarea v-else v-model="questText" label="Tracker text" :disabled="loading || (!!questId && !loadedRevision)" :loading="loading" rows="7" maxlength="48000" hide-details />
     </section>
     <section>
      <h3>Next arranged game</h3>
      <v-select v-if="schedules.length > 1" v-model="scheduleId" label="Schedule page" :items="schedules" item-title="title" item-value="_id" hide-details />
-     <v-select v-model="plan" label="Next game" :items="['Keep current plan','Set a date','To be arranged']" hide-details />
+     <v-radio-group v-model="plan" inline hide-details aria-label="Next game">
+      <v-radio v-for="choice in ['Keep current plan','Set a date','To be arranged']" :key="choice" :label="choice" :value="choice" />
+     </v-radio-group>
      <div v-if="plan === 'Set a date'" class="game-date">
       <v-text-field v-model="date" type="date" label="Game date" hide-details />
       <v-text-field v-model="time" type="time" label="Start time (optional)" hide-details />
