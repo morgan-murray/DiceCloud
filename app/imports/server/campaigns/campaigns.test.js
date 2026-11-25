@@ -4,7 +4,7 @@ import { Random } from 'meteor/random';
 import sharp from 'sharp';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import '/imports/api/users/methods/deleteMyAccount';
-import { Games, Revisions, Assets, Invites, createGame, listGames, state, getEntry, saveEntry, history, restoreRevision, trash, purge, invite, invitations, availablePlayers, accept, revokeInvite, membership, configure, upload, image, updateAsset, removeAsset, destroy, maintenance } from './service';
+import { Games, Revisions, Assets, Invites, createGame, listGames, state, getEntry, saveEntry, finishSession, history, restoreRevision, trash, purge, invite, invitations, availablePlayers, accept, revokeInvite, membership, configure, upload, image, updateAsset, removeAsset, destroy, maintenance } from './service';
 async function denied(fn, code) { let error; try { await fn(); } catch (e) { error = e; } assert.exists(error, 'operation must be denied'); if (code) assert.equal(error.error, 'campaign-' + code); return error; }
 describe('Campaign collaboration, atomic publishing, secrets and artwork', function () {
  this.timeout(120000);
@@ -26,6 +26,31 @@ describe('Campaign collaboration, atomic publishing, secrets and artwork', funct
   await Assets.updateAsync({ campaignId: { $in: [game, other] } }, { $set: { createdAt: new Date(0) } }, { multi: true });
   await Revisions.updateAsync({ campaignId: { $in: [game, other] } }, { $set: { createdAt: new Date(0) } }, { multi: true });
   await maintenance(); await Creatures.removeAsync(nativeId); await Creatures.removeAsync(protectedNativeId); await Meteor.users.removeAsync({ _id: { $in: [owner, gm, player, second, outsider] } });
+ });
+ it('finishes shared sessions atomically, retaining unchanged pages and refusing stale or private targets', async () => {
+  const campaignId = other;
+  const create = { entryId: null, revision: 0 };
+  const save = (args) => finishSession(outsider, { campaignId, ...args });
+  await save({ recap: { ...create, body: 'Last time.\n\n## At the table\n\nMap link' },
+   quest: { ...create, append: true, body: 'The first lead.' },
+   schedule: { ...create, date: '2026-12-02', time: '20:00', zone: 'Europe/London' } });
+  const pages = (await state(outsider, { campaignId })).entries;
+  const ref = kind => { const p = pages.find(p => p.kind === kind); return { entryId: p._id, revision: p.revision }; };
+  const recap = ref('Session recap'), quest = ref('Quest log'), schedule = ref('Session arrangements');
+  const body = async target => (await getEntry(outsider, { campaignId, entryId: target.entryId })).body;
+  assert.include(await body(schedule), '20:00 (Europe/London)');
+  await save({ quest: { ...quest, append: true, body: 'Relic recovered.' } });
+  assert.include(await body(quest), 'The first lead.');
+  await denied(() => save({ recap: { ...recap, body: 'Must roll back.' }, quest: { ...quest, body: 'Stale.' } }), 'conflict');
+  await denied(() => save({ recap: { ...recap, body: 'Must roll back.' }, schedule: { ...schedule, date: '2026-02-30' } }), 'request');
+  assert.include(await body(recap), 'Last time.');
+  const secret = await saveEntry(outsider, { campaignId, type: 'journal', title: 'Secret', kind: 'Active quest', visibility: 'gm' });
+  await denied(() => save({ quest: { entryId: secret._id, revision: secret.revision, body: 'Hidden' } }), 'permission');
+  await denied(() => finishSession(player, { campaignId, recap: { ...recap, body: 'Denied' } }), 'access');
+  await save({ recap: { ...recap, body: 'This week.' }, schedule: { ...schedule, tba: true } });
+  assert.equal(await body(recap), 'This week.\n\n## At the table\n\nMap link');
+  assert.equal(await body(schedule), '**TBA**');
+  assert.include(await body(quest), 'Relic recovered.');
  });
  it('lists eligible usernames only to campaign managers and restores revoked or expired choices', async () => {
   const username = 'camp-' + outsider;

@@ -5,6 +5,7 @@ import { DDPRateLimiter } from 'meteor/ddp-rate-limiter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import { sessionPageRole, sessionPages } from '/imports/api/campaigns/sessionJournal';
 import Creatures from '/imports/api/creature/creatures/Creatures';
 import Tabletops from '/imports/api/tabletop/Tabletops';
 import { assertViewPermission } from '/imports/api/sharing/sharingPermissions';
@@ -194,6 +195,57 @@ export async function saveEntry(user, arg, options = {}) {
   const saved = await stagePage(tx, p); return { _id: saved._id, revision: saved.revision };
  }, options);
 }
+function nextGameText(plan) {
+ if (plan.tba === true) return '**TBA**';
+ const date = text(plan.date, 10, true);
+ const day = new Date(date + 'T12:00:00Z');
+ if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== date)
+  fail('request', 'Choose a valid next game date.');
+ const label = new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeZone: 'UTC' }).format(day);
+ if (!plan.time) return label;
+ if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(text(plan.time, 5, true))) fail('request', 'Choose a valid start time.');
+ const zone = text(plan.zone, 80, true);
+ try { new Intl.DateTimeFormat('en-GB', { timeZone: zone }); } catch { fail('request', 'Enter a time zone such as Europe/London.'); }
+ return label + ' at ' + plan.time + ' (' + zone + ')';
+}
+
+export async function finishSession(user, arg) {
+ fields(arg, ['campaignId', 'recap', 'quest', 'schedule']);
+ return mutate(user, arg.campaignId, false, async tx => {
+  if (!arg.recap && !arg.quest && !arg.schedule) fail('request', 'Enter a session update before saving.');
+  for (const key of ['recap', 'quest', 'schedule']) {
+   const change = arg[key];
+   if (!change) continue;
+   fields(change, key === 'schedule' ? ['entryId', 'revision', 'tba', 'date', 'time', 'zone'] : key === 'quest' ? ['entryId', 'revision', 'body', 'append'] : ['entryId', 'revision', 'body']);
+   const role = key === 'quest' ? 'tracker' : key;
+   let target;
+   if (change.entryId) {
+    target = tx.map.get(id(change.entryId));
+    const currentRole = target && sessionPageRole(target);
+    if (!target || restricted(target, tx.map) !== 'shared' || !canEdit(target, tx) ||
+       !(currentRole === role || (key === 'quest' && currentRole === 'quest'))) fail('permission', 'This journal page is no longer available for this update.');
+    revision(target, change.revision);
+   } else {
+    if (change.revision !== 0 || [...tx.map.values()].some(p => sessionPageRole(p) === role && restricted(p, tx.map) === 'shared'))
+     fail('conflict', 'A matching journal page already exists. Reopen Finish session to use it.');
+    if (tx.map.size >= 1000) fail('quota', 'Campaign page limit reached.');
+    target = await validatePage(tx, { ...sessionPages[role], type: 'journal' });
+   }
+   let body = key === 'schedule' ? nextGameText(change) : text(change.body, 48000, true);
+   if (key === 'quest' && change.append === true) {
+    const stamp = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date());
+    body = [target.body, '### Session update · ' + stamp + '\n\n' + body].filter(Boolean).join('\n\n');
+   }
+   if (key === 'recap') {
+    const footer = target.body.match(/^## At the table\s*$[\s\S]*/m);
+    if (footer && !/^## At the table\s*$/m.test(body)) body += '\n\n' + footer[0];
+   }
+   await stagePage(tx, { ...target, body: markdown(body, 48000) });
+  }
+  return true;
+ });
+}
+
 export async function history(user, arg) {
  fields(arg, ['campaignId', 'entryId']); const c = await context(user, arg.campaignId), e = c.map.get(id(arg.entryId)); if (!c.visible(e)) fail('access', 'Page not found.');
  const result = (await Revisions.find({ _id: { $in: c.game.history[e._id] || [] }, ...(manager(c.role) ? {} : { epoch: e.epoch, 'page.visibility': 'shared' }) }, { sort: { revision: -1 } }).fetchAsync()).map(r => ({ _id: r._id, revision: r.revision, savedAt: r.createdAt, savedBy: r.page.updatedBy, savedByName:r.page.updatedByName, title: r.page.title, body: r.page.body }));
@@ -347,7 +399,7 @@ export async function maintenance() {
  // Remove departed non-owner accounts without overwriting concurrent membership edits.
  for (const g of games) { const members = []; for (const m of g.members) if (await Meteor.users.findOneAsync(m.userId, { fields: { _id: 1 } })) members.push(m); if (members.length !== g.members.length && members.some(m => m.role === 'owner')) await Games.updateAsync({ _id: g._id, version: g.version }, { $set: { members }, $inc: { version: 1 } }); }
 }
-const methods = { create: createGame, list: listGames, state, entry: getEntry, save: saveEntry, history, restoreRevision, trash, purge, invite, accept, invitations, availablePlayers, membership, configure, revokeInvite, upload: (u, a) => upload(u, a), image, updateAsset, removeAsset, destroy };
+const methods = { create: createGame, list: listGames, state, entry: getEntry, save: saveEntry, finishSession, history, restoreRevision, trash, purge, invite, accept, invitations, availablePlayers, membership, configure, revokeInvite, upload: (u, a) => upload(u, a), image, updateAsset, removeAsset, destroy };
 for (const [name, fn] of Object.entries(methods)) Meteor.methods({ ['campaigns.' + name]: async function (arg) { const user=auth(this.userId); if(!await Meteor.users.findOneAsync(user,{fields:{_id:1}})) fail('auth','Your account is no longer available.'); return fn(user, arg); } });
 DDPRateLimiter.addRule({ name: name => typeof name === 'string' && name.startsWith('campaigns.'), connectionId: () => true }, 180, 10000);
 DDPRateLimiter.addRule({ name: 'campaigns.upload', userId: user => Boolean(user) }, 6, 60000);
