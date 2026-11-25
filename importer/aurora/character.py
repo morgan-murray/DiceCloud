@@ -112,9 +112,9 @@ def extract(source, files):
     for spell in additional:
         element = content.quick_query_id(spell.get('id'))
         if element is None: fail('MISSING_CONTENT', 'spells', 'Missing additional spell: '+str(spell.get('id')))
-        name = bounded(element.get('name', 'Spell'), 'spells.name', 128)
-        source = bounded(spell.get('source', 'Additional spell'), 'spells.source', 128)
-        notes.append(bounded(f'{source} — {name}\n{content.describe(element)}', 'notes'))
+        spell_name = bounded(element.get('name', 'Spell'), 'spells.name', 128)
+        spell_source = bounded(spell.get('source', 'Additional spell'), 'spells.source', 128)
+        notes.append(bounded(f'{spell_source} — {spell_name}\n{content.describe(element)}', 'notes'))
     if additional:
         warn('ADDITIONAL_SPELLS', 'spells', 'Additional spells are saved as notes with their source. Review casting limits and abilities separately.')
     warn('SNAPSHOT_ONLY','character','This is a 2014 current-sheet snapshot. Level-up, equipment changes and ongoing conditional effects require manual review.')

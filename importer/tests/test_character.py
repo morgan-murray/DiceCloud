@@ -20,6 +20,7 @@ class CharacterTests(unittest.TestCase):
             b'pool="spellcasting"', b'source="ID_WOTC_PHB_CLASS_FEATURE_WARLOCK_SPELLCASTING_WARLOCK_PACT_MAGIC"')
         body = body.replace(b'</magic>', b'<additional><spell id="ID_TEST_SPELL" source="Innate"/></additional></magic>')
         result = extract(upload(body, 'pact.dnd5e'), pack())
+        self.assertEqual(result['identity']['name'], 'caster')
         self.assertTrue(result['resources'])
         self.assertTrue(all(slot['reset'] == 'shortRest' for slot in result['resources']))
         self.assertTrue(any('Innate' in note for note in result['notes']))
