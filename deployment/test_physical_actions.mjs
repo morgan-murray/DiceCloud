@@ -55,3 +55,36 @@ test('2014 class abilities use class levels and the existing sheet pools', () =>
   assert.equal(validCost('Step of the Wind',2,10),false);
   assert.equal(validCost('Cunning Action',1,10),false);
 });
+
+import { affinityDamage, slotCosts } from '../app/imports/api/classAbilities/physical.mjs';
+test('Sorcerer choices share their sorcery pool and use the 2014 costs', () => {
+  const record = {type: 'note', name: 'Aurora import record', description: { text: 'Sorcerer 10' }};
+  const features = ['Quickened Spell', 'Heightened Spell', 'Elemental Affinity', 'Red Dragon'].map(name => ({type: 'feature', name}));
+  assert.deepEqual(sheetAbilities({}, [record]).map(a => a.name), ['Font of Magic']);
+  assert.equal(affinityDamage(features), 'fire');
+  const pool = {type: 'attribute', attributeType: 'resource', variableName: 'custom', tags: ['sorceryPoints']};
+  for (const [ability, cost] of [['Quickened Spell', 2], ['Heightened Spell', 3], ['Elemental Affinity', 1]]) {
+    assert.ok(sheetAbilities({}, [record, ...features]).some(a => a.name === ability));
+    assert.ok(poolFor(ability, pool));
+    assert.ok(validCost(ability, cost, cost));
+    assert.equal(validCost(ability, cost, cost-1), false);
+    assert.equal(validCost(ability, cost+1, 10), false);
+    assert.equal(poolFor(ability, {...pool, tags: ['kiPoints']}), false);
+  }
+  assert.equal(validCost('Font of Magic', 1, 10), false);
+  assert.deepEqual(slotCosts.slice(1), [2, 3, 5, 6, 7]);
+});
+
+test('Ranger hunter choices are opt-in and Primeval Awareness spends exactly one levelled slot', () => {
+  const ranger = {type: 'class', variableName: 'ranger', level: 10};
+  assert.deepEqual(sheetAbilities({}, [ranger]).map(a => a.name), ['Primeval Awareness', 'Extra Attack', 'Hide in Plain Sight']);
+  const picks = ['Horde Breaker', 'Multiattack Defense'].map(name => ({type: 'feature', name}));
+  assert.equal(sheetAbilities({}, [ranger, ...picks]).length, 5);
+  assert.equal(sheetAbilities({}, [{type: 'feature', name: 'Extra Attack'}]).length, 0);
+  const slot = {type: 'attribute', name: 'Second level', attributeType: 'spellSlot', spellSlotLevel: {value: 2}};
+  assert.ok(poolFor('Primeval Awareness', slot));
+  assert.equal(poolFor('Primeval Awareness', {...slot, name:'Pact Magic'}), false);
+  assert.equal(poolFor('Primeval Awareness', {...slot, spellSlotLevel:{value:0}}), false);
+  assert.ok(validCost('Primeval Awareness', 1, 3));
+  assert.equal(validCost('Primeval Awareness', 2, 3), false);
+});

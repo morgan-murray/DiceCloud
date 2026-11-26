@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import { Meteor } from 'meteor/meteor';
-import { poolFor, smiteDice, sneakDice, validCost } from '/imports/api/classAbilities/physical.mjs';
+import FlexibleCasting from './FlexibleCasting.vue';
+import { affinityDamage, fixedCost, poolFor, smiteDice, sneakDice, validCost } from '/imports/api/classAbilities/physical.mjs';
 
-const props = defineProps<{ ability: string; creatureId: string; pools: any[]; rogueLevel?: number; monkLevel?: number }>();
+const props = defineProps<{ ability: string; creatureId: string; pools: any[]; rogueLevel?: number; monkLevel?: number; sorcererLevel?: number }>();
 const context = inject('context', { editPermission: false });
 const selected = ref(''), points = ref('1'), healing = ref('Heal'), maneuver = ref('Dash');
 const initialKi = ref('');
@@ -11,16 +12,30 @@ const critical = ref(false), undead = ref(false), busy = ref(false), message = r
 const smite = computed(() => props.ability === 'Divine Smite');
 const hands = computed(() => props.ability === 'Lay on Hands');
 const step = computed(() => props.ability === 'Step of the Wind');
-const consumes = computed(() => smite.value || hands.value || step.value);
+const awareness = computed(() => props.ability === 'Primeval Awareness');
+const font = computed(() => props.ability === 'Font of Magic');
+const usesSlot = computed(() => smite.value || awareness.value);
+const missingCounter = computed(() => {
+  if (usesSlot.value) return 'Add a levelled spell-slot counter under Stats.';
+  if (hands.value) return 'Tag an existing resource in Stats with layOnHands, or add a Lay on Hands resource.';
+  if (step.value) return 'Tag an existing ki resource with kiPoints in Stats, or create one with your current balance.';
+  return 'Set up sorcery points on the Font of Magic card or tag an existing resource in Stats with sorceryPoints.';
+});
+const consumes = computed(() => hands.value || fixedCost(props.ability) !== undefined);
+const slots = computed(() => props.pools.filter(p => poolFor('Divine Smite', p)));
+const ancestry = computed(() => affinityDamage(props.pools));
+const charisma = computed(() => props.pools.find(p => p.variableName === 'charisma' && !p.overridden)?.modifier);
+const terrainNames = ['Arctic', 'Coast', 'Desert', 'Forest', 'Grassland', 'Mountain', 'Swamp', 'Underdark'];
+const terrains = computed(() => props.pools.filter(p => p.type === 'feature' && terrainNames.includes(p.name)).map(p => p.name.toLowerCase()).join(', '));
 const choices = computed(() => props.pools.filter(p => poolFor(props.ability, p))
   .sort((a,b) => (a.spellSlotLevel?.value || 0) - (b.spellSlotLevel?.value || 0)));
 const pool = computed(() => choices.value.find(p => p._id === selected.value));
 watch(choices, list => {
   if (list.some(p => p._id === selected.value)) return;
-  const first = smite.value ? list.find(p => p.value > 0) || list[0] : list.length === 1 ? list[0] : undefined;
+  const first = usesSlot.value ? list.find(p => p.value > 0) || list[0] : list.length === 1 ? list[0] : undefined;
   selected.value = first?._id || '';
 }, { immediate: true });
-const cost = computed(() => hands.value ? healing.value === 'Heal' ? Number(points.value) : 5 : 1);
+const cost = computed(() => hands.value ? healing.value === 'Heal' ? Number(points.value) : 5 : fixedCost(props.ability));
 const canSpend = computed(() => context.editPermission && !busy.value && validCost(props.ability, cost.value, pool.value?.value));
 const dice = computed(() => smite.value && pool.value ? smiteDice(pool.value.spellSlotLevel.value, undead.value, critical.value) : sneakDice(props.rogueLevel, critical.value));
 const label = (p: any) => p.name + ' (' + p.value + '/' + p.total + ')';
@@ -35,12 +50,26 @@ async function createKi() {
   } catch (e: any) { message.value = e.reason || 'Check the ki pool under Stats.'; }
   finally { busy.value = false; }
 }
+function spendOutcome(amount: number, chosen: any) {
+  switch (props.ability) {
+    case 'Divine Smite': return 'Roll ' + dice.value + 'd8 radiant damage.';
+    case 'Step of the Wind': return maneuver.value + ' as a bonus action. Double your jump distance this turn.';
+    case 'Primeval Awareness': {
+      const minutes = chosen.spellSlotLevel.value;
+      return 'Sense their presence for ' + minutes + (minutes === 1 ? ' minute.' : ' minutes.');
+    }
+    case 'Elemental Affinity': return 'Gain resistance to ' + (ancestry.value || 'your ancestry damage type') + ' for 1 hour.';
+    case 'Quickened Spell': return 'Cast this spell as a bonus action.';
+    case 'Heightened Spell': return 'One target has disadvantage on its first save against this spell.';
+    case 'Lay on Hands': return healing.value === 'Heal'
+      ? 'Restore ' + amount + ' HP to the recipient, up to their maximum.' : healing.value + ' by touch.';
+    default: return '';
+  }
+}
 async function spend() {
   if (!canSpend.value) return;
   const chosen = pool.value, amount = cost.value;
-  const outcome = smite.value ? 'Roll ' + dice.value + 'd8 radiant damage.'
-    : step.value ? maneuver.value + ' as a bonus action. Double your jump distance this turn.'
-    : healing.value === 'Heal' ? 'Restore ' + amount + ' HP to the recipient, up to their maximum.' : healing.value + ' by touch.';
+  const outcome = spendOutcome(amount, chosen);
   busy.value = true;
   try {
     const left = await Meteor.callAsync('classAbilities.spend', {
@@ -54,16 +83,25 @@ async function spend() {
 </script>
 <template>
   <v-card class="pa-4 class-ability" :data-ability="ability">
-    <h3 class="text-h6">{{ ability }}</h3>
+    <h3 class="text-h6">{{ font ? 'Font of Magic · Flexible Casting' : ability }}</h3>
     <p v-if="smite">After a melee weapon attack hits, choose a spell slot to add radiant damage.</p>
     <p v-else-if="hands">As an action, touch a creature to heal it or spend 5 points per disease or poison. Undead and constructs are unaffected. Update the recipient’s sheet separately.</p>
     <p v-else-if="step">Spend 1 ki to Dash or Disengage as a bonus action. Your jump distance doubles for the turn.</p>
     <p v-else-if="ability === 'Cunning Action'">On your turn, use your bonus action for one of these moves.</p>
-    <p v-else>Once per turn on a finesse or ranged weapon hit. You need advantage, or another enemy of the target within 5 feet of it who is not incapacitated while you do not have disadvantage.</p>
+    <p v-else-if="ability === 'Quickened Spell'">Spend 2 sorcery points to cast a one-action spell as a bonus action. The only other spell you can cast that turn is a cantrip with a casting time of one action.</p>
+    <p v-else-if="ability === 'Heightened Spell'">When you cast a spell that calls for a saving throw, spend 3 sorcery points to give one target disadvantage on its first save against the spell.</p>
+    <p v-else-if="ability === 'Elemental Affinity'">When you cast a spell that deals {{ ancestry ? ancestry + ' damage' : 'damage matching your draconic ancestry' }}, add your Charisma modifier<template v-if="Number.isInteger(charisma)"> ({{ charisma >= 0 ? '+' : '' }}{{ charisma }})</template> to one damage roll. At the same time, you may spend 1 sorcery point for resistance to that damage type for 1 hour.</p>
+    <p v-else-if="awareness">As an action, spend one ranger spell slot to sense whether aberrations, celestials, dragons, elementals, fey, fiends or undead are within 1 mile. The range extends to 6 miles in favoured terrain<template v-if="terrains"> ({{ terrains }})</template>. You learn their presence only.</p>
+    <p v-else-if="ability === 'Extra Attack'">When you take the Attack action on your turn, make two attacks. Roll each attack separately using the weapon on your sheet.</p>
+    <p v-else-if="ability === 'Horde Breaker'">Once on each of your turns when you make a weapon attack, you may attack a different creature with the same weapon. The second creature must be within 5 feet of the first and within weapon range. Roll a separate attack, even if the first missed.</p>
+    <p v-else-if="ability === 'Multiattack Defense'">When a creature hits you, add +4 to your AC against further attacks from that creature for the rest of this turn.</p>
+    <p v-else-if="ability === 'Hide in Plain Sight'">Spend 1 minute camouflaging yourself with natural materials, then hide against a solid surface at least as tall and wide as you. Add +10 to your Dexterity (Stealth) check. Moving, taking an action or using a reaction ends the benefit.</p>
+    <flexible-casting v-else-if="font" :creature-id="creatureId" :level="sorcererLevel" :slots="slots" :has-pool="choices.length > 0" />
+    <p v-else-if="ability === 'Sneak Attack'">Once per turn on a finesse or ranged weapon hit. You need advantage, or another enemy of the target within 5 feet of it who is not incapacitated while you do not have disadvantage.</p>
     <div class="ability-fields">
-      <v-select v-if="consumes && choices.length" v-model="selected" :label="smite ? 'Spell slot' : 'Resource pool'" :items="choices"
+      <v-select v-if="(consumes || font) && choices.length" v-model="selected" :label="usesSlot ? 'Spell slot' : 'Resource pool'" :items="choices"
         :item-title="label" item-value="_id" :disabled="busy" variant="outlined" hide-details />
-      <p v-if="consumes && !choices.length" class="text-body-2">{{ smite ? 'Add a levelled spell-slot counter under Stats to use Divine Smite.' : hands ? 'Select an existing resource in Stats and give it the tag layOnHands, or add a Lay on Hands resource.' : 'Tag an existing ki resource with kiPoints in Stats. If you have no ki pool, create one with your current balance.' }}</p>
+      <p v-if="consumes && !choices.length" class="text-body-2">{{ missingCounter }}</p>
       <template v-if="step && !choices.length && monkLevel && context.editPermission">
         <v-text-field v-model="initialKi" type="number" :label="'Ki currently remaining (0–' + monkLevel + ')'" min="0" :max="monkLevel" step="1" :disabled="busy" variant="outlined" hide-details />
         <v-btn variant="tonal" :disabled="busy || initialKi === '' || !Number.isInteger(Number(initialKi)) || Number(initialKi) < 0 || Number(initialKi) > monkLevel" @click="createKi">Create ki pool</v-btn>
@@ -78,11 +116,12 @@ async function spend() {
         <v-checkbox v-model="critical" :disabled="busy" label="Critical hit" hide-details density="compact" />
       </template>
     </div>
+    <p v-if="awareness && pool" class="mt-2">Duration: {{ pool.spellSlotLevel.value }} {{ pool.spellSlotLevel.value === 1 ? 'minute' : 'minutes' }}.</p>
     <p v-if="step || ability === 'Cunning Action'" class="mt-2">{{ benefit }}</p>
     <p v-if="smite && pool" class="mt-2"><strong>{{ dice }}d8</strong> extra radiant damage on your physical dice.</p>
     <p v-if="ability === 'Sneak Attack'" class="mt-2"><template v-if="dice">Roll <strong>{{ dice }}d6</strong> extra weapon damage.</template><template v-else>Use the Sneak Attack dice for your rogue class level{{ critical ? ', doubled for this critical hit' : '' }}.</template></p>
     <v-btn v-if="consumes && choices.length" class="mt-3" variant="tonal" color="primary" :disabled="!canSpend" :loading="busy" @click="spend">
-      {{ smite ? 'Spend 1 slot' : step ? 'Spend 1 ki' : 'Spend ' + (cost || 0) + (cost === 1 ? ' point' : ' points') }}
+      {{ usesSlot ? 'Spend 1 slot' : ability === 'Elemental Affinity' ? 'Spend 1 point for resistance' : step ? 'Spend 1 ki' : 'Spend ' + (cost || 0) + (cost === 1 ? ' point' : ' points') }}
     </v-btn>
     <p v-if="message" class="mt-2" role="status">{{ message }}</p>
   </v-card>

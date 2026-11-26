@@ -22,9 +22,10 @@ const { result: classSheet } = autorun(() => Creatures.findOne(props.creatureId)
 const { result: classProperties } = autorun(() => CreatureProperties.find({
   'root.id': props.creatureId, removed: { $ne: true }, inactive: { $ne: true }, disabled: { $ne: true },
   $or: [{ type: { $in: ['feature', 'class'] } }, { type: 'note', name: 'Aurora import record' },
-    { type: 'attribute', attributeType: { $in: ['resource', 'spellSlot'] } }],
+    { type: 'attribute', attributeType: { $in: ['resource', 'spellSlot'] } },
+    { type: 'attribute', variableName: 'charisma' }],
 }, { fields: { type: 1, name: 1, level: 1, variableName: 1, tags: 1, attributeType: 1, overridden: 1,
-  spellSlotLevel: 1, value: 1, total: 1, 'description.text': 1 } }).fetch());
+  spellSlotLevel: 1, modifier: 1, value: 1, total: 1, 'description.text': 1 } }).fetch());
 const classCards = computed(() => sheetAbilities(classSheet.value, classProperties.value || []));
 const rogueLevel = computed(() => classLevel(classSheet.value, classProperties.value || [], 'rogue'));
 
@@ -72,6 +73,7 @@ const { result: actions } = autorun(() => {
   }).fetch();
 });
 
+const sorcererLevel = computed(() => classLevel(classSheet.value, classProperties.value || [], 'sorcerer'));
 const monkLevel = computed(() => classLevel(classSheet.value, classProperties.value || [], 'monk'));
 
 function clickProperty({ _id }: { _id: string }) {
@@ -108,7 +110,7 @@ function softRemove(_id: string) {
     </v-card>
     <column-layout wide-columns>
       <class-ability-card v-for="entry in classCards" :key="creatureId + entry.name" :ability="entry.name"
-        :creature-id="creatureId" :pools="classProperties || []" :rogue-level="rogueLevel" :monk-level="monkLevel" />
+        :creature-id="creatureId" :pools="classProperties || []" :rogue-level="rogueLevel" :monk-level="monkLevel" :sorcerer-level="sorcererLevel" />
       <folder-group-card
         v-for="folder in startFolders"
         :key="folder._id"

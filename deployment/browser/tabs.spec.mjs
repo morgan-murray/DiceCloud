@@ -393,3 +393,45 @@ test('Character tabs: physical class abilities spend the selected native counter
     await call(page,'Creatures.methods.removeCreature',{charId:id});
   }
 });
+
+test('Character tabs: sorcerer and ranger cards share sheet balances with manual Flexible Casting', async ({ page }) => {
+  test.skip(!fixture, 'Requires the native workflow account');
+  const { owner } = JSON.parse(readFileSync(fixture, 'utf8'));
+  await page.goto(url('sign-in'));
+  await page.getByLabel('Username or email').fill(owner.username);
+  await page.getByLabel('Password', { exact: true }).fill(owner.password);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.waitForFunction(() => window.Meteor?.userId());
+  const id = await call(page, 'creatures.insertCreature', { name: 'Resource card fixture', startingLevel: 1, allowedLibraries: [], allowedLibraryCollections: [] });
+  try {
+    const insert = prop => call(page, 'creatureProperties.insert', { creatureProperty: { ...prop, root: { collection: 'creatures', id } } });
+    await insert({type: 'note', name: 'Aurora import record', description: {text: 'Sorcerer 10\nRanger 10'}});
+    await insert({type: 'feature', name: 'Quickened Spell'});
+    await insert({type: 'feature', name: 'Heightened Spell'});
+    await insert({type: 'attribute', name: 'Second level', variableName: 'secondSlots', attributeType: 'spellSlot',
+      spellSlotLevel: {calculation:'2'}, baseValue: {calculation:'3'}, damage: 1});
+    await page.evaluate(id => document.querySelector('#app').__vue_app__.config.globalProperties.$router.push({ name:'characterSheet', params:{id} }), id);
+    await page.getByRole('tab', { name: 'Actions', exact: true }).click();
+    const card = name => page.locator('[data-ability="' + name + '"]');
+    const font = card('Font of Magic');
+    await font.getByLabel('Sorcery points remaining', {exact:false}).fill('4');
+    await font.getByRole('button', {name:'Create sorcery point pool'}).click();
+    const quickened = card('Quickened Spell');
+    await expect(quickened.getByRole('button', {name:'Spend 2 points'})).toBeEnabled({timeout:20000});
+    await quickened.getByRole('button', {name:'Spend 2 points'}).click();
+    await expect(quickened.getByRole('status')).toContainText('2 remaining');
+    await expect(card('Heightened Spell').getByRole('button', {name:'Spend 3 points'})).toBeDisabled();
+    await expect(card('Horde Breaker')).toHaveCount(0);
+    const primeval = card('Primeval Awareness');
+    await expect(primeval).toContainText('2 minutes');
+    await primeval.getByRole('button', {name:'Spend 1 slot'}).click();
+    await expect(primeval.getByRole('status')).toContainText('1 remaining');
+    await font.locator('.v-field').filter({has: page.getByRole('combobox', {name:'Exchange', exact:true})}).click();
+    await page.getByRole('option', {name:'Convert a slot to points', exact:true}).click();
+    await expect(font).toContainText('gain 2 sorcery points');
+    await expect(font).toContainText('1 of 3 remaining');
+    await expect(card('Heightened Spell').getByRole('button', {name:'Spend 3 points'})).toBeDisabled();
+  } finally {
+    await call(page, 'Creatures.methods.removeCreature', {charId:id});
+  }
+});
